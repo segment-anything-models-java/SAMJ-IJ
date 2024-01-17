@@ -125,10 +125,10 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	private final List<Object> collectedPoints = new ArrayList<>(100);
 
 	@Override
-	public void mouseEntered(MouseEvent e) {}
-
-	@Override
-	public void mouseExited(MouseEvent e) {}
+	public void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+		}
+	}
 
 	@Override
 	public void windowClosed(WindowEvent e) {
@@ -136,7 +136,11 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		deRegisterListeners();
 	}
 
-	// ===== unused window events =====
+	// ===== unused events =====
+	@Override
+	public void mouseEntered(MouseEvent e) {}
+	@Override
+	public void mouseExited(MouseEvent e) {}
 	@Override
 	public void windowOpened(WindowEvent e) {}
 	@Override
@@ -149,17 +153,10 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	public void windowActivated(WindowEvent e) {}
 	@Override
 	public void windowDeactivated(WindowEvent e) {}
-
-	// ===== KEYS =====
 	@Override
 	public void keyTyped(KeyEvent e) {
 	}
-
 	@Override
 	public void keyPressed(KeyEvent e) {
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
 	}
 }
