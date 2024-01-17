@@ -152,6 +152,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	public void windowClosed(WindowEvent e) {
 		System.out.println("Image window: Window closed, notify that nothing will ever arrive...");
 		deRegisterListeners();
+		promptsToNet.notifyUiHasBeenClosed();
 	}
 
 	// ===== unused events =====
