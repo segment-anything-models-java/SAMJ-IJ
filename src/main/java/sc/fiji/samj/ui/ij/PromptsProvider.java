@@ -7,6 +7,8 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 
 import java.awt.*;
@@ -17,6 +19,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class PromptsProvider implements MouseListener, KeyListener, WindowListener {
@@ -74,17 +78,25 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		switch (roi.getType()) {
 			case Roi.RECTANGLE:
 				System.out.println("Image window: rectangle...");
+				//
+				final Rectangle rectBounds = roi.getBounds();
+				final Interval rectInterval = new FinalInterval(
+						new long[] { rectBounds.x, rectBounds.y },
+						new long[] { rectBounds.x+rectBounds.width-1, rectBounds.y+rectBounds.height-1 } );
+				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(rectInterval) ) );
+				break;
 
-				Polygon res = promptsToNet.fetch2dSegmentation(new FinalInterval(
-						roi.getBounds().x, roi.getBounds().y,
-						roi.getBounds().x+roi.getBounds().width-1,
-						roi.getBounds().y+roi.getBounds().height-1 ));
-				roiManager.addRoi( convertToPolygonRoi(res) );
-				break;
 			case Roi.LINE:
-				//TODO submit them
+				Iterator<Point> it = roi.iterator();
+				Point pit = it.next(); //NB: since Roi != null, the point for sure exists...
+				net.imglib2.Point p1 = new net.imglib2.Point(pit.x, pit.y);
+				while (it.hasNext()) pit = it.next(); //find the last point on the line
+				net.imglib2.Point p2 = new net.imglib2.Point(pit.x, pit.y);
 				System.out.println("Image window: line... from "+p1+" to "+p2);
+				//
+				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(p1,p2) ) );
 				break;
+
 			case Roi.POINT:
 				if (e.isShiftDown()) {
 					//add point to the list
