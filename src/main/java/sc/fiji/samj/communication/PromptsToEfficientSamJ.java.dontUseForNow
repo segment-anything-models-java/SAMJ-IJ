@@ -1,0 +1,53 @@
+package sc.fiji.samj.communication;
+
+import io.bioimage.samj.EfficientSamJ;
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccessibleInterval;
+import java.awt.Polygon;
+import java.io.IOException;
+import java.util.List;
+
+public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
+
+	private final EfficientSamJ efficientSamJ;
+	private static final Polygon EMPTY_POLYGON = new Polygon(new int[0], new int[0], 0);
+
+	public PromptsToEfficientSamJ(final String envPath,
+	                              final RandomAccessibleInterval<?> image)
+	throws IOException, RuntimeException, InterruptedException {
+		efficientSamJ = EfficientSamJ.initializeSam(envPath, (RandomAccessibleInterval) image);
+	}
+
+	@Override
+	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
+		System.out.println("NOT SUPPORTED YET");
+		return EMPTY_POLYGON;
+	}
+
+	@Override
+	public Polygon fetch2dSegmentation(Localizable lineStartPoint2D, Localizable lineEndPoint2D) {
+		System.out.println("NOT SUPPORTED YET");
+		return EMPTY_POLYGON;
+	}
+
+	@Override
+	public Polygon fetch2dSegmentation(Interval boundingBox2D) {
+		try {
+			int bbox[] = {
+				(int)boundingBox2D.min(0),
+				(int)boundingBox2D.min(1),
+				(int)boundingBox2D.max(0),
+				(int)boundingBox2D.max(1)
+			};
+			return efficientSamJ.processBox(bbox);
+		} catch (IOException | InterruptedException | RuntimeException e) {
+			return EMPTY_POLYGON;
+		}
+	}
+
+	@Override
+	public void NotifyUiHasBeenClosed() {
+		System.out.println("EfficientSamJ: OKAY, I'm closing myself...");
+	}
+}
