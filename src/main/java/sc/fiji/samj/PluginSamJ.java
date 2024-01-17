@@ -25,9 +25,16 @@ public class PluginSamJ implements Command {
 
 	@Override
 	public void run() {
-		System.out.println("Plugin started over an image: "+imagePlus.getTitle());
+		if (imagePlus == null) {
+			logService.info("No image available.");
+			return;
+		}
+
+		//TODO: test the size of the image
 
 		try {
+			System.out.println("Plugin started over an image: "+imagePlus.getTitle());
+
 			//get some implementation of SAM
 			final PromptsToNetAdapter someSamImpl = new PromptsToFakeSamJ();
 
