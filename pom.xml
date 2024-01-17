@@ -91,13 +91,10 @@
 	</repositories>
 
 	<dependencies>
-		<!-- Fiji dependencies -->
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>fiji-lib</artifactId>
+			<artifactId>fiji</artifactId>
 		</dependency>
-
-		<!-- ImageJ dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
