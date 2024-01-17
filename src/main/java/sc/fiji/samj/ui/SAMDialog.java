@@ -1,4 +1,5 @@
-package ui;
+package sc.fiji.samj.ui;
+
 import java.awt.Desktop;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -26,9 +27,8 @@ import ij.gui.ImageCanvas;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
+import sc.fiji.samj.ui.components.HTMLPane;
 import segmentation.sam.SimulationSAM;
-import ui.components.HTMLPane;
-import ui.components.PanelImage;
 
 public class SAMDialog extends JDialog implements ActionListener, MouseListener {
 

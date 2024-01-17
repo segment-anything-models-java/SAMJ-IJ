@@ -1,4 +1,4 @@
-package ui.components;
+package sc.fiji.samj.ui.components;
 
 import java.awt.Color;
 import java.awt.Graphics;

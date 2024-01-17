@@ -26,8 +26,7 @@
  * You should have received a copy of the GNU General Public License along with
  * DL2. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package ui.components;
+package sc.fiji.samj.ui.components;
 
 import java.awt.Image;
 import java.net.URL;

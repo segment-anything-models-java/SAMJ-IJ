@@ -74,7 +74,7 @@
 	</ciManagement>
 
 	<properties>
-		<package-name>fiji.samj</package-name>
+		<package-name>sc.fiji.samj</package-name>
 		<license.licenseName>gpl_v2</license.licenseName>
 		<license.copyrightOwners>Fiji developers.</license.copyrightOwners>
 		<license.projectName>Fiji distribution of ImageJ for the life sciences.</license.projectName>

@@ -1,9 +1,10 @@
+package sc.fiji.samj;
 
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
-import ui.SAMDialog;
+import sc.fiji.samj.ui.SAMDialog;
 
 public class SAMJ_ implements PlugIn {
 
@@ -20,4 +21,3 @@ public class SAMJ_ implements PlugIn {
 		new SAMDialog(imp);
 	}
 }
-

@@ -1,4 +1,5 @@
-package ui;
+package sc.fiji.samj.ui;
+
 import java.awt.event.ActionEvent;
 
 import ij.plugin.frame.RoiManager;
