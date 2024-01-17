@@ -53,7 +53,7 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 	}
 
 	@Override
-	public void NotifyUiHasBeenClosed() {
+	public void notifyUiHasBeenClosed() {
 		System.out.println("FAKE SAM: OKAY, I'm closing myself...");
 	}
 }

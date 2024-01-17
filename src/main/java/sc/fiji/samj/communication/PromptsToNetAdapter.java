@@ -13,5 +13,5 @@ public interface PromptsToNetAdapter {
 
 	Polygon fetch2dSegmentation(Interval boundingBox2D);
 
-	void NotifyUiHasBeenClosed();
+	void notifyUiHasBeenClosed();
 }
