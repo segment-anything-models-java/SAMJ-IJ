@@ -2,15 +2,21 @@ package sc.fiji.samj.communication;
 
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
+import org.scijava.log.Logger;
 import java.awt.Polygon;
 import java.util.List;
 
 public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 	private static final Polygon EMPTY_POLYGON = new Polygon(new int[0], new int[0], 0);
+	private final Logger log;
+
+	public PromptsToFakeSamJ(final Logger log) {
+		this.log = log;
+	}
 
 	@Override
 	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
-		System.out.println("FAKE SAM: LIST OF POINTS NOT IMPLEMENTED YET");
+		log.info("FAKE SAM: LIST OF POINTS NOT IMPLEMENTED YET");
 		return EMPTY_POLYGON;
 	}
 
@@ -71,6 +77,6 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 
 	@Override
 	public void notifyUiHasBeenClosed() {
-		System.out.println("FAKE SAM: OKAY, I'm closing myself...");
+		log.info("FAKE SAM: OKAY, I'm closing myself...");
 	}
 }

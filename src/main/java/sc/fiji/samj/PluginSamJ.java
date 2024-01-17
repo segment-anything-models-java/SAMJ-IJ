@@ -2,11 +2,11 @@ package sc.fiji.samj;
 
 import ij.ImagePlus;
 import ij.Prefs;
-import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
+import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.samj.communication.PromptsToFakeSamJ;
@@ -33,16 +33,16 @@ public class PluginSamJ implements Command {
 		//TODO: test the size of the image
 
 		try {
-			System.out.println("Plugin started over an image: "+imagePlus.getTitle());
+			final Logger log = logService.subLogger("SAMJ on "+imagePlus.getTitle());
 
 			//get some implementation of SAM
-			final PromptsToNetAdapter someSamImpl = new PromptsToFakeSamJ();
+			final PromptsToNetAdapter someSamImpl = new PromptsToFakeSamJ(log.subLogger("SAM fake Python side"));
 
 			//get the Fiji's ROI manager
 			final RoiManager roiManager = startRoiManager();
 
 			//create the adapter between the user inputs and SAMJ outputs
-			new PromptsProvider(imagePlus, someSamImpl, roiManager);
+			new PromptsProvider(imagePlus, someSamImpl, roiManager, log.subLogger("Prompts in image window"));
 
 		} catch (RuntimeException e) {
 			logService.error("SAMJ error: "+e.getMessage());

@@ -9,6 +9,7 @@ import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
+import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 
 import java.awt.*;
@@ -20,7 +21,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class PromptsProvider implements MouseListener, KeyListener, WindowListener {
@@ -34,12 +34,16 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	private final ImageCanvas activeCanvas;
 	private final ImageWindow activeWindow;
 
+	private final Logger log;
+
 	public PromptsProvider(final ImagePlus imagePlus,
 	                       final PromptsToNetAdapter promptsToNetAdapter,
-	                       final RoiManager roiManager) {
+	                       final RoiManager roiManager,
+	                       final Logger log) {
 		this.promptsToNet = promptsToNetAdapter;
 		this.roiManager = roiManager;
 		this.activeImage = imagePlus;
+		this.log = log;
 
 		activeCanvas = activeImage.getCanvas();
 		activeWindow = activeImage.getWindow();
@@ -71,13 +75,13 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	public void mouseReleased(MouseEvent e) {
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
-			System.out.println("Image window: There's no ROI...");
+			log.info("Image window: There's no ROI...");
 			return;
 		}
 
 		switch (roi.getType()) {
 			case Roi.RECTANGLE:
-				System.out.println("Image window: rectangle...");
+				log.info("Image window: rectangle...");
 				//
 				final Rectangle rectBounds = roi.getBounds();
 				final Interval rectInterval = new FinalInterval(
@@ -92,7 +96,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				net.imglib2.Point p1 = new net.imglib2.Point(pit.x, pit.y);
 				while (it.hasNext()) pit = it.next(); //find the last point on the line
 				net.imglib2.Point p2 = new net.imglib2.Point(pit.x, pit.y);
-				System.out.println("Image window: line... from "+p1+" to "+p2);
+				log.info("Image window: line... from "+p1+" to "+p2);
 				//
 				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(p1,p2) ) );
 				break;
@@ -103,7 +107,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 					isCollectingPoints = true;
 					Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
 					collectedPoints.add(p);
-					System.out.println("Image window: collecting points..., already we have: "+collectedPoints.size());
+					log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
 					//collect this last one
@@ -114,7 +118,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				break;
 
 			default:
-				System.out.println("Image window: unsupported ROI type");
+				log.info("Image window: unsupported ROI type");
 		}
 
 		if (!isCollectingPoints) activeImage.deleteRoi();
@@ -130,7 +134,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	private void submitAndClearPoints() {
 		if (collectedPoints.size() == 0) return;
 
-		System.out.println("Image window: Processing now points, this count: "+collectedPoints.size());
+		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		//convert into ImgLib2 points...
 		List<Localizable> pointList = new ArrayList<>( collectedPoints.size() );
@@ -150,7 +154,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		System.out.println("Image window: Window closed, notify that nothing will ever arrive...");
+		log.info("Image window: Window closed, notify that nothing will ever arrive...");
 		deRegisterListeners();
 		promptsToNet.notifyUiHasBeenClosed();
 	}
