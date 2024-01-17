@@ -101,15 +101,18 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				if (e.isShiftDown()) {
 					//add point to the list
 					isCollectingPoints = true;
-					collectedPoints.add(new Double(10)); //TODO
+					Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
+					collectedPoints.add(p);
 					System.out.println("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
-					collectedPoints.add(new Double(10)); //TODO
-					//TODO submit them
-					collectedPoints.clear();
+					//collect this last one
+					Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
+					collectedPoints.add(p);
+					submitAndClearPoints();
 				}
 				break;
+
 			default:
 				System.out.println("Image window: unsupported ROI type");
 		}
@@ -122,11 +125,26 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	}
 
 	private boolean isCollectingPoints = false;
-	private final List<Object> collectedPoints = new ArrayList<>(100);
+	private final List<Point> collectedPoints = new ArrayList<>(100);
+
+	private void submitAndClearPoints() {
+		if (collectedPoints.size() == 0) return;
+
+		System.out.println("Image window: Processing now points, this count: "+collectedPoints.size());
+		isCollectingPoints = false;
+		//convert into ImgLib2 points...
+		List<Localizable> pointList = new ArrayList<>( collectedPoints.size() );
+		collectedPoints.forEach( p -> pointList.add( new net.imglib2.Point(p.x,p.y) ) );
+		collectedPoints.clear();
+		activeImage.deleteRoi();
+
+		promptsToNet.fetch2dSegmentation(pointList);
+	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+			submitAndClearPoints();
 		}
 	}
 
