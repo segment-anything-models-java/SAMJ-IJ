@@ -66,12 +66,6 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {}
-
-	@Override
-	public void mousePressed(MouseEvent e) {}
-
-	@Override
 	public void mouseReleased(MouseEvent e) {
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
@@ -162,6 +156,10 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	// ===== unused events =====
 	@Override
 	public void mouseEntered(MouseEvent e) {}
+	@Override
+	public void mouseClicked(MouseEvent e) {}
+	@Override
+	public void mousePressed(MouseEvent e) {}
 	@Override
 	public void mouseExited(MouseEvent e) {}
 	@Override
