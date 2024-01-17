@@ -67,13 +67,13 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	public void mouseReleased(MouseEvent e) {
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
-			System.out.println("There's no ROI...");
+			System.out.println("Image window: There's no ROI...");
 			return;
 		}
 
 		switch (roi.getType()) {
 			case Roi.RECTANGLE:
-				System.out.println("rectangle...");
+				System.out.println("Image window: rectangle...");
 
 				Polygon res = promptsToNet.fetch2dSegmentation(new FinalInterval(
 						roi.getBounds().x, roi.getBounds().y,
@@ -82,24 +82,24 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				roiManager.addRoi( convertToPolygonRoi(res) );
 				break;
 			case Roi.LINE:
-				System.out.println("line...");
 				//TODO submit them
+				System.out.println("Image window: line... from "+p1+" to "+p2);
 				break;
 			case Roi.POINT:
 				if (e.isShiftDown()) {
 					//add point to the list
 					isCollectingPoints = true;
 					collectedPoints.add(new Double(10)); //TODO
+					System.out.println("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
 					collectedPoints.add(new Double(10)); //TODO
-					System.out.println("points...: "+collectedPoints.size());
 					//TODO submit them
 					collectedPoints.clear();
 				}
 				break;
 			default:
-				System.out.println("unsupported ROI type");
+				System.out.println("Image window: unsupported ROI type");
 		}
 
 		if (!isCollectingPoints) activeImage.deleteRoi();
@@ -120,8 +120,8 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 
 	@Override
 	public void windowClosed(WindowEvent e) {
+		System.out.println("Image window: Window closed, notify that nothing will ever arrive...");
 		deRegisterListeners();
-		System.out.println("Window closed, notify that nothing will ever arrive...");
 	}
 
 	// ===== unused window events =====
