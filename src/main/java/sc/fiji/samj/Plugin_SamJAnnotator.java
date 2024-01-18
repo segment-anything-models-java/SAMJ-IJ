@@ -12,8 +12,8 @@ import sc.fiji.samj.gui.SAMJDialog;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
 import sc.fiji.samj.ui.ij.IJ1PromptsProvider;
 
-@Plugin(type = Command.class, menuPath = "Plugins>SAMJ")
-public class PluginSamJ implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
+public class Plugin_SamJAnnotator implements Command {
 	@Parameter
 	private ImagePlus imagePlus;
 
