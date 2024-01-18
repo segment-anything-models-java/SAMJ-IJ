@@ -30,6 +30,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	private final ImagePlus activeImage;
 	private final PromptsToNetAdapter promptsToNet;
 	private final RoiManager roiManager;
+	private int promptsCreatedCnt = 0;
 
 	//shortcuts...
 	private final ImageCanvas activeCanvas;
@@ -82,7 +83,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				final Interval rectInterval = new FinalInterval(
 						new long[] { rectBounds.x, rectBounds.y },
 						new long[] { rectBounds.x+rectBounds.width-1, rectBounds.y+rectBounds.height-1 } );
-				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(rectInterval) ) );
+				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(rectInterval), "box" ) );
 				break;
 
 			case Roi.LINE:
@@ -93,7 +94,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				Point p2 = new Point(pit.x, pit.y);
 				log.info("Image window: line... from "+p1+" to "+p2);
 				//
-				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(p1,p2) ) );
+				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(p1,p2), "line" ) );
 				break;
 
 			case Roi.POINT:
@@ -119,8 +120,13 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		if (!isCollectingPoints) activeImage.deleteRoi();
 	}
 
-	PolygonRoi convertToPolygonRoi(final Polygon p) {
-		return new PolygonRoi(p, PolygonRoi.POLYGON);
+	PolygonRoi convertToPolygonRoi(final Polygon p, final String promptShape) {
+		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
+		promptsCreatedCnt++; //TODO assumes that NETs
+		// would return list of Polygons, and thus a convenience method for
+		// adding them into the RoiManager would need to be created
+		pRoi.setName(promptsCreatedCnt+"-"+promptShape+"-"+promptsToNet.getNetName());
+		return pRoi;
 	}
 
 	private boolean isCollectingPoints = false;
