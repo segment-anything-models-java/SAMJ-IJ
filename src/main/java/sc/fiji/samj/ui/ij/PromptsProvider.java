@@ -1,6 +1,7 @@
 package sc.fiji.samj.ui.ij;
 
 import ij.ImagePlus;
+import ij.Prefs;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.PolygonRoi;
@@ -44,11 +45,9 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 	private final Logger log;
 
 	public PromptsProvider(final ImagePlus imagePlus,
-	                       final PromptsToNetAdapter promptsToNetAdapter,
-	                       final RoiManager roiManager,
 	                       final Logger log) {
-		this.promptsToNet = promptsToNetAdapter;
-		this.roiManager = roiManager;
+		this.promptsToNet = null;
+		this.roiManager = startRoiManager();
 		this.activeImage = imagePlus;
 		this.log = log;
 
@@ -58,6 +57,18 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 		//make sure we start with no ROIs at all
 		activeImage.killRoi();
 		registerListeners();
+	}
+
+	private RoiManager startRoiManager() {
+		RoiManager roiManager = RoiManager.getInstance();
+		if (roiManager == null) {
+			roiManager = new RoiManager();
+		}
+		roiManager.setVisible(true);
+		roiManager.setTitle("SAM Roi Manager");
+		Prefs.useNamesAsLabels = true;
+		roiManager.setEditMode(activeImage, true);
+		return roiManager;
 	}
 
 	@Override
@@ -105,6 +116,11 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
 			log.info("Image window: There's no ROI...");
+			return;
+		}
+
+		if (promptsToNet == null) {
+			log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
 			return;
 		}
 

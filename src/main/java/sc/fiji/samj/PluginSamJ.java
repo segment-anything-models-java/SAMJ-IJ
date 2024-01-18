@@ -1,24 +1,21 @@
 package sc.fiji.samj;
 
 import ij.ImagePlus;
-import ij.Prefs;
-import ij.plugin.frame.RoiManager;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.samj.communication.PromptsToFakeSamJ;
-import sc.fiji.samj.communication.PromptsToNetAdapter;
+import sc.fiji.samj.communication.model.SAMModels;
+import sc.fiji.samj.gui.SAMJDialog;
+import sc.fiji.samj.ui.PromptsResultsDisplay;
 import sc.fiji.samj.ui.ij.PromptsProvider;
 
 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ")
 public class PluginSamJ implements Command {
 	@Parameter
 	private ImagePlus imagePlus;
-
-	//TBA: QUERY WHATEVER IS NEEDED TO CONNECT TO SOME RUNNING SAM
 
 	@Parameter
 	private LogService logService;
@@ -35,31 +32,17 @@ public class PluginSamJ implements Command {
 		try {
 			final Logger log = logService.subLogger("SAMJ on "+imagePlus.getTitle());
 
-			//get some implementation of SAM
-			final PromptsToNetAdapter someSamImpl = new PromptsToFakeSamJ(log.subLogger("SAM fake Python side"));
+			//get list of recognized installations of SAM(s)
+			final SAMModels availableModels = new SAMModels();
 
-			//get the Fiji's ROI manager
-			final RoiManager roiManager = startRoiManager();
+			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
+			final PromptsResultsDisplay display = new PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
 
-			//create the adapter between the user inputs and SAMJ outputs
-			new PromptsProvider(imagePlus, someSamImpl, roiManager, log.subLogger("Prompts in image window"));
-
+			new SAMJDialog(display, availableModels, log.subLogger("SAMs"));
 		} catch (RuntimeException e) {
 			logService.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();
 		}
-	}
-
-	private RoiManager startRoiManager() {
-		RoiManager roiManager = RoiManager.getInstance();
-		if (roiManager == null) {
-			roiManager = new RoiManager();
-		}
-		roiManager.setVisible(true);
-		roiManager.setTitle("SAM Roi Manager");
-		Prefs.useNamesAsLabels = true;
-		roiManager.setEditMode(imagePlus, true);
-		return roiManager;
 	}
 
 	public static void main(String[] args) {

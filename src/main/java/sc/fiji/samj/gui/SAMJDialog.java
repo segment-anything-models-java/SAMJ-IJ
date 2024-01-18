@@ -38,9 +38,11 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.process.ImageProcessor;
+import org.scijava.log.Logger;
 import sc.fiji.samj.communication.model.SAMModels;
 import sc.fiji.samj.gui.tools.SimulationSAM;
 import sc.fiji.samj.gui.tools.Tools;
+import sc.fiji.samj.ui.PromptsResultsDisplay;
 
 public class SAMJDialog extends JDialog implements ActionListener, MouseListener {
 
@@ -65,19 +67,27 @@ public class SAMJDialog extends JDialog implements ActionListener, MouseListener
 
 	private JComboBox<String> cmbImage = new JComboBox<String>();
 	
-	private SAMModelPanel panelModel;
+	private final SAMModelPanel panelModel;
+	private final PromptsResultsDisplay display;
+	private final Logger log;
 	private SAMRoiManager roiManager;
-	
+
 	private boolean encodingDone = false;
-	
-	public SAMJDialog(ImagePlus imp, SAMModels models) {
+
+	public SAMJDialog(final PromptsResultsDisplay display,
+	                  final SAMModels availableModel,
+	                  final Logger hmmFijiLogForNow) {
 		super(new JFrame(), "SAMJ Annotator");
+		this.display = display;
+		this.log = hmmFijiLogForNow;
+
+
 		this.imp = imp;
 		
 		ImageCanvas canvas = imp.getCanvas();
 		canvas.addMouseListener(this);
 
-		panelModel = new SAMModelPanel(models);
+		panelModel = new SAMModelPanel(availableModel);
 		// Buttons
 		JPanel pnButtons = new JPanel(new FlowLayout());
 		pnButtons.add(bnRect);
