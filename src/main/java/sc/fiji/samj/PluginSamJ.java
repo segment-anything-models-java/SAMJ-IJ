@@ -38,7 +38,7 @@ public class PluginSamJ implements Command {
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
 			final PromptsResultsDisplay display = new PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
 
-			new SAMJDialog(display, availableModels, log.subLogger("SAMs"));
+			new SAMJDialog(display, availableModels, log);
 		} catch (RuntimeException e) {
 			logService.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();

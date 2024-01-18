@@ -60,7 +60,8 @@ public class SAMJDialog extends JDialog implements ActionListener {
 	
 	private final SAMModelPanel panelModel;
 	private final PromptsResultsDisplay display;
-	private final Logger log;
+	private final Logger GUIsOwnLog;
+	private final Logger logForNetworks;
 
 	private boolean encodingDone = false;
 
@@ -69,7 +70,8 @@ public class SAMJDialog extends JDialog implements ActionListener {
 	                  final Logger hmmFijiLogForNow) {
 		super(new JFrame(), "SAMJ Annotator");
 		this.display = display;
-		this.log = hmmFijiLogForNow;
+		this.GUIsOwnLog = hmmFijiLogForNow.subLogger("SAM controlling dialog");
+		this.logForNetworks = hmmFijiLogForNow.subLogger("SAM networks");
 
 		//TODO: is this needed?
 		this.imp = imp;
@@ -158,16 +160,16 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		}
 		
 		if (e.getSource() == bnComplete) {
-			IJ.log("TO DO call Auto-complete");
+			GUIsOwnLog.warn("TO DO call Auto-complete");
 		}
 
 		if (e.getSource() == bnStart) {
 			if (!panelModel.getSelectedModel().isInstalled())
-				log.warn("Not starting encoding as the selected model is not installed.");
+				GUIsOwnLog.warn("Not starting encoding as the selected model is not installed.");
 
-			IJ.log("TO DO Start the encoding");
+			GUIsOwnLog.warn("TO DO Start the encoding");
 			try {
-				PromptsToNetAdapter netAdapter = panelModel.getSelectedModel().instantiate(log);
+				PromptsToNetAdapter netAdapter = panelModel.getSelectedModel().instantiate(logForNetworks);
 				//TODO: if this netAdapter has already encoded, we don't do it again
 				display.switchToThisNet(netAdapter);
 				Thread.sleep(500);
@@ -175,7 +177,7 @@ public class SAMJDialog extends JDialog implements ActionListener {
 			catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
-			IJ.log("TO DO End the encoding");
+			GUIsOwnLog.warn("TO DO End the encoding");
 			//TODO: encoding should be a property of a model
 			encodingDone = true;
 		}
@@ -226,7 +228,8 @@ public class SAMJDialog extends JDialog implements ActionListener {
 	}
 
 	private ImagePlus getImageMask(File file) {
-		System.out.println("" + file.getAbsolutePath());
+		GUIsOwnLog.info("Taking mask from file "+file.getAbsolutePath());
+		//TODO: outsource this to display, this dialog must have no IJ-specific dependencies
 		ImagePlus tmp = IJ.openImage(file.getAbsolutePath());
 		if (tmp == null)
 			return null;
@@ -239,7 +242,7 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		ImageProcessor ip = tmp.getProcessor();
 		mask = new ImagePlus(file.getName(), ip);
 		mask.show();
-		IJ.log(mask.toString());
+		GUIsOwnLog.info(mask.toString());
 		return mask;
 	}
 	
