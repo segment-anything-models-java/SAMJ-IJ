@@ -195,7 +195,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
-		promptsToNet.fetch2dSegmentation(collectedPoints);
+		addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints),
+				(collectedPoints.size() > 1 ? "points" : "point"));
 		collectedPoints.clear();
 	}
 

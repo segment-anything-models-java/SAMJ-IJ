@@ -7,7 +7,6 @@ import java.awt.Polygon;
 import java.util.List;
 
 public class PromptsToFakeSamJ implements PromptsToNetAdapter {
-	private static final Polygon EMPTY_POLYGON = new Polygon(new int[0], new int[0], 0);
 	private final Logger log;
 	private final String fakeNetworkName;
 
@@ -23,8 +22,17 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 
 	@Override
 	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
-		log.info("FAKE SAM: LIST OF POINTS NOT IMPLEMENTED YET");
-		return EMPTY_POLYGON;
+		final int[] xCoords = new int[8];
+		final int[] yCoords = new int[8];
+		//a small rectangle around the first point
+		int x = listOfPoints2D.get(0).getIntPosition(0);
+		int y = listOfPoints2D.get(0).getIntPosition(1);
+		int w = 6;
+		x -= w/2;
+		y -= w/2;
+		createFakeRectangle(x,y,w,w, xCoords,yCoords,0.0);
+		//score = Math.random();
+		return new Polygon(xCoords,yCoords, xCoords.length);
 	}
 
 	@Override
@@ -84,6 +92,6 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 
 	@Override
 	public void notifyUiHasBeenClosed() {
-		log.info("FAKE SAM: OKAY, I'm closing myself...");
+		log.info("FAKE SAM "+fakeNetworkName+": OKAY, I'm closing myself...");
 	}
 }
