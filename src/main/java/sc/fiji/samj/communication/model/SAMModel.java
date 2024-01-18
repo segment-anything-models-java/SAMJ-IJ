@@ -1,5 +1,6 @@
 package sc.fiji.samj.communication.model;
 
+import net.imglib2.RandomAccessibleInterval;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 
@@ -18,5 +19,7 @@ public interface SAMModel {
 	boolean isInstalled();
 
 	/** Returns null if it is no installed. */
-	PromptsToNetAdapter instantiate(final Logger useThisLoggerForIt);
+	PromptsToNetAdapter instantiate(
+			final RandomAccessibleInterval<?> image,
+			final Logger useThisLoggerForIt);
 }
