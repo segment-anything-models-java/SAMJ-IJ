@@ -9,10 +9,11 @@ import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
+import net.imglib2.Point;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
-
-import java.awt.*;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -85,11 +86,11 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 				break;
 
 			case Roi.LINE:
-				Iterator<Point> it = roi.iterator();
-				Point pit = it.next(); //NB: since Roi != null, the point for sure exists...
-				net.imglib2.Point p1 = new net.imglib2.Point(pit.x, pit.y);
+				Iterator<java.awt.Point> it = roi.iterator();
+				java.awt.Point pit = it.next(); //NB: since Roi != null, the point for sure exists...
+				Point p1 = new Point(pit.x, pit.y);
 				while (it.hasNext()) pit = it.next(); //find the last point on the line
-				net.imglib2.Point p2 = new net.imglib2.Point(pit.x, pit.y);
+				Point p2 = new Point(pit.x, pit.y);
 				log.info("Image window: line... from "+p1+" to "+p2);
 				//
 				roiManager.addRoi( convertToPolygonRoi( promptsToNet.fetch2dSegmentation(p1,p2) ) );
@@ -97,16 +98,16 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 
 			case Roi.POINT:
 				if (e.isShiftDown()) {
-					//add point to the list
+					//add point to the list only
 					isCollectingPoints = true;
-					Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
-					collectedPoints.add(p);
+					java.awt.Point p = roi.iterator().next();  //NB: since Roi != null, the point for sure exists...
+					collectedPoints.add( new Point(p.x,p.y) ); //NB: add ImgLib2 Point
 					log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
 					//collect this last one
-					Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
-					collectedPoints.add(p);
+					java.awt.Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
+					collectedPoints.add( new Point(p.x,p.y) );
 					submitAndClearPoints();
 				}
 				break;
@@ -123,20 +124,16 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	}
 
 	private boolean isCollectingPoints = false;
-	private final List<Point> collectedPoints = new ArrayList<>(100);
+	private final List<Localizable> collectedPoints = new ArrayList<>(100);
 
 	private void submitAndClearPoints() {
 		if (collectedPoints.size() == 0) return;
 
 		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
-		//convert into ImgLib2 points...
-		List<Localizable> pointList = new ArrayList<>( collectedPoints.size() );
-		collectedPoints.forEach( p -> pointList.add( new net.imglib2.Point(p.x,p.y) ) );
-		collectedPoints.clear();
 		activeImage.deleteRoi();
-
-		promptsToNet.fetch2dSegmentation(pointList);
+		promptsToNet.fetch2dSegmentation(collectedPoints);
+		collectedPoints.clear();
 	}
 
 	@Override
