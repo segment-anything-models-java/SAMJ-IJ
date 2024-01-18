@@ -9,14 +9,16 @@ import java.util.List;
 public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 	private static final Polygon EMPTY_POLYGON = new Polygon(new int[0], new int[0], 0);
 	private final Logger log;
+	private final String fakeNetworkName;
 
-	public PromptsToFakeSamJ(final Logger log) {
+	public PromptsToFakeSamJ(final Logger log, final String fakeSamName) {
 		this.log = log;
+		this.fakeNetworkName = fakeSamName;
 	}
 
 	@Override
 	public String getNetName() {
-		return "FakeSam";
+		return fakeNetworkName;
 	}
 
 	@Override

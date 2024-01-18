@@ -1,5 +1,9 @@
 package sc.fiji.samj.communication.model;
 
+import org.scijava.log.Logger;
+import sc.fiji.samj.communication.PromptsToFakeSamJ;
+import sc.fiji.samj.communication.PromptsToNetAdapter;
+
 public class SAMViTLarge implements SAMModel {
 	
 	@Override
@@ -14,6 +18,11 @@ public class SAMViTLarge implements SAMModel {
 
 	@Override
 	public boolean isInstalled() {
-		return false;
+		return true;
+	}
+
+	@Override
+	public PromptsToNetAdapter instantiate(final Logger useThisLoggerForIt) {
+		return new PromptsToFakeSamJ(useThisLoggerForIt, "Official_ViT");
 	}
 }
