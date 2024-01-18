@@ -128,6 +128,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 		if (promptsToNet == null) {
 			log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
+			activeImage.deleteRoi();
 			return;
 		}
 
