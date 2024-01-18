@@ -10,7 +10,7 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.samj.communication.model.SAMModels;
 import sc.fiji.samj.gui.SAMJDialog;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
-import sc.fiji.samj.ui.ij.PromptsProvider;
+import sc.fiji.samj.ui.ij.IJ1PromptsProvider;
 
 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ")
 public class PluginSamJ implements Command {
@@ -36,7 +36,7 @@ public class PluginSamJ implements Command {
 			final SAMModels availableModels = new SAMModels();
 
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
-			final PromptsResultsDisplay display = new PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
+			final PromptsResultsDisplay display = new IJ1PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
 
 			new SAMJDialog(display, availableModels, log);
 		} catch (RuntimeException e) {

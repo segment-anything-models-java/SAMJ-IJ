@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
+public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
 
 	//remember provided arguments
 	private final ImagePlus activeImage;
@@ -46,8 +46,8 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 
 	private final Logger log;
 
-	public PromptsProvider(final ImagePlus imagePlus,
-	                       final Logger log) {
+	public IJ1PromptsProvider(final ImagePlus imagePlus,
+	                          final Logger log) {
 		this.promptsToNet = null;
 		this.roiManager = startRoiManager();
 		this.activeImage = imagePlus;
