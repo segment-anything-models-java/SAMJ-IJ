@@ -1,4 +1,4 @@
-package sam.model;
+package sc.fiji.samj.communication.model;
 
 import java.util.ArrayList;
 

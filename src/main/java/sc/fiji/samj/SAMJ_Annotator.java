@@ -1,9 +1,11 @@
-import gui.SAMJDialog;
+package sc.fiji.samj;
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
-import sam.model.SAMModels;
+import sc.fiji.samj.communication.model.SAMModels;
+import sc.fiji.samj.gui.SAMJDialog;
 
 public class SAMJ_Annotator implements PlugIn {
 

@@ -1,4 +1,4 @@
-package tools;
+package sc.fiji.samj.gui.tools;
 
 import java.awt.Desktop;
 import java.net.URL;

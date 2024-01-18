@@ -1,4 +1,4 @@
-package gui;
+package sc.fiji.samj.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -38,9 +38,9 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.process.ImageProcessor;
-import sam.model.SAMModels;
-import segmentation.sam.SimulationSAM;
-import tools.Tools;
+import sc.fiji.samj.communication.model.SAMModels;
+import sc.fiji.samj.gui.tools.SimulationSAM;
+import sc.fiji.samj.gui.tools.Tools;
 
 public class SAMJDialog extends JDialog implements ActionListener, MouseListener {
 

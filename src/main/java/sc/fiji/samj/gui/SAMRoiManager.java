@@ -1,4 +1,4 @@
-package gui;
+package sc.fiji.samj.gui;
 
 import ij.ImagePlus;
 import ij.Prefs;

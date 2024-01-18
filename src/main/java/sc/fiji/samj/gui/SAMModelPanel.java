@@ -1,4 +1,4 @@
-package gui;
+package sc.fiji.samj.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -16,8 +16,8 @@ import javax.swing.JToolBar;
 import gui.components.GridPanel;
 import gui.components.HTMLPane;
 import ij.IJ;
-import sam.model.SAMModel;
-import sam.model.SAMModels;
+import sc.fiji.samj.communication.model.SAMModel;
+import sc.fiji.samj.communication.model.SAMModels;
 
 public class SAMModelPanel extends JPanel implements ActionListener {
 	
