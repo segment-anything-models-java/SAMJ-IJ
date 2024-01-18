@@ -1,4 +1,4 @@
-package gui.icons;
+package sc.fiji.samj.gui.icons;
 
 import java.awt.Dimension;
 import java.awt.Image;
