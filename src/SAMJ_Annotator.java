@@ -1,23 +1,24 @@
-
+import gui.SAMJDialog;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
-import ui.SAMDialog;
+import sam.model.SAMModels;
 
-public class SAMJ_ implements PlugIn {
-
+public class SAMJ_Annotator implements PlugIn {
 
 	public static void main(String args[]) {
 		new ImageJ();
-		new SAMJ_().run("");
+		new SAMJ_Annotator().run("");
 	}
 
 	@Override
 	public void run(String arg0) {
+		SAMModels availableModels = new SAMModels();
 		ImagePlus imp = IJ.createImage("Test", 512, 512, 1, 8);
+		
 		imp.show();
-		new SAMDialog(imp);
+		new SAMJDialog(imp, availableModels);
 	}
 }
 

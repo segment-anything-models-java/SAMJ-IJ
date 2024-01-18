@@ -27,7 +27,7 @@
  * DL2. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ui.components;
+package gui.components;
 
 import java.awt.Image;
 import java.net.URL;
