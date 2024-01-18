@@ -181,6 +181,11 @@ public class SAMJDialog extends JDialog implements ActionListener {
 			//TODO: encoding should be a property of a model
 			encodingDone = true;
 		}
+
+		if (e.getSource() == chkROIManager) {
+			display.enableAddingToRoiManager(chkROIManager.isSelected());
+		}
+
 		updateInterface();
 	}
 
