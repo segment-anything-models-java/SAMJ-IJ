@@ -10,8 +10,11 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.RandomAccessibleInterval;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
+import sc.fiji.samj.ui.PromptsResultsDisplay;
+
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -21,15 +24,17 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class PromptsProvider implements MouseListener, KeyListener, WindowListener {
+public class PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
 
 	//remember provided arguments
 	private final ImagePlus activeImage;
-	private final PromptsToNetAdapter promptsToNet;
+	private PromptsToNetAdapter promptsToNet; //NB: user may want to use different networks along the way
 	private final RoiManager roiManager;
+	private boolean isAddingToRoiManager = true;
 	private int promptsCreatedCnt = 0;
 
 	//shortcuts...
@@ -53,6 +58,34 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		//make sure we start with no ROIs at all
 		activeImage.killRoi();
 		registerListeners();
+	}
+
+	@Override
+	public void switchToThisImg(final RandomAccessibleInterval<?> newImage) {
+		log.error("Sorry, switching to new image is not yet implemented.");
+	}
+
+	@Override
+	public void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter) {
+		this.promptsToNet = promptsToNetAdapter;
+	}
+
+	@Override
+	public List<Polygon> getPolygonsFromRoiManager() {
+		log.error("Sorry, retrieving collected Polygons is not yet implemented.");
+		//TODO: we would use the TODO infrastructure for this, as this infrastructure
+		//      is probably going to memorize both inputs and their outputs... and outpus
+		//      is what this method is after
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void enableAddingToRoiManager(boolean shouldBeAdding) {
+		this.isAddingToRoiManager = shouldBeAdding;
+	}
+	@Override
+	public boolean isAddingToRoiManager() {
+		return this.isAddingToRoiManager;
 	}
 
 	private void registerListeners() {
@@ -126,7 +159,7 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		// would return list of Polygons, and thus a convenience method for
 		// adding them into the RoiManager would need to be created
 		pRoi.setName(promptsCreatedCnt+"-"+promptShape+"-"+promptsToNet.getNetName());
-		roiManager.addRoi(pRoi);
+		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
 	private boolean isCollectingPoints = false;
