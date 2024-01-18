@@ -1,11 +1,13 @@
 package sc.fiji.samj.ui.ij;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
+import ij.gui.Toolbar;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -79,6 +81,11 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 	@Override
 	public void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter) {
 		this.promptsToNet = promptsToNetAdapter;
+	}
+	@Override
+	public void notifyNetToClose() {
+		this.promptsToNet.notifyUiHasBeenClosed();
+		this.promptsToNet = null;
 	}
 
 	@Override
@@ -182,6 +189,7 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 	private final List<Localizable> collectedPoints = new ArrayList<>(100);
 
 	private void submitAndClearPoints() {
+		if (promptsToNet == null) return;
 		if (collectedPoints.size() == 0) return;
 
 		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
@@ -202,7 +210,20 @@ public class PromptsProvider implements PromptsResultsDisplay, MouseListener, Ke
 	public void windowClosed(WindowEvent e) {
 		log.info("Image window: Window closed, notify that nothing will ever arrive...");
 		deRegisterListeners();
-		promptsToNet.notifyUiHasBeenClosed();
+		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
+	}
+
+	@Override
+	public void switchToUsingRectangles() {
+		IJ.setTool(Toolbar.RECT_ROI);
+	}
+	@Override
+	public void switchToUsingLines() {
+		IJ.setTool(Toolbar.LINE);
+	}
+	@Override
+	public void switchToUsingPoints() {
+		IJ.setTool(Toolbar.POINT);
 	}
 
 	// ===== unused events =====

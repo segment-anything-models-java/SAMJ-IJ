@@ -9,9 +9,14 @@ public interface PromptsResultsDisplay {
 
 	void switchToThisImg(final RandomAccessibleInterval<?> newImage);
 	void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter);
+	void notifyNetToClose();
 
 	List<Polygon> getPolygonsFromRoiManager();
 
 	void enableAddingToRoiManager(boolean shouldBeAdding);
 	boolean isAddingToRoiManager();
+
+	void switchToUsingRectangles();
+	void switchToUsingLines();
+	void switchToUsingPoints();
 }
