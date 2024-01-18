@@ -24,6 +24,11 @@ public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
 	}
 
 	@Override
+	public String getNetName() {
+		return "E.SAM";
+	}
+
+	@Override
 	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
 		log.info("EfficientSamJ: NOT SUPPORTED YET");
 		return EMPTY_POLYGON;

@@ -15,6 +15,11 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 	}
 
 	@Override
+	public String getNetName() {
+		return "FakeSam";
+	}
+
+	@Override
 	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
 		log.info("FAKE SAM: LIST OF POINTS NOT IMPLEMENTED YET");
 		return EMPTY_POLYGON;
