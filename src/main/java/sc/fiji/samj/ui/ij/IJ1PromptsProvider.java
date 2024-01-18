@@ -14,6 +14,7 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
@@ -76,6 +77,12 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	@Override
 	public void switchToThisImg(final RandomAccessibleInterval<?> newImage) {
 		log.error("Sorry, switching to new image is not yet implemented.");
+	}
+
+	@Override
+	public RandomAccessibleInterval<?> giveProcessedSubImage() {
+		//the IJ1 image operates always on the full image
+		return ImageJFunctions.wrap(activeImage);
 	}
 
 	@Override

@@ -168,15 +168,11 @@ public class SAMJDialog extends JDialog implements ActionListener {
 				GUIsOwnLog.warn("Not starting encoding as the selected model is not installed.");
 
 			GUIsOwnLog.warn("TO DO Start the encoding");
-			try {
-				PromptsToNetAdapter netAdapter = panelModel.getSelectedModel().instantiate(logForNetworks);
-				//TODO: if this netAdapter has already encoded, we don't do it again
-				display.switchToThisNet(netAdapter);
-				Thread.sleep(500);
-			}
-			catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
+			PromptsToNetAdapter netAdapter = panelModel
+					.getSelectedModel()
+					.instantiate(display.giveProcessedSubImage(), logForNetworks);
+			//TODO: if this netAdapter has already encoded, we don't do it again
+			display.switchToThisNet(netAdapter);
 			GUIsOwnLog.warn("TO DO End the encoding");
 			//TODO: encoding should be a property of a model
 			encodingDone = true;
