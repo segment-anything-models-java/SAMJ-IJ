@@ -1,17 +1,23 @@
 package sc.fiji.samj.ui.ij;
 
+import ij.IJ;
 import ij.ImagePlus;
+import ij.Prefs;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
+import ij.gui.Toolbar;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.RandomAccessibleInterval;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
+import sc.fiji.samj.ui.PromptsResultsDisplay;
+
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -21,15 +27,17 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class PromptsProvider implements MouseListener, KeyListener, WindowListener {
+public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
 
 	//remember provided arguments
 	private final ImagePlus activeImage;
-	private final PromptsToNetAdapter promptsToNet;
+	private PromptsToNetAdapter promptsToNet; //NB: user may want to use different networks along the way
 	private final RoiManager roiManager;
+	private boolean isAddingToRoiManager = true;
 	private int promptsCreatedCnt = 0;
 
 	//shortcuts...
@@ -38,12 +46,10 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 
 	private final Logger log;
 
-	public PromptsProvider(final ImagePlus imagePlus,
-	                       final PromptsToNetAdapter promptsToNetAdapter,
-	                       final RoiManager roiManager,
-	                       final Logger log) {
-		this.promptsToNet = promptsToNetAdapter;
-		this.roiManager = roiManager;
+	public IJ1PromptsProvider(final ImagePlus imagePlus,
+	                          final Logger log) {
+		this.promptsToNet = null;
+		this.roiManager = startRoiManager();
 		this.activeImage = imagePlus;
 		this.log = log;
 
@@ -53,6 +59,51 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		//make sure we start with no ROIs at all
 		activeImage.killRoi();
 		registerListeners();
+	}
+
+	private RoiManager startRoiManager() {
+		RoiManager roiManager = RoiManager.getInstance();
+		if (roiManager == null) {
+			roiManager = new RoiManager();
+		}
+		roiManager.setVisible(true);
+		roiManager.setTitle("SAM Roi Manager");
+		Prefs.useNamesAsLabels = true;
+		roiManager.setEditMode(activeImage, true);
+		return roiManager;
+	}
+
+	@Override
+	public void switchToThisImg(final RandomAccessibleInterval<?> newImage) {
+		log.error("Sorry, switching to new image is not yet implemented.");
+	}
+
+	@Override
+	public void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter) {
+		this.promptsToNet = promptsToNetAdapter;
+	}
+	@Override
+	public void notifyNetToClose() {
+		this.promptsToNet.notifyUiHasBeenClosed();
+		this.promptsToNet = null;
+	}
+
+	@Override
+	public List<Polygon> getPolygonsFromRoiManager() {
+		log.error("Sorry, retrieving collected Polygons is not yet implemented.");
+		//TODO: we would use the TODO infrastructure for this, as this infrastructure
+		//      is probably going to memorize both inputs and their outputs... and outpus
+		//      is what this method is after
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void enableAddingToRoiManager(boolean shouldBeAdding) {
+		this.isAddingToRoiManager = shouldBeAdding;
+	}
+	@Override
+	public boolean isAddingToRoiManager() {
+		return this.isAddingToRoiManager;
 	}
 
 	private void registerListeners() {
@@ -72,6 +123,11 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
 			log.info("Image window: There's no ROI...");
+			return;
+		}
+
+		if (promptsToNet == null) {
+			log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
 			return;
 		}
 
@@ -126,13 +182,14 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 		// would return list of Polygons, and thus a convenience method for
 		// adding them into the RoiManager would need to be created
 		pRoi.setName(promptsCreatedCnt+"-"+promptShape+"-"+promptsToNet.getNetName());
-		roiManager.addRoi(pRoi);
+		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
 	private boolean isCollectingPoints = false;
 	private final List<Localizable> collectedPoints = new ArrayList<>(100);
 
 	private void submitAndClearPoints() {
+		if (promptsToNet == null) return;
 		if (collectedPoints.size() == 0) return;
 
 		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
@@ -153,7 +210,20 @@ public class PromptsProvider implements MouseListener, KeyListener, WindowListen
 	public void windowClosed(WindowEvent e) {
 		log.info("Image window: Window closed, notify that nothing will ever arrive...");
 		deRegisterListeners();
-		promptsToNet.notifyUiHasBeenClosed();
+		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
+	}
+
+	@Override
+	public void switchToUsingRectangles() {
+		IJ.setTool(Toolbar.RECT_ROI);
+	}
+	@Override
+	public void switchToUsingLines() {
+		IJ.setTool(Toolbar.LINE);
+	}
+	@Override
+	public void switchToUsingPoints() {
+		IJ.setTool(Toolbar.POINT);
 	}
 
 	// ===== unused events =====
