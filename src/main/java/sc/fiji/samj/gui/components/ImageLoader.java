@@ -27,7 +27,7 @@
  * DL2. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gui.components;
+package sc.fiji.samj.gui.components;
 
 import java.awt.Image;
 import java.net.URL;

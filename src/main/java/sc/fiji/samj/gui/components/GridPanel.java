@@ -1,4 +1,4 @@
-package gui.components;
+package sc.fiji.samj.gui.components;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
