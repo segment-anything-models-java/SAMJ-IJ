@@ -30,6 +30,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GUI;
 import ij.process.ImageProcessor;
+import net.imglib2.view.Views;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.communication.model.SAMModels;
@@ -170,7 +171,7 @@ public class SAMJDialog extends JDialog implements ActionListener {
 			GUIsOwnLog.warn("TO DO Start the encoding");
 			PromptsToNetAdapter netAdapter = panelModel
 					.getSelectedModel()
-					.instantiate(display.giveProcessedSubImage(), logForNetworks);
+					.instantiate(Views.permute(display.giveProcessedSubImage(),0,1), logForNetworks);
 			//TODO: if this netAdapter has already encoded, we don't do it again
 			display.switchToThisNet(netAdapter);
 			GUIsOwnLog.warn("TO DO End the encoding");
