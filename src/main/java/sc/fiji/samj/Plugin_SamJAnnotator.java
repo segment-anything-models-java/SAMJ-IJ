@@ -28,6 +28,9 @@ public class Plugin_SamJAnnotator implements Command {
 		}
 
 		//TODO: test the size of the image
+		//image must be three channels,
+		//must be 0..1 values
+		//must be 32bit/channel
 
 		try {
 			final Logger log = logService.subLogger("SAMJ on "+imagePlus.getTitle());

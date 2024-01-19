@@ -10,6 +10,8 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GUI;
 import ij.process.ImageProcessor;
+import net.imglib2.view.Views;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.communication.model.SAMModels;
@@ -37,7 +40,7 @@ import sc.fiji.samj.gui.icons.ButtonIcon;
 import sc.fiji.samj.gui.tools.Tools;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
 
-public class SAMJDialog extends JDialog implements ActionListener {
+public class SAMJDialog extends JDialog implements ActionListener, WindowListener {
 
 	private JButton bnClose = new JButton("Close");
 	private JButton bnHelp = new JButton("Help");
@@ -135,6 +138,8 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		this.setVisible(true);
 		GUI.center(this);
 		updateInterface();
+
+		this.addWindowListener(this);
 	}
 
 	@Override
@@ -168,15 +173,11 @@ public class SAMJDialog extends JDialog implements ActionListener {
 				GUIsOwnLog.warn("Not starting encoding as the selected model is not installed.");
 
 			GUIsOwnLog.warn("TO DO Start the encoding");
-			try {
-				PromptsToNetAdapter netAdapter = panelModel.getSelectedModel().instantiate(logForNetworks);
-				//TODO: if this netAdapter has already encoded, we don't do it again
-				display.switchToThisNet(netAdapter);
-				Thread.sleep(500);
-			}
-			catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
+			PromptsToNetAdapter netAdapter = panelModel
+					.getSelectedModel()
+					.instantiate(Views.permute(display.giveProcessedSubImage(),0,1), logForNetworks);
+			//TODO: if this netAdapter has already encoded, we don't do it again
+			display.switchToThisNet(netAdapter);
 			GUIsOwnLog.warn("TO DO End the encoding");
 			//TODO: encoding should be a property of a model
 			encodingDone = true;
@@ -265,4 +266,22 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		return list;
 	}
 
+
+	@Override
+	public void windowOpened(WindowEvent windowEvent) {}
+	@Override
+	public void windowClosing(WindowEvent windowEvent) {
+		//NB: reacts to closing the window using OS tools (such as "cross decoration icon")
+		display.notifyNetToClose();
+	}
+	@Override
+	public void windowClosed(WindowEvent windowEvent) {}
+	@Override
+	public void windowIconified(WindowEvent windowEvent) {}
+	@Override
+	public void windowDeiconified(WindowEvent windowEvent) {}
+	@Override
+	public void windowActivated(WindowEvent windowEvent) {}
+	@Override
+	public void windowDeactivated(WindowEvent windowEvent) {}
 }

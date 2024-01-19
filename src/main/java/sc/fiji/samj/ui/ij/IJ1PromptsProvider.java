@@ -14,6 +14,7 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
@@ -79,12 +80,20 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	public RandomAccessibleInterval<?> giveProcessedSubImage() {
+		//the IJ1 image operates always on the full image
+		return ImageJFunctions.wrap(activeImage);
+	}
+
+	@Override
 	public void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter) {
 		this.promptsToNet = promptsToNetAdapter;
 	}
 	@Override
 	public void notifyNetToClose() {
-		this.promptsToNet.notifyUiHasBeenClosed();
+		log.info("Image window: Stopping service, stopping network");
+		deRegisterListeners();
+		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
 		this.promptsToNet = null;
 	}
 
@@ -210,9 +219,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		log.info("Image window: Window closed, notify that nothing will ever arrive...");
-		deRegisterListeners();
-		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
+		roiManager.close();
+		notifyNetToClose();
 	}
 
 	@Override
