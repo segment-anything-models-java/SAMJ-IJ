@@ -91,7 +91,9 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void notifyNetToClose() {
-		this.promptsToNet.notifyUiHasBeenClosed();
+		log.info("Image window: Stopping service, stopping network");
+		deRegisterListeners();
+		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
 		this.promptsToNet = null;
 	}
 
@@ -217,9 +219,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		log.info("Image window: Window closed, notify that nothing will ever arrive...");
-		deRegisterListeners();
-		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
+		roiManager.close();
+		notifyNetToClose();
 	}
 
 	@Override

@@ -10,6 +10,8 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ import sc.fiji.samj.gui.icons.ButtonIcon;
 import sc.fiji.samj.gui.tools.Tools;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
 
-public class SAMJDialog extends JDialog implements ActionListener {
+public class SAMJDialog extends JDialog implements ActionListener, WindowListener {
 
 	private JButton bnClose = new JButton("Close");
 	private JButton bnHelp = new JButton("Help");
@@ -136,6 +138,8 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		this.setVisible(true);
 		GUI.center(this);
 		updateInterface();
+
+		this.addWindowListener(this);
 	}
 
 	@Override
@@ -262,4 +266,22 @@ public class SAMJDialog extends JDialog implements ActionListener {
 		return list;
 	}
 
+
+	@Override
+	public void windowOpened(WindowEvent windowEvent) {}
+	@Override
+	public void windowClosing(WindowEvent windowEvent) {
+		//NB: reacts to closing the window using OS tools (such as "cross decoration icon")
+		display.notifyNetToClose();
+	}
+	@Override
+	public void windowClosed(WindowEvent windowEvent) {}
+	@Override
+	public void windowIconified(WindowEvent windowEvent) {}
+	@Override
+	public void windowDeiconified(WindowEvent windowEvent) {}
+	@Override
+	public void windowActivated(WindowEvent windowEvent) {}
+	@Override
+	public void windowDeactivated(WindowEvent windowEvent) {}
 }
