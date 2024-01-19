@@ -26,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
-import gui.components.GridPanel;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -36,6 +35,7 @@ import net.imglib2.view.Views;
 import org.scijava.log.Logger;
 import sc.fiji.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.communication.model.SAMModels;
+import sc.fiji.samj.gui.components.GridPanel;
 import sc.fiji.samj.gui.icons.ButtonIcon;
 import sc.fiji.samj.gui.tools.Tools;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
