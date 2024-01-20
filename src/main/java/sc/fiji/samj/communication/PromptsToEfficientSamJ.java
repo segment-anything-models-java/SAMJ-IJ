@@ -1,5 +1,6 @@
 package sc.fiji.samj.communication;
 
+import io.bioimage.samj.AbstractSamJ;
 import io.bioimage.samj.EfficientSamJ;
 import io.bioimage.samj.SamEnvManager;
 import net.imglib2.Interval;
@@ -22,7 +23,14 @@ public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
 	                              final Logger log)
 	throws IOException, RuntimeException, InterruptedException {
 		this.log = log;
-		efficientSamJ = EfficientSamJ.initializeSam(SamEnvManager.create(), (RandomAccessibleInterval)image);
+		AbstractSamJ.DebugTextPrinter filteringLogger = text -> {
+			int idx = text.indexOf("contours_x");
+			if (idx > 0) this.log.info( text.substring(0,idx) );
+			else this.log.info( text );
+		};
+		efficientSamJ = EfficientSamJ.initializeSam(
+				SamEnvManager.create(), (RandomAccessibleInterval)image,
+				filteringLogger, false);
 	}
 
 	@Override
