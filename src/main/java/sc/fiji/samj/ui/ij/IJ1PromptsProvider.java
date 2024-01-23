@@ -149,7 +149,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				final Interval rectInterval = new FinalInterval(
 						new long[] { rectBounds.x, rectBounds.y },
 						new long[] { rectBounds.x+rectBounds.width-1, rectBounds.y+rectBounds.height-1 } );
-				addToRoiManager(promptsToNet.fetch2dSegmentation(rectInterval), "box");
+				addToRoiManager(promptsToNet.fetch2dSegmentation(rectInterval), "rect");
 				break;
 
 			case Roi.LINE:
