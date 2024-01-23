@@ -4,6 +4,7 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import org.scijava.log.Logger;
 import java.awt.Polygon;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PromptsToFakeSamJ implements PromptsToNetAdapter {
@@ -21,7 +22,7 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
+	public List<Polygon> fetch2dSegmentation(List<Localizable> listOfPoints2D) {
 		final int[] xCoords = new int[8];
 		final int[] yCoords = new int[8];
 		//a small rectangle around the first point
@@ -32,11 +33,13 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 		y -= w/2;
 		createFakeRectangle(x,y,w,w, xCoords,yCoords,0.0);
 		//score = Math.random();
-		return new Polygon(xCoords,yCoords, xCoords.length);
+		List<Polygon> retList = new ArrayList<>(1);
+		retList.add( new Polygon(xCoords,yCoords, xCoords.length) );
+		return retList;
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(Localizable lineStartPoint2D, Localizable lineEndPoint2D) {
+	public List<Polygon> fetch2dSegmentation(Localizable lineStartPoint2D, Localizable lineEndPoint2D) {
 		int x1 = lineStartPoint2D.getIntPosition(0);
 		int y1 = lineStartPoint2D.getIntPosition(1);
 		int w = lineEndPoint2D.getIntPosition(0) -x1 +1;
@@ -45,11 +48,13 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 		final int[] yCoords = new int[8];
 		createFakeRectangle(x1,y1,w,h, xCoords,yCoords,0.0);
 		//score = Math.random();
-		return new Polygon(xCoords,yCoords, xCoords.length);
+		List<Polygon> retList = new ArrayList<>(1);
+		retList.add( new Polygon(xCoords,yCoords, xCoords.length) );
+		return retList;
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(Interval boundingBox2D) {
+	public List<Polygon> fetch2dSegmentation(Interval boundingBox2D) {
 		int x1 = (int)boundingBox2D.min(0);
 		int y1 = (int)boundingBox2D.min(1);
 		int w = (int)boundingBox2D.dimension(0);
@@ -58,7 +63,9 @@ public class PromptsToFakeSamJ implements PromptsToNetAdapter {
 		final int[] yCoords = new int[8];
 		createFakeRectangle(x1,y1,w,h, xCoords,yCoords,0.1);
 		//score = Math.random();
-		return new Polygon(xCoords,yCoords, xCoords.length);
+		List<Polygon> retList = new ArrayList<>(1);
+		retList.add( new Polygon(xCoords,yCoords, xCoords.length) );
+		return retList;
 	}
 
 	private void createFakeRectangle(final int x1,

@@ -9,6 +9,7 @@ import net.imglib2.RandomAccessibleInterval;
 import org.scijava.log.Logger;
 import java.awt.Polygon;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
@@ -39,19 +40,23 @@ public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(List<Localizable> listOfPoints2D) {
+	public List<Polygon> fetch2dSegmentation(List<Localizable> listOfPoints2D) {
 		log.info(LONG_NAME+": NOT SUPPORTED YET");
-		return EMPTY_POLYGON;
+		List<Polygon> retList = new ArrayList<>(1);
+		retList.add( EMPTY_POLYGON );
+		return retList;
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(Localizable lineStartPoint2D, Localizable lineEndPoint2D) {
+	public List<Polygon> fetch2dSegmentation(Localizable lineStartPoint2D, Localizable lineEndPoint2D) {
 		log.info(LONG_NAME+": NOT SUPPORTED YET");
-		return EMPTY_POLYGON;
+		List<Polygon> retList = new ArrayList<>(1);
+		retList.add( EMPTY_POLYGON );
+		return retList;
 	}
 
 	@Override
-	public Polygon fetch2dSegmentation(Interval boundingBox2D) {
+	public List<Polygon> fetch2dSegmentation(Interval boundingBox2D) {
 		try {
 			//order to processBox() should be: x0,y0, x1,y1
 			final int bbox[] = {
@@ -64,7 +69,9 @@ public class PromptsToEfficientSamJ implements PromptsToNetAdapter {
 		} catch (IOException | InterruptedException | RuntimeException e) {
 			log.error(LONG_NAME+", providing empty result because of some trouble: "+e.getMessage());
 			e.printStackTrace();
-			return EMPTY_POLYGON;
+			List<Polygon> retList = new ArrayList<>(1);
+			retList.add( EMPTY_POLYGON );
+			return retList;
 		}
 	}
 
