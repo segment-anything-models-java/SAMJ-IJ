@@ -186,12 +186,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		if (!isCollectingPoints) activeImage.deleteRoi();
 	}
 
-	void addToRoiManager(final Polygon p, final String promptShape) {
+	void addToRoiManager(final List<Polygon> polys, final String promptShape) {
+		promptsCreatedCnt++;
+		int resNo = 1;
+		for (Polygon p : polys) this.addToRoiManager(p, resNo++, promptShape);
+	}
+
+	void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
 		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
-		promptsCreatedCnt++; //TODO assumes that NETs
-		// would return list of Polygons, and thus a convenience method for
-		// adding them into the RoiManager would need to be created
-		pRoi.setName(promptsCreatedCnt+"-"+promptShape+"-"+promptsToNet.getNetName());
+		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getNetName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
