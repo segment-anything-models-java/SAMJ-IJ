@@ -1,6 +1,6 @@
 package ai.nets.samj.ij;
 
-import net.imagej.ImageJ;
+import net.imagej.ImageJPlugin;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -18,33 +18,31 @@ import net.imglib2.view.Views;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
+
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
 import ai.nets.samj.ui.SAMJLogger;
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.GUI;
 import ai.nets.samj.ij.ui.IJ1PromptsProvider;
 import ai.nets.samj.ij.ui.IJSamMethods;
 
-@Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
-public class Plugin_SamJAnnotator implements Command {
+// TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
+//TODO I (Carlos) don't know how to develop in IJ2 public class Plugin_SamJAnnotator implements Command {
+public class Plugin_SamJAnnotator implements ImageJPlugin {
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
-	
-	static { net.imagej.patcher.LegacyInjector.preinit(); }
 
+	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
+	//private LogService logService = new LogService();
 
-	@Parameter
-	private LogService logService;
-
-	@Override
+	// TODO I (Carlos) don't know how to develop in IJ2 @Override
 	public void run() {
 
-		final Logger log = logService.subLogger("SAMJ");
+		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
 		try {
 			//ask the user to isolate current time point from a time-lapse (multi-frame) image
 			//...yes, for now, to make our life here easier...
@@ -96,29 +94,29 @@ public class Plugin_SamJAnnotator implements Command {
 			//get list of recognized installations of SAM(s)
 			final SAMModels availableModels = new SAMModels();
 			
-			Logger guiSublogger = log.subLogger("PromptsResults window");
+			// TODO I (Carlos) don't know how to develop in IJ2 Logger guiSublogger = log.subLogger("PromptsResults window");
 			SAMJLogger guilogger = new SAMJLogger() {
 	            @Override
-	            public void info(String text) {guiSublogger.info(text);}
+	            public void info(String text) {System.out.println(text);}
 	            @Override
-	            public void warn(String text) {guiSublogger.warn(text);}
+	            public void warn(String text) {System.out.println(text);}
 	            @Override
-	            public void error(String text) {guiSublogger.error(text);}
+	            public void error(String text) {System.out.println(text);}
 	        };
 
-			Logger networkSublogger = log.subLogger("Networks window");
+	     // TODO I (Carlos) don't know how to develop in IJ2 Logger networkSublogger = log.subLogger("Networks window");
 			SAMJLogger networkLogger = new SAMJLogger() {
 	            @Override
-	            public void info(String text) {networkSublogger.info(text);}
+	            public void info(String text) {System.out.println("network -- " + text);}
 	            @Override
-	            public void warn(String text) {networkSublogger.warn(text);}
+	            public void warn(String text) {System.out.println("network -- " + text);}
 	            @Override
-	            public void error(String text) {networkSublogger.error(text);}
+	            public void error(String text) {System.out.println("network -- " + text);}
 	        };
 			
 	        SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
-			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, log.subLogger("PromptsResults window"));});
+			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
 			
 			JDialog dialog = new JDialog(new JFrame(), "");
 			dialog.add(samjDialog);
@@ -128,7 +126,7 @@ public class Plugin_SamJAnnotator implements Command {
 			dialog.setVisible(true);
 			GUI.center(dialog);
 		} catch (RuntimeException e) {
-			log.error("SAMJ error: "+e.getMessage());
+			//TODO log.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -153,7 +151,7 @@ public class Plugin_SamJAnnotator implements Command {
 		if (img.firstElement() instanceof FloatType) {
 			//input already in the target pixel type,
 			//construct then only on-the-fly wrappers (no memory duplication)
-			logService.debug("wrapping around input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
+			// TODO logService.debug("wrapping around input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
 			if (img.numDimensions() == 2 || img.dimension(2) == 1) {
 				//essentially configuration 1*1
 				RandomAccessibleInterval<T> input2dImg = img.numDimensions() == 3 ? Views.hyperSlice(img, 2, 0) : img;
@@ -167,7 +165,7 @@ public class Plugin_SamJAnnotator implements Command {
 			}
 		} else {
 			//input in wrong pixel type, copy&convert
-			logService.debug("copy&convert-ing around input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
+			// TODO logService.debug("copy&convert-ing around input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
 			Interval newDims = new FinalInterval(
 					new long[] {img.min(0),img.min(1), 0},
 					new long[] {img.max(0),img.max(1), 2});
@@ -205,7 +203,7 @@ public class Plugin_SamJAnnotator implements Command {
 	<T extends NumericType<T> & NativeType<T> & RealType<T>>
 	ImagePlus obtainFloatTypeImage(final ImagePlus imagePlus) {
 		Img<T> img = ImageJFunctions.wrap(imagePlus);
-		logService.debug("converting input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
+		// TODO logService.debug("converting input image of dims: "+Util.printCoordinates(img.dimensionsAsLongArray()));
 		Img<FloatType> newImg = img.factory().imgFactory(new FloatType()).create(img);
 		LoopBuilder.setImages(img,newImg).forEachPixel((i,o) -> o.setReal(i.getRealFloat()));
 		return ImageJFunctions.show(newImg, "Converted copy of "+imagePlus.getTitle());
@@ -214,6 +212,6 @@ public class Plugin_SamJAnnotator implements Command {
 
 	public static void main(String[] args) {
 		ImageJ ij = new ImageJ();
-		ij.ui().showUI();
+		new Plugin_SamJAnnotator().run();
 	}
 }

@@ -8,13 +8,18 @@ import ij.gui.ImageWindow;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
+import ij.plugin.CompositeConverter;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.util.Cast;
+import net.imglib2.view.Views;
+
 import org.scijava.log.Logger;
 import ai.nets.samj.communication.PromptsToNetAdapter;
 import ai.nets.samj.ui.PromptsResultsDisplay;
@@ -45,16 +50,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	private final ImageCanvas activeCanvas;
 	private final ImageWindow activeWindow;
 
-	private final Logger log;
+	private final Logger lag;
 	
-	static { net.imagej.patcher.LegacyInjector.preinit(); }
-
 	public IJ1PromptsProvider(final ImagePlus imagePlus,
 	                          final Logger log) {
 		this.promptsToNet = null;
 		this.roiManager = startRoiManager();
-		this.activeImage = imagePlus;
-		this.log = log;
+		if (imagePlus.getType() == 4) activeImage = CompositeConverter.makeComposite(imagePlus);
+		else activeImage = imagePlus;
+		this.lag = log;
 
 		activeCanvas = activeImage.getCanvas();
 		activeWindow = activeImage.getWindow();
@@ -78,13 +82,14 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public void switchToThisImg(final RandomAccessibleInterval<?> newImage) {
-		log.error("Sorry, switching to new image is not yet implemented.");
+		//TODO log.error("Sorry, switching to new image is not yet implemented.");
 	}
 
 	@Override
 	public RandomAccessibleInterval<?> giveProcessedSubImage() {
 		//the IJ1 image operates always on the full image
-		return ImageJFunctions.wrap(activeImage);
+		Img<?> aa = ImageJFunctions.wrap(activeImage);
+		return Cast.unchecked(Views.permute(aa, 0, 1));
 	}
 
 	@Override
@@ -93,7 +98,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void notifyNetToClose() {
-		log.info("Image window: Stopping service, stopping network");
+		//TODO log.info("Image window: Stopping service, stopping network");
 		deRegisterListeners();
 		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
 		this.promptsToNet = null;
@@ -101,7 +106,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public List<Polygon> getPolygonsFromRoiManager() {
-		log.error("Sorry, retrieving collected Polygons is not yet implemented.");
+		//TODO log.error("Sorry, retrieving collected Polygons is not yet implemented.");
 		//TODO: we would use the TODO infrastructure for this, as this infrastructure
 		//      is probably going to memorize both inputs and their outputs... and outpus
 		//      is what this method is after
@@ -133,19 +138,19 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	public void mouseReleased(MouseEvent e) {
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
-			log.info("Image window: There's no ROI...");
+			//TODO log.info("Image window: There's no ROI...");
 			return;
 		}
 
 		if (promptsToNet == null) {
-			log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
+			//TODO log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
 			activeImage.deleteRoi();
 			return;
 		}
 
 		switch (roi.getType()) {
 			case Roi.RECTANGLE:
-				log.info("Image window: rectangle...");
+				//TODO log.info("Image window: rectangle...");
 				//
 				final Rectangle rectBounds = roi.getBounds();
 				final Interval rectInterval = new FinalInterval(
@@ -160,7 +165,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				Point p1 = new Point(pit.x, pit.y);
 				while (it.hasNext()) pit = it.next(); //find the last point on the line
 				Point p2 = new Point(pit.x, pit.y);
-				log.info("Image window: line... from "+p1+" to "+p2);
+				//TODO log.info("Image window: line... from "+p1+" to "+p2);
 				//
 				addToRoiManager(promptsToNet.fetch2dSegmentation(p1,p2), "line");
 				break;
@@ -171,7 +176,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 					isCollectingPoints = true;
 					java.awt.Point p = roi.iterator().next();  //NB: since Roi != null, the point for sure exists...
 					collectedPoints.add( new Point(p.x,p.y) ); //NB: add ImgLib2 Point
-					log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
+					//TODO log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
 					//collect this last one
@@ -182,7 +187,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 
 			default:
-				log.info("Image window: unsupported ROI type");
+				//TODO log.info("Image window: unsupported ROI type");
 		}
 
 		if (!isCollectingPoints) activeImage.deleteRoi();
@@ -207,7 +212,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		if (promptsToNet == null) return;
 		if (collectedPoints.size() == 0) return;
 
-		log.info("Image window: Processing now points, this count: "+collectedPoints.size());
+		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
 		addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints),
