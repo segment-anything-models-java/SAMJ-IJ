@@ -1,4 +1,4 @@
-package sc.fiji.samj.communication;
+package ai.nets.samj.ij.communication;
 
 import ai.nets.samj.AbstractSamJ;
 import ai.nets.samj.EfficientSamJ;

@@ -1,4 +1,4 @@
-package sc.fiji.samj.ui.ij;
+package ai.nets.samj.ij.ui;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -17,7 +17,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import org.scijava.log.Logger;
 import ai.nets.samj.communication.PromptsToNetAdapter;
-import sc.fiji.samj.ui.PromptsResultsDisplay;
+import ai.nets.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;

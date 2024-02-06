@@ -1,4 +1,4 @@
-package sc.fiji.samj.ui;
+package ai.nets.samj.ij.ui;
 
 import net.imglib2.RandomAccessibleInterval;
 import ai.nets.samj.communication.PromptsToNetAdapter;

@@ -1,4 +1,4 @@
-package sc.fiji.samj;
+package ai.nets.samj.ij;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -24,7 +24,7 @@ import org.scijava.plugin.Plugin;
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
 import ai.nets.samj.ui.PromptsResultsDisplay;
-import sc.fiji.samj.ui.ij.IJ1PromptsProvider;
+import ai.nets.samj.ij.ui.IJ1PromptsProvider;
 
 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
 public class Plugin_SamJAnnotator implements Command {
