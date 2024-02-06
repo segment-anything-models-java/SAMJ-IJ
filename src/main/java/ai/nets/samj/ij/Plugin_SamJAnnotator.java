@@ -23,7 +23,9 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
+import ai.nets.samj.ui.ExternalMethodsInterface;
 import ai.nets.samj.ui.PromptsResultsDisplay;
+import ai.nets.samj.ui.SAMJLogger;
 import ai.nets.samj.ij.ui.IJ1PromptsProvider;
 
 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
@@ -95,7 +97,10 @@ public class Plugin_SamJAnnotator implements Command {
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
 			final PromptsResultsDisplay display = (PromptsResultsDisplay) new IJ1PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
 
-			new SAMJDialog(null, null);
+			new SAMJDialog( availableModel,
+	                  final ExternalMethodsInterface softwareMethods,
+	                  final SAMJLogger guilogger,
+	                  final SAMJLogger networkLogger)
 		} catch (RuntimeException e) {
 			log.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();
