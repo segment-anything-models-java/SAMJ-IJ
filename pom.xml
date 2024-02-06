@@ -9,17 +9,17 @@
 		<relativePath />
 	</parent>
 
-	<groupId>sc.fiji</groupId>
-	<artifactId>SAMJ</artifactId>
+	<groupId>ai.nets</groupId>
+	<artifactId>samj-IJ</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<name>SAM network inside Fiji</name>
 	<description>A Fiji plugin for interactive segmentation using the SAM network</description>
 	<url>TBA</url>
-	<inceptionYear>2023</inceptionYear>
+	<inceptionYear>2024</inceptionYear>
 	<organization>
-		<name>Fiji</name>
-		<url>https://fiji.sc/</url>
+		<name>null</name>
+		<url>null</url>
 	</organization>
 	<licenses>
 		<license> <!-- change later to BSD-2...? -->
@@ -33,20 +33,20 @@
 	<!-- TBA !!! -->
 	<developers>
 		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<url>https://imagej.net/people/ctrueden</url>
+			<id>null</id>
+			<name>null</name>
+			<url>null</url>
 			<roles>
-				<role>maintainer</role>
+				<role>null</role>
 			</roles>
 		</developer>
 	</developers>
 	<contributors>
 		<contributor>
-			<name>Albert Cardona</name>
-			<url>https://imagej.net/people/acardona</url>
-			<roles><role>founder</role></roles>
-			<properties><id>acardona</id></properties>
+			<name>null</name>
+			<url>null</url>
+			<roles><role>null</role></roles>
+			<properties><id>null</id></properties>
 		</contributor>
 	</contributors>
 
@@ -100,10 +100,14 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.bioimage</groupId>
+			<groupId>ai.nets</groupId>
 			<artifactId>samj</artifactId>
-			<version>0.0.1</version>
-			<scope>compile</scope>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ai.nets</groupId>
+			<artifactId>SAMJ-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>
