@@ -171,16 +171,20 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 
 			case Roi.POINT:
-				if (e.isShiftDown()) {
+				if (e.isControlDown()) {
 					//add point to the list only
 					isCollectingPoints = true;
-					java.awt.Point p = roi.iterator().next();  //NB: since Roi != null, the point for sure exists...
+					Iterator<java.awt.Point> iterator = roi.iterator();
+					java.awt.Point p = iterator.next();
+					while (iterator.hasNext()) p = iterator.next();
 					collectedPoints.add( new Point(p.x,p.y) ); //NB: add ImgLib2 Point
 					//TODO log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
 				} else {
 					isCollectingPoints = false;
 					//collect this last one
-					java.awt.Point p = roi.iterator().next(); //NB: since Roi != null, the point for sure exists...
+					Iterator<java.awt.Point> iterator = roi.iterator();
+					java.awt.Point p = iterator.next();
+					while (iterator.hasNext()) p = iterator.next();
 					collectedPoints.add( new Point(p.x,p.y) );
 					submitAndClearPoints();
 				}
