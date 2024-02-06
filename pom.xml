@@ -106,7 +106,7 @@
 		</dependency>
 		<dependency>
 			<groupId>ai.nets</groupId>
-			<artifactId>SAMJ-core</artifactId>
+			<artifactId>samj-gui</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
