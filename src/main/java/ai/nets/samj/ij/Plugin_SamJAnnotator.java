@@ -1,7 +1,5 @@
 package ai.nets.samj.ij;
 
-import ij.IJ;
-import ij.ImagePlus;
 import net.imagej.ImageJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -16,6 +14,10 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
@@ -23,40 +25,39 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
-import ai.nets.samj.ui.ExternalMethodsInterface;
-import ai.nets.samj.ui.PromptsResultsDisplay;
 import ai.nets.samj.ui.SAMJLogger;
+import ij.ImagePlus;
+import ij.gui.GUI;
 import ai.nets.samj.ij.ui.IJ1PromptsProvider;
+import ai.nets.samj.ij.ui.IJSamMethods;
 
 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
 public class Plugin_SamJAnnotator implements Command {
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
+	
+	static { net.imagej.patcher.LegacyInjector.preinit(); }
 
-	@Parameter
-	private ImagePlus imagePlus;
 
 	@Parameter
 	private LogService logService;
 
 	@Override
 	public void run() {
-		if (imagePlus == null) {
-			logService.warn("No image available, bailing out.");
-			return;
-		}
 
-		final Logger log = logService.subLogger("SAMJ on "+imagePlus.getTitle());
+		final Logger log = logService.subLogger("SAMJ");
 		try {
 			//ask the user to isolate current time point from a time-lapse (multi-frame) image
 			//...yes, for now, to make our life here easier...
 			//(also cosider the CLI variant, where we must load image ourselves, do we also want to extract
 			// ourselves a particular frame from a time-lapse image? ...no, we don't!)
+			/*
 			if (imagePlus.getNFrames() > 1) {
 				IJ.showMessage("SAMJ Annotator", "The input image should not be a time-lapse (multi-frame) sequence.\n"
 						+ "Here, the input image "+imagePlus.getTitle()+" contains "+imagePlus.getNFrames()+" frames.");
 				return;
 			}
-
+			*/
+			/*
 			int imgNChannels = imagePlus.getNChannels();
 			int imgNSlices = imagePlus.getNSlices();
 			log.debug("Input image configuration: "+imgNChannels+"*"+imgNSlices);
@@ -90,17 +91,42 @@ public class Plugin_SamJAnnotator implements Command {
 				IJ.showMessage("SAMJ Annotator", "The size of an image "+imagePlus.getTitle()+" exceeds 4 GB limit");
 				return;
 			}
+			*/
 
 			//get list of recognized installations of SAM(s)
 			final SAMModels availableModels = new SAMModels();
+			
+			Logger guiSublogger = log.subLogger("PromptsResults window");
+			SAMJLogger guilogger = new SAMJLogger() {
+	            @Override
+	            public void info(String text) {guiSublogger.info(text);}
+	            @Override
+	            public void warn(String text) {guiSublogger.warn(text);}
+	            @Override
+	            public void error(String text) {guiSublogger.error(text);}
+	        };
 
+			Logger networkSublogger = log.subLogger("Networks window");
+			SAMJLogger networkLogger = new SAMJLogger() {
+	            @Override
+	            public void info(String text) {networkSublogger.info(text);}
+	            @Override
+	            public void warn(String text) {networkSublogger.warn(text);}
+	            @Override
+	            public void error(String text) {networkSublogger.error(text);}
+	        };
+			
+	        SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
-			final PromptsResultsDisplay display = (PromptsResultsDisplay) new IJ1PromptsProvider(imagePlus, log.subLogger("PromptsResults window"));
-
-			new SAMJDialog( availableModel,
-	                  final ExternalMethodsInterface softwareMethods,
-	                  final SAMJLogger guilogger,
-	                  final SAMJLogger networkLogger)
+			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, log.subLogger("PromptsResults window"));});
+			
+			JDialog dialog = new JDialog(new JFrame(), "");
+			dialog.add(samjDialog);
+			dialog.pack();
+			dialog.setResizable(false);
+			dialog.setModal(false);
+			dialog.setVisible(true);
+			GUI.center(dialog);
 		} catch (RuntimeException e) {
 			log.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();

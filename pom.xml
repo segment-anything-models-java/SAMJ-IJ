@@ -92,12 +92,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>fiji</artifactId>
+		    <groupId>org.scijava</groupId>
+		    <artifactId>scijava-plugins-commands</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
+			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>ai.nets</groupId>
@@ -108,6 +108,14 @@
 			<groupId>ai.nets</groupId>
 			<artifactId>samj-gui</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>net.imagej</groupId>
+		    <artifactId>ij1-patcher</artifactId>
 		</dependency>
 	</dependencies>
 </project>

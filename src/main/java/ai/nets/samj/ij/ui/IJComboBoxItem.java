@@ -12,6 +12,8 @@ import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
 
 public class IJComboBoxItem extends ComboBoxItem {
+	
+	static { net.imagej.patcher.LegacyInjector.preinit(); }
 
 	public IJComboBoxItem(int uniqueID, Object seq) {
 		super(uniqueID, seq);

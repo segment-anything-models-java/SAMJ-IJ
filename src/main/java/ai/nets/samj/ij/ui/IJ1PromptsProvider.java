@@ -46,6 +46,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	private final ImageWindow activeWindow;
 
 	private final Logger log;
+	
+	static { net.imagej.patcher.LegacyInjector.preinit(); }
 
 	public IJ1PromptsProvider(final ImagePlus imagePlus,
 	                          final Logger log) {

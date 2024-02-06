@@ -13,6 +13,8 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 public class IJSamMethods implements ExternalMethodsInterface {
+	
+	static { net.imagej.patcher.LegacyInjector.preinit(); }
 
 	@Override
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageMask(File file) {
