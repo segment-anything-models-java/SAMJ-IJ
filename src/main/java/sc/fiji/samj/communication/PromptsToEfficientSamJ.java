@@ -3,6 +3,7 @@ package sc.fiji.samj.communication;
 import ai.nets.samj.AbstractSamJ;
 import ai.nets.samj.EfficientSamJ;
 import ai.nets.samj.SamEnvManager;
+import ai.nets.samj.communication.PromptsToNetAdapter;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessibleInterval;

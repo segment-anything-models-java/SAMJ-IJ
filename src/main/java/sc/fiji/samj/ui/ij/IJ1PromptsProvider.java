@@ -16,7 +16,7 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import org.scijava.log.Logger;
-import sc.fiji.samj.communication.PromptsToNetAdapter;
+import ai.nets.samj.communication.PromptsToNetAdapter;
 import sc.fiji.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Polygon;

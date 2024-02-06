@@ -1,7 +1,7 @@
 package sc.fiji.samj.ui;
 
 import net.imglib2.RandomAccessibleInterval;
-import sc.fiji.samj.communication.PromptsToNetAdapter;
+import ai.nets.samj.communication.PromptsToNetAdapter;
 import java.util.List;
 import java.awt.Polygon;
 
