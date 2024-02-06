@@ -1,8 +1,8 @@
 package sc.fiji.samj.communication;
 
-import io.bioimage.samj.AbstractSamJ;
-import io.bioimage.samj.EfficientSamJ;
-import io.bioimage.samj.SamEnvManager;
+import ai.nets.samj.AbstractSamJ;
+import ai.nets.samj.EfficientSamJ;
+import ai.nets.samj.SamEnvManager;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessibleInterval;
