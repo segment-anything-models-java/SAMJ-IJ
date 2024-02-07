@@ -118,7 +118,7 @@ public class Plugin_SamJAnnotator implements ImageJPlugin {
 			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
 			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
 			
-			JDialog dialog = new JDialog(new JFrame(), "");
+			JDialog dialog = new JDialog(new JFrame(), "SAMJ Annotator");
 			dialog.add(samjDialog);
 			dialog.pack();
 			dialog.setResizable(false);
