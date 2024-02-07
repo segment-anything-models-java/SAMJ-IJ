@@ -45,6 +45,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	private final RoiManager roiManager;
 	private boolean isAddingToRoiManager = true;
 	private int promptsCreatedCnt = 0;
+	
+	private boolean sendToSam = false;
 
 	//shortcuts...
 	private final ImageCanvas activeCanvas;
@@ -136,6 +138,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		if (!sendToSam) return;
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
 			//TODO log.info("Image window: There's no ROI...");
@@ -240,14 +243,22 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	@Override
 	public void switchToUsingRectangles() {
 		IJ.setTool(Toolbar.RECT_ROI);
+		sendToSam = true;
 	}
 	@Override
 	public void switchToUsingLines() {
 		IJ.setTool(Toolbar.LINE);
+		sendToSam = true;
 	}
 	@Override
 	public void switchToUsingPoints() {
 		IJ.setTool(Toolbar.POINT);
+		sendToSam = true;
+	}
+
+	@Override
+	public void switchToNone() {
+		sendToSam = false;
 	}
 
 	// ===== unused events =====
