@@ -163,14 +163,16 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 
 			case Roi.LINE:
+				// TODO this is not a real mask prompt, it is just taking
+				// TODO all the points in a line and using them, modify it for a true mask
 				Iterator<java.awt.Point> it = roi.iterator();
-				java.awt.Point pit = it.next(); //NB: since Roi != null, the point for sure exists...
-				Point p1 = new Point(pit.x, pit.y);
-				while (it.hasNext()) pit = it.next(); //find the last point on the line
-				Point p2 = new Point(pit.x, pit.y);
+				while (it.hasNext()) {
+					java.awt.Point p = it.next();
+					collectedPoints.add(new Point(p.x,p.y)); 
+				}
 				//TODO log.info("Image window: line... from "+p1+" to "+p2);
-				//
-				addToRoiManager(promptsToNet.fetch2dSegmentation(p1,p2), "line");
+				//addToRoiManager(promptsToNet.fetch2dSegmentation(p1,p2), "line");
+				submitAndClearPoints();
 				break;
 
 			case Roi.POINT:
