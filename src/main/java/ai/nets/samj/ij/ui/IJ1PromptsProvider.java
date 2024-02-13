@@ -162,7 +162,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				addToRoiManager(promptsToNet.fetch2dSegmentation(rectInterval), "rect");
 				break;
 
-			case Roi.LINE:
+			case Roi.FREELINE:
 				// TODO this is not a real mask prompt, it is just taking
 				// TODO all the points in a line and using them, modify it for a true mask
 				Iterator<java.awt.Point> it = roi.iterator();
@@ -249,7 +249,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void switchToUsingLines() {
-		IJ.setTool(Toolbar.LINE);
+		IJ.setTool(Toolbar.FREELINE);
 		sendToSam = true;
 	}
 	@Override
