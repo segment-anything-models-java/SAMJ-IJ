@@ -176,7 +176,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 
 			case Roi.POINT:
-				if (e.isControlDown()) {
+				if (e.isControlDown() && e.isAltDown()) {
+					//add point to the list only
+					isCollectingPoints = true;
+					Iterator<java.awt.Point> iterator = roi.iterator();
+					java.awt.Point p = iterator.next();
+					while (iterator.hasNext()) p = iterator.next();
+					collecteNegPoints.add( new Point(p.x,p.y) ); //NB: add ImgLib2 Point
+					//TODO log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
+				} else if (e.isControlDown()) {
 					//add point to the list only
 					isCollectingPoints = true;
 					Iterator<java.awt.Point> iterator = roi.iterator();
@@ -215,7 +223,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	private boolean isCollectingPoints = false;
-	private final List<Localizable> collectedPoints = new ArrayList<>(100);
+	private List<Localizable> collectedPoints = new ArrayList<Localizable>();
+	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
 
 	private void submitAndClearPoints() {
 		if (promptsToNet == null) return;
@@ -224,14 +233,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
-		addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints),
+		addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints),
 				(collectedPoints.size() > 1 ? "points" : "point"));
-		collectedPoints.clear();
+		collectedPoints = new ArrayList<Localizable>();
+		collecteNegPoints = new ArrayList<Localizable>();
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 			submitAndClearPoints();
 		}
 	}
