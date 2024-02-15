@@ -21,7 +21,9 @@ import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
 
 import org.scijava.log.Logger;
-import ai.nets.samj.communication.PromptsToNetAdapter;
+
+import ai.nets.samj.communication.model.EfficientSAM;
+import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Polygon;
@@ -41,7 +43,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	//remember provided arguments
 	private final ImagePlus activeImage;
-	private PromptsToNetAdapter promptsToNet; //NB: user may want to use different networks along the way
+	private SAMModel promptsToNet; //NB: user may want to use different networks along the way
 	private final RoiManager roiManager;
 	private boolean isAddingToRoiManager = true;
 	private int promptsCreatedCnt = 0;
@@ -88,14 +90,18 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
-	public RandomAccessibleInterval<?> giveProcessedSubImage() {
+	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
-		Img<?> aa = ImageJFunctions.wrap(activeImage);
-		return Cast.unchecked(Views.permute(aa, 0, 1));
+		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
+			Img<?> image = ImageJFunctions.wrap(activeImage);
+			return Cast.unchecked(Views.permute(image, 0, 1));
+		} else {
+			return Cast.unchecked(ImageJFunctions.wrap(activeImage));
+		}
 	}
 
 	@Override
-	public void switchToThisNet(final PromptsToNetAdapter promptsToNetAdapter) {
+	public void switchToThisNet(final SAMModel promptsToNetAdapter) {
 		this.promptsToNet = promptsToNetAdapter;
 	}
 	@Override
@@ -218,7 +224,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
 		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
-		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getNetName());
+		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
