@@ -96,7 +96,9 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 			Img<?> image = ImageJFunctions.wrap(activeImage);
 			return Cast.unchecked(Views.permute(image, 0, 1));
 		} else {
-			return Cast.unchecked(ImageJFunctions.wrap(activeImage));
+			Img<?> image = ImageJFunctions.wrap(activeImage);
+			return Cast.unchecked(Views.permute(image, 0, 1));
+			//return Cast.unchecked(ImageJFunctions.wrap(activeImage));
 		}
 	}
 
