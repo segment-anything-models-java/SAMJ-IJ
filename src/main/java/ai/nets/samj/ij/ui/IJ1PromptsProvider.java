@@ -5,10 +5,12 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
+import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.plugin.CompositeConverter;
+import ij.plugin.OverlayLabels;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -59,6 +61,9 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	private boolean isRect = false;
 	private boolean isPoints = false;
 	private boolean isFreehand = false;
+
+	private List<Roi> temporalROIs = new ArrayList<Roi>();
+	private List<Roi> temporalNegROIs = new ArrayList<Roi>();
 	
 	public IJ1PromptsProvider(final ImagePlus imagePlus,
 	                          final Logger log) {
@@ -180,20 +185,24 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				// TODO this is not a real mask prompt, it is just taking
 				// TODO all the points in a line and using them, modify it for a true mask
 				if (e.isControlDown() && e.isAltDown()) {
-					roi.setFillColor(Color.red);
+					temporalNegROIs.add(roi);
+					roi.setStrokeColor(Color.red);
 					isCollectingPoints = true;
 					Iterator<java.awt.Point> it = roi.iterator();
 					while (it.hasNext()) {
 						java.awt.Point p = it.next();
 						collecteNegPoints.add(new Point(p.x,p.y)); 
 					}
+					addTemporalRois();
 				} else if (e.isControlDown()) {
+					temporalROIs.add(roi);
 					isCollectingPoints = true;
 					Iterator<java.awt.Point> it = roi.iterator();
 					while (it.hasNext()) {
 						java.awt.Point p = it.next();
 						collectedPoints.add(new Point(p.x,p.y)); 
 					}
+					addTemporalRois();
 				} else {
 					isCollectingPoints = false;
 					Iterator<java.awt.Point> it = roi.iterator();
@@ -242,6 +251,17 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 		if (!isCollectingPoints) activeImage.deleteRoi();
 	}
+	
+	private void addTemporalRois() {
+		//Overlay overlay = activeCanvas.getOverlay();
+		Overlay overlay = OverlayLabels.createOverlay();
+		for (Roi rr : this.roiManager.getRoisAsArray())
+			overlay.add(rr);
+		this.temporalROIs.stream().forEach(r -> overlay.add(r));
+		this.temporalNegROIs.stream().forEach(r -> overlay.add(r));
+		activeCanvas.setShowAllList(overlay);
+		this.activeImage.draw();
+	}
 
 	void addToRoiManager(final List<Polygon> polys, final String promptShape) {
 		promptsCreatedCnt++;
@@ -270,6 +290,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				(collectedPoints.size() > 1 ? "points" : "point"));
 		collectedPoints = new ArrayList<Localizable>();
 		collecteNegPoints = new ArrayList<Localizable>();
+		temporalROIs = new ArrayList<Roi>();
+		temporalNegROIs = new ArrayList<Roi>();
 	}
 
 	@Override
