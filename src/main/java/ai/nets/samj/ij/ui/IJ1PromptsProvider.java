@@ -114,6 +114,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	@Override
 	public void switchToThisNet(final SAMModel promptsToNetAdapter) {
 		this.promptsToNet = promptsToNetAdapter;
+		this.registerListeners();
 	}
 	@Override
 	public void notifyNetToClose() {
@@ -362,5 +363,10 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
+	}
+
+	@Override
+	public Object getFocusedImage() {
+		return this.activeImage;
 	}
 }
