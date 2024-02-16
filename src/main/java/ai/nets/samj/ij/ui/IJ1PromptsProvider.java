@@ -26,6 +26,7 @@ import ai.nets.samj.communication.model.EfficientSAM;
 import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -48,13 +49,16 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	private boolean isAddingToRoiManager = true;
 	private int promptsCreatedCnt = 0;
 	
-	private boolean sendToSam = false;
 
 	//shortcuts...
 	private final ImageCanvas activeCanvas;
 	private final ImageWindow activeWindow;
 
 	private final Logger lag;
+	
+	private boolean isRect = false;
+	private boolean isPoints = false;
+	private boolean isFreehand = false;
 	
 	public IJ1PromptsProvider(final ImagePlus imagePlus,
 	                          final Logger log) {
@@ -146,7 +150,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		if (!sendToSam) return;
+		if (!this.isRect && !this.isPoints && !this.isFreehand) return;
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
 			//TODO log.info("Image window: There's no ROI...");
@@ -161,6 +165,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 		switch (roi.getType()) {
 			case Roi.RECTANGLE:
+				if (!isRect) break;
 				//TODO log.info("Image window: rectangle...");
 				//
 				final Rectangle rectBounds = roi.getBounds();
@@ -171,20 +176,40 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 
 			case Roi.FREELINE:
+				if (!isFreehand) break;
 				// TODO this is not a real mask prompt, it is just taking
 				// TODO all the points in a line and using them, modify it for a true mask
-				Iterator<java.awt.Point> it = roi.iterator();
-				while (it.hasNext()) {
-					java.awt.Point p = it.next();
-					collectedPoints.add(new Point(p.x,p.y)); 
+				if (e.isControlDown() && e.isAltDown()) {
+					roi.setFillColor(Color.red);
+					isCollectingPoints = true;
+					Iterator<java.awt.Point> it = roi.iterator();
+					while (it.hasNext()) {
+						java.awt.Point p = it.next();
+						collecteNegPoints.add(new Point(p.x,p.y)); 
+					}
+				} else if (e.isControlDown()) {
+					isCollectingPoints = true;
+					Iterator<java.awt.Point> it = roi.iterator();
+					while (it.hasNext()) {
+						java.awt.Point p = it.next();
+						collectedPoints.add(new Point(p.x,p.y)); 
+					}
+				} else {
+					isCollectingPoints = false;
+					Iterator<java.awt.Point> it = roi.iterator();
+					while (it.hasNext()) {
+						java.awt.Point p = it.next();
+						collectedPoints.add(new Point(p.x,p.y)); 
+					}
+					submitAndClearPoints();
 				}
 				//TODO log.info("Image window: line... from "+p1+" to "+p2);
 				//addToRoiManager(promptsToNet.fetch2dSegmentation(p1,p2), "line");
-				submitAndClearPoints();
 				break;
-
 			case Roi.POINT:
+				if (!isPoints) break;
 				if (e.isControlDown() && e.isAltDown()) {
+					roi.setFillColor(Color.red);
 					//add point to the list only
 					isCollectingPoints = true;
 					Iterator<java.awt.Point> iterator = roi.iterator();
@@ -263,22 +288,30 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	@Override
 	public void switchToUsingRectangles() {
 		IJ.setTool(Toolbar.RECT_ROI);
-		sendToSam = true;
+		this.isRect = true;
+		this.isPoints = false;
+		this.isFreehand = false;
 	}
 	@Override
 	public void switchToUsingLines() {
 		IJ.setTool(Toolbar.FREELINE);
-		sendToSam = true;
+		this.isRect = false;
+		this.isPoints = false;
+		this.isFreehand = true;
 	}
 	@Override
 	public void switchToUsingPoints() {
 		IJ.setTool(Toolbar.POINT);
-		sendToSam = true;
+		this.isRect = true;
+		this.isPoints = true;
+		this.isFreehand = false;
 	}
 
 	@Override
 	public void switchToNone() {
-		sendToSam = false;
+		this.isRect = false;
+		this.isPoints = false;
+		this.isFreehand = false;
 	}
 
 	// ===== unused events =====
