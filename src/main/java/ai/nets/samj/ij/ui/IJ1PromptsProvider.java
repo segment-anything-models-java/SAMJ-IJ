@@ -60,8 +60,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	                          final Logger log) {
 		this.promptsToNet = null;
 		this.roiManager = startRoiManager();
-		if (imagePlus.getType() == 4) activeImage = CompositeConverter.makeComposite(imagePlus);
-		else activeImage = imagePlus;
+		activeImage = imagePlus;
 		this.lag = log;
 
 		activeCanvas = activeImage.getCanvas();
@@ -77,6 +76,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		if (roiManager == null) {
 			roiManager = new RoiManager();
 		}
+		roiManager.reset();
 		roiManager.setVisible(true);
 		roiManager.setTitle("SAM Roi Manager");
 		Prefs.useNamesAsLabels = true;
@@ -93,10 +93,10 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
 		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
-			Img<?> image = ImageJFunctions.wrap(activeImage);
+			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
 			return Cast.unchecked(Views.permute(image, 0, 1));
 		} else {
-			Img<?> image = ImageJFunctions.wrap(activeImage);
+			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
 			return Cast.unchecked(Views.permute(image, 0, 1));
 			//return Cast.unchecked(ImageJFunctions.wrap(activeImage));
 		}
