@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -368,5 +369,16 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	@Override
 	public Object getFocusedImage() {
 		return this.activeImage;
+	}
+
+	@Override
+	public void improveExistingMask(File mask) {
+		try {
+			ImagePlus imp = IJ.openImage(mask.getAbsolutePath());
+			List<Polygon> pols = this.promptsToNet.fetch2dSegmentation(ImageJFunctions.wrap(imp));
+			addToRoiManager(pols, "existing-mask"); 
+		} catch (Exception ex) {
+			throw new IllegalArgumentException("The file selected does not correspond to an image.");
+		}
 	}
 }
