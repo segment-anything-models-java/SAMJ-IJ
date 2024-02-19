@@ -375,7 +375,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	public void improveExistingMask(File mask) {
 		try {
 			ImagePlus imp = IJ.openImage(mask.getAbsolutePath());
-			List<Polygon> pols = this.promptsToNet.fetch2dSegmentation(ImageJFunctions.wrap(imp));
+			List<Polygon> pols = this.promptsToNet.fetch2dSegmentationFromMask(Cast.unchecked(ImageJFunctions.wrap(imp)));
 			addToRoiManager(pols, "existing-mask"); 
 		} catch (Exception ex) {
 			throw new IllegalArgumentException("The file selected does not correspond to an image.");
