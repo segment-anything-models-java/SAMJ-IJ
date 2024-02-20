@@ -1,6 +1,5 @@
 package ai.nets.samj.ij;
 
-import net.imagej.ImageJPlugin;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -21,22 +20,19 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-import org.scijava.log.LogService;
-import org.scijava.log.Logger;
-import org.scijava.plugin.Parameter;
-
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.GUI;
+import ij.plugin.PlugIn;
 import ai.nets.samj.ij.ui.IJ1PromptsProvider;
 import ai.nets.samj.ij.ui.IJSamMethods;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
 //TODO I (Carlos) don't know how to develop in IJ2 public class Plugin_SamJAnnotator implements Command {
-public class Plugin_SamJAnnotator implements ImageJPlugin {
+public class SAMJ_Annotator implements PlugIn {
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
@@ -221,6 +217,13 @@ public class Plugin_SamJAnnotator implements ImageJPlugin {
 
 	public static void main(String[] args) {
 		ImageJ ij = new ImageJ();
-		new Plugin_SamJAnnotator().run();
+		new SAMJ_Annotator().run();
+	}
+
+
+	@Override
+	public void run(String arg) {
+		run();
+		
 	}
 }
