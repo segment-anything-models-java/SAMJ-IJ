@@ -74,7 +74,7 @@
 	</ciManagement>
 
 	<properties>
-		<package-name>sc.fiji.samj</package-name>
+		<package-name>ai.nets.samj</package-name>
 		<license.licenseName>gpl_v2</license.licenseName>
 		<license.copyrightOwners>Fiji developers.</license.copyrightOwners>
 		<license.projectName>Fiji distribution of ImageJ for the life sciences.</license.projectName>
@@ -92,16 +92,8 @@
 
 	<dependencies>
 		<dependency>
-		    <groupId>org.scijava</groupId>
-		    <artifactId>scijava-plugins-commands</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>ai.nets</groupId>
@@ -116,10 +108,6 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>net.imagej</groupId>
-		    <artifactId>ij1-patcher</artifactId>
 		</dependency>
 	</dependencies>
 </project>
