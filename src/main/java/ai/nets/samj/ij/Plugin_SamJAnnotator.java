@@ -15,6 +15,9 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
@@ -119,6 +122,12 @@ public class Plugin_SamJAnnotator implements ImageJPlugin {
 			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
 			
 			JDialog dialog = new JDialog(new JFrame(), "SAMJ Annotator");
+			dialog.addWindowListener(new WindowAdapter() {
+				@Override
+	            public void windowClosing(WindowEvent e) {
+					samjDialog.close();
+				}
+			});
 			dialog.add(samjDialog);
 			dialog.pack();
 			dialog.setResizable(false);

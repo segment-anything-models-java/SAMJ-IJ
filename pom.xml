@@ -33,20 +33,20 @@
 	<!-- TBA !!! -->
 	<developers>
 		<developer>
-			<id>null</id>
-			<name>null</name>
+			<id>carlosuc3m</id>
+			<name>carlos garcia</name>
 			<url>null</url>
 			<roles>
-				<role>null</role>
+				<role>developer</role>
 			</roles>
 		</developer>
 	</developers>
 	<contributors>
 		<contributor>
-			<name>null</name>
+			<name>carlos garcia</name>
 			<url>null</url>
-			<roles><role>null</role></roles>
-			<properties><id>null</id></properties>
+			<roles><role>developer</role></roles>
+			<properties><id>carlosuc3m</id></properties>
 		</contributor>
 	</contributors>
 
