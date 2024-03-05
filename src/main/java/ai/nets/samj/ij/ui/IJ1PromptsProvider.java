@@ -95,11 +95,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
-	public void switchToThisImg(final RandomAccessibleInterval<?> newImage) {
-		//TODO log.error("Sorry, switching to new image is not yet implemented.");
-	}
-
-	@Override
 	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
 		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
@@ -317,7 +312,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.isFreehand = false;
 	}
 	@Override
-	public void switchToUsingLines() {
+	public void switchToUsingBrush() {
 		IJ.setTool(Toolbar.FREELINE);
 		this.isRect = false;
 		this.isPoints = false;
