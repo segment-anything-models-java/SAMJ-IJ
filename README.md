@@ -1,13 +1,11 @@
--------------
-Just a reminder for the developers that there exists a
-[branch `no_real_networks_installed`](https://github.com/DeepImageJ-Hackaton/SAMJ-core/tree/no_real_networks_installed),
-which includes no special dependencies such as `apposed` (Java-Python bridge) or any network itself.
--------------
+
+> **Comment:** Just a reminder for the developers that there exists a [branch `no_real_networks_installed`](https://github.com/DeepImageJ-Hackaton/SAMJ-core/tree/no_real_networks_installed), which includes no special dependencies such as `apposed` (Java-Python bridge) or any network itself.
+
 
 # SAMJ-IJ
 
 The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the Segment Anything Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
-> **Comment:** Documentation preliminary version. Needs to be reviewed, improved and, of course, to add screenshots of the plugin usage.
+Documentation preliminary version. Needs to be reviewed, improved and, of course, to add screenshots of the plugin usage.
 
 ## Contents
 - [Installation](#installation)
