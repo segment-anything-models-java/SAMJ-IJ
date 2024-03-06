@@ -43,29 +43,93 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Implementation of SAMJ {@link PromptsResultsDisplay} used to communicate with the SAMJ GUI and SAMJ models.
+ * This class sends the prompts generated in ImageJ to SAMJ.
+ * 
+ * @author Vladimir Ulman
+ * @author Carlos Garcia
+ */
 public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
-
-	//remember provided arguments
+	/**
+	 * The image being processed
+	 */
 	private final ImagePlus activeImage;
-	private SAMModel promptsToNet; //NB: user may want to use different networks along the way
+	/**
+	 * SAM-based model selected to process the image
+	 */
+	private SAMModel promptsToNet;
+	/**
+	 * Instance of the ROI manager to save the ROIs created
+	 */
 	private final RoiManager roiManager;
+	/**
+	 * Whether to add the ROIs created to the ROI manager or not
+	 */
 	private boolean isAddingToRoiManager = true;
+	/**
+	 * Counter of the ROIs created
+	 */
 	private int promptsCreatedCnt = 0;
-	
-
-	//shortcuts...
+	/**
+	 * Canvas of the image selected. Used to record the prompts drawn by the user
+	 */
 	private final ImageCanvas activeCanvas;
+	/**
+	 * Window of the selected image. Used to record the prompts drawn by the user
+	 */
 	private final ImageWindow activeWindow;
-
+	/**
+	 * TODO
+	 * Logger, not used yet
+	 */
 	private final Logger lag;
-	
+	/**
+	 * Whether the prompts being used are the bounding boxes
+	 */
 	private boolean isRect = false;
+	/**
+	 * Whether the prompts used are the points
+	 */
 	private boolean isPoints = false;
+	/**
+	 * Whether the prompt being used is the freehand
+	 */
 	private boolean isFreehand = false;
-
+	/**
+	 * A list to save several ROIs that are being created for the same prompt.
+	 * Whenever the prompt is sent to the model, this list is emptied
+	 */
 	private List<Roi> temporalROIs = new ArrayList<Roi>();
+	/**
+	 * A list to save several ROIs that are being created from the same prompt.
+	 * This list saves only the "negative" ROIs, those that are not part of the instance of interest,
+	 * but part of the background.
+	 * Whenever the prompt is sent to the model, this list is emptied. 
+	 */
 	private List<Roi> temporalNegROIs = new ArrayList<Roi>();
+	/**
+	 * For the point prompts, whether if hte user is collecting several prompts (pressing the ctrl key)
+	 * or just one
+	 */
+	private boolean isCollectingPoints = false;
+	/**
+	 * All the points being collected that reference the instance of interest
+	 */
+	private List<Localizable> collectedPoints = new ArrayList<Localizable>();
+	/**
+	 * All the points being collected that reference the background (ctrl + alt)
+	 */
+	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
 	
+	/**
+	 * Instance of SAMJ {@link PromptsResultsDisplay} that sends the prompts over the image of interest
+	 * to SAMJ.
+	 * @param imagePlus
+	 * 	the image of interest that is being annotated/processed
+	 * @param log
+	 * 	logging of the events of the GUI and network
+	 */
 	public IJ1PromptsProvider(final ImagePlus imagePlus,
 	                          final Logger log) {
 		this.promptsToNet = null;
@@ -95,6 +159,12 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Get the ImageJ {@link ImagePlus} that is going to be processed by the wanted model
+	 * and convert it to a {@link RandomAccessibleInterval} that fulfills the conditions of the model
+	 */
 	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
 		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
@@ -107,12 +177,21 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		}
 	}
 
+	
 	@Override
+	/**
+	 * {@inheritDoc}
+	 * 
+	 */
 	public void switchToThisNet(final SAMModel promptsToNetAdapter) {
 		this.promptsToNet = promptsToNetAdapter;
 		this.registerListeners();
 	}
+	
 	@Override
+	/**
+	 * {@inheritDoc}
+	 */
 	public void notifyNetToClose() {
 		//TODO log.info("Image window: Stopping service, stopping network");
 		deRegisterListeners();
@@ -121,6 +200,9 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * {@inheritDoc}
+	 */
 	public List<Polygon> getPolygonsFromRoiManager() {
 		//TODO log.error("Sorry, retrieving collected Polygons is not yet implemented.");
 		//TODO: we would use the TODO infrastructure for this, as this infrastructure
@@ -130,20 +212,33 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * {@inheritDoc}
+	 */
 	public void enableAddingToRoiManager(boolean shouldBeAdding) {
 		this.isAddingToRoiManager = shouldBeAdding;
 	}
+	
 	@Override
+	/**
+	 * {@inheritDoc}
+	 */
 	public boolean isAddingToRoiManager() {
 		return this.isAddingToRoiManager;
 	}
 
+	/**
+	 * Add the listeners to the new image once the image is selected
+	 */
 	private void registerListeners() {
 		activeCanvas.addMouseListener(this);
 		activeCanvas.addKeyListener(this);
 		activeWindow.addWindowListener(this);
 	}
 
+	/**
+	 * Remove the listeners from the image once the image is changed or de-selected
+	 */
 	private void deRegisterListeners() {
 		activeCanvas.removeMouseListener(this);
 		activeCanvas.removeKeyListener(this);
@@ -151,6 +246,10 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * Once the mouse is released, if there is any image active and prompt mode selected, process
+	 * the new ROI and send it to the SAMJ model
+	 */
 	public void mouseReleased(MouseEvent e) {
 		if (!this.isRect && !this.isPoints && !this.isFreehand) return;
 		final Roi roi = activeImage.getRoi();
@@ -260,22 +359,38 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.activeImage.draw();
 	}
 
+	/**
+	 * Add the new roi to the ROI manager
+	 * @param polys
+	 * 	list of polygons that will be converted into polygon ROIs and sent to the ROI manager
+	 * @param promptShape
+	 * 	String giving information about which prompt was used to generate the ROI
+	 */
 	void addToRoiManager(final List<Polygon> polys, final String promptShape) {
 		promptsCreatedCnt++;
 		int resNo = 1;
 		for (Polygon p : polys) this.addToRoiManager(p, resNo++, promptShape);
 	}
-
-	void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
+	
+	/**
+	 * Add a single polygon to the ROI manager
+	 * @param p
+	 * 	the polygon to be added
+	 * @param resultNumber
+	 * 	this is for when various polygon are added at the same time from one prompt.
+	 * 	It is the position in the list of polygons produced by SAM, if not just 0
+	 * @param promptShape
+	 * 	String giving information about which prompt was used to generate the ROI
+	 */
+	public void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
 		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
 		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
-	private boolean isCollectingPoints = false;
-	private List<Localizable> collectedPoints = new ArrayList<Localizable>();
-	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
-
+	/**
+	 * Send the point prompts to SAM and clear the lists collecting them
+	 */
 	private void submitAndClearPoints() {
 		if (promptsToNet == null) return;
 		if (collectedPoints.size() == 0) return;
@@ -292,6 +407,11 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * Monitor when the control key is being released for the point prompts.
+	 * Whenever it is released and the point prompt is selected, the points that have already been drawn 
+	 * are sent to SAMJ
+	 */
 	public void keyReleased(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 			submitAndClearPoints();
@@ -299,26 +419,40 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * when the plugin is closed, close everythng
+	 */
 	public void windowClosed(WindowEvent e) {
 		roiManager.close();
 		notifyNetToClose();
 	}
 
 	@Override
+	/**
+	 * Select the bounding box tool to send bounding box prompts to SAMJ
+	 */
 	public void switchToUsingRectangles() {
 		IJ.setTool(Toolbar.RECT_ROI);
 		this.isRect = true;
 		this.isPoints = false;
 		this.isFreehand = false;
 	}
+	
 	@Override
+	/**
+	 * Select the brush tool to send freehand line prompts to SAMJ
+	 */
 	public void switchToUsingBrush() {
 		IJ.setTool(Toolbar.FREELINE);
 		this.isRect = false;
 		this.isPoints = false;
 		this.isFreehand = true;
 	}
+	
 	@Override
+	/**
+	 * Select the points tool to send point prompts to SAMJ
+	 */
 	public void switchToUsingPoints() {
 		IJ.setTool(Toolbar.POINT);
 		this.isRect = true;
@@ -327,10 +461,39 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
+	/**
+	 * Do not send any prompt of the ROIs generated to SAMJ
+	 */
 	public void switchToNone() {
 		this.isRect = false;
 		this.isPoints = false;
 		this.isFreehand = false;
+	}
+
+	@Override
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Get the selected ImageJ {@link ImagePlus} as an Object
+	 */
+	public Object getFocusedImage() {
+		return this.activeImage;
+	}
+
+	@Override
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Use an existing mask as the prompt. Not working well yet. TODO
+	 */
+	public void improveExistingMask(File mask) {
+		try {
+			ImagePlus imp = IJ.openImage(mask.getAbsolutePath());
+			List<Polygon> pols = this.promptsToNet.fetch2dSegmentationFromMask(Cast.unchecked(ImageJFunctions.wrap(imp)));
+			addToRoiManager(pols, "existing-mask"); 
+		} catch (Exception ex) {
+			throw new IllegalArgumentException("The file selected does not correspond to an image.");
+		}
 	}
 
 	// ===== unused events =====
@@ -359,21 +522,5 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
-	}
-
-	@Override
-	public Object getFocusedImage() {
-		return this.activeImage;
-	}
-
-	@Override
-	public void improveExistingMask(File mask) {
-		try {
-			ImagePlus imp = IJ.openImage(mask.getAbsolutePath());
-			List<Polygon> pols = this.promptsToNet.fetch2dSegmentationFromMask(Cast.unchecked(ImageJFunctions.wrap(imp)));
-			addToRoiManager(pols, "existing-mask"); 
-		} catch (Exception ex) {
-			throw new IllegalArgumentException("The file selected does not correspond to an image.");
-		}
 	}
 }

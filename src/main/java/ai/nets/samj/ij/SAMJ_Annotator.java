@@ -18,6 +18,13 @@ import ai.nets.samj.ij.ui.IJSamMethods;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
 //TODO I (Carlos) don't know how to develop in IJ2 public class Plugin_SamJAnnotator implements Command {
+
+/**
+ * ImageJ plugin that implements the SAMJ default GUI that can help annotating images 
+ * using SAM-based Deep Learning models
+ * @author Carlos Garcia
+ * @author Vladimir Ulman
+ */
 public class SAMJ_Annotator implements PlugIn {
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
 
@@ -25,6 +32,9 @@ public class SAMJ_Annotator implements PlugIn {
 	//private LogService logService = new LogService();
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Override
+	/**
+	 * Run the plugin
+	 */
 	public void run() {
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
@@ -76,6 +86,11 @@ public class SAMJ_Annotator implements PlugIn {
 		}
 	}
 
+	/**
+	 * method for tesitng during development
+	 * @param args
+	 * 	nothing
+	 */
 	public static void main(String[] args) {
 		ImageJ ij = new ImageJ();
 		new SAMJ_Annotator().run();
