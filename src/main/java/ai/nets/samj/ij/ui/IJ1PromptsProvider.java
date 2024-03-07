@@ -140,6 +140,10 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * All the points being collected that reference the background (ctrl + alt)
 	 */
 	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
+	/**
+	 * The number of words per line in the error message dialogs
+	 */
+	private static int WORDS_PER_LINE_ERR_MSG = 7;
 	
 	/**
 	 * Instance of SAMJ {@link PromptsResultsDisplay} that sends the prompts over the image of interest
@@ -194,6 +198,32 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 			return Cast.unchecked(Views.permute(image, 0, 1));
 			//return Cast.unchecked(ImageJFunctions.wrap(activeImage));
 		}
+	}
+
+	@Override
+	/**
+	 * {@inheritDoc}
+	 */
+	public void notifyException(SAMJException type, Exception ex) {
+		String msg = ex.toString();
+		String[] msgArr = msg.split(" ");
+		int lines = msgArr.length / WORDS_PER_LINE_ERR_MSG;
+		String nMessage = "";
+		int firstEnd = 0;
+		for (int i = 1; i < lines; i ++) {
+			String lastWord = msgArr[Math.min(lines * i, msgArr.length - 1)];
+			int end = msg.indexOf(lastWord) + lastWord.length();
+			nMessage += msg.substring(firstEnd, end) + System.lineSeparator();
+			firstEnd = end;
+		}
+		if (SAMJException.ENCODING == type) {
+			IJ.error("Error with the image being used", nMessage);
+		} else if (SAMJException.ENCODING == type) {
+			IJ.error("Error providing or processing the prompts", nMessage);
+		} else {
+			IJ.error(nMessage);
+		}
+		
 	}
 
 	
