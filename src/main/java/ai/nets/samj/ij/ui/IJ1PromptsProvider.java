@@ -205,19 +205,22 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * {@inheritDoc}
 	 */
 	public void notifyException(SAMJException type, Exception ex) {
-		String msg = ex.toString();
-		String[] msgArr = msg.split(" ");
-		int lines = msgArr.length / WORDS_PER_LINE_ERR_MSG;
+		String msg = ex.getMessage();
 		String nMessage = "";
-		int firstEnd = 0;
-		for (int i = 1; i < lines; i ++) {
-			String lastWord = msgArr[Math.min(lines * i, msgArr.length - 1)];
-			int end = msg.indexOf(lastWord) + lastWord.length();
-			nMessage += msg.substring(firstEnd, end) + System.lineSeparator();
-			firstEnd = end;
+		if (msg != null) {
+			String[] msgArr = msg.split(" ");
+			int lines = msgArr.length / WORDS_PER_LINE_ERR_MSG;
+			int firstEnd = 0;
+			for (int i = 1; i < lines + 1; i ++) {
+				String lastWord = msgArr[Math.min(WORDS_PER_LINE_ERR_MSG * i, msgArr.length - 1)];
+				int end = msg.substring(firstEnd).indexOf(lastWord) + lastWord.length();
+				nMessage += msg.substring(firstEnd, firstEnd + end) + System.lineSeparator();
+				firstEnd = end + firstEnd;
+			}
+			nMessage += msg.substring(firstEnd, msg.length());
 		}
 		if (SAMJException.ENCODING == type) {
-			IJ.error("Error with the image being used", nMessage);
+			IJ.error("Error with the image being used", "Make sure that the image being used is 2D 1-channel or 3-channels.");
 		} else if (SAMJException.ENCODING == type) {
 			IJ.error("Error providing or processing the prompts", nMessage);
 		} else {
@@ -322,7 +325,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				final Interval rectInterval = new FinalInterval(
 						new long[] { rectBounds.x, rectBounds.y },
 						new long[] { rectBounds.x+rectBounds.width-1, rectBounds.y+rectBounds.height-1 } );
-				addToRoiManager(promptsToNet.fetch2dSegmentation(rectInterval), "rect");
+				submitRectPrompt(rectInterval);
 				break;
 
 			case Roi.FREELINE:
@@ -447,12 +450,24 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
-		addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints),
-				(collectedPoints.size() > 1 ? "points" : "point"));
+		try {
+			addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints),
+					(collectedPoints.size() > 1 ? "points" : "point"));
+		} catch (Exception ex) {
+			this.notifyException(SAMJException.DECODING, ex);
+		}
 		collectedPoints = new ArrayList<Localizable>();
 		collecteNegPoints = new ArrayList<Localizable>();
 		temporalROIs = new ArrayList<Roi>();
 		temporalNegROIs = new ArrayList<Roi>();
+	}
+	
+	private void submitRectPrompt(Interval rectInterval) {
+		try {
+			addToRoiManager(promptsToNet.fetch2dSegmentation(rectInterval), "rect");
+		} catch (Exception ex) {
+			this.notifyException(SAMJException.DECODING, ex);
+		}
 	}
 
 	@Override
