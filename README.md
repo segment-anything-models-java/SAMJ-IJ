@@ -22,8 +22,15 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 
 ## Model Installation
 
-To use the SAMJ-IJ plugin, you must install a SAM model:
+To use the SAMJ-IJ plugin, you must install a SAM model. These are the models available for installation:
+* **EfficientSAM:** A base model designed for segmentation tasks, optimized for efficiency and performance on standard computational resources. Ideal for quick, accurate segmentation in real-time applications.
+* **EfficientViTSAM-l0:** A lightweight variant of the EfficientViTSAM model, offering a balance between segmentation accuracy and computational demand, suitable for use on normal computers.
+* **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
+* **EfficientViTSAM-l2:** A more advanced version, designed for high-accuracy segmentation in demanding scenarios, requiring higher computational resources.
+* **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
+* **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
 
+This are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
