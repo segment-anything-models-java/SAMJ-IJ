@@ -154,8 +154,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * @param log
 	 * 	logging of the events of the GUI and network
 	 */
-	public IJ1PromptsProvider(final ImagePlus imagePlus,
-	                          final Logger log) {
+	public IJ1PromptsProvider(final ImagePlus imagePlus, final Logger log) {
 		this.promptsToNet = null;
 		this.roiManager = startRoiManager();
 		activeImage = imagePlus;
