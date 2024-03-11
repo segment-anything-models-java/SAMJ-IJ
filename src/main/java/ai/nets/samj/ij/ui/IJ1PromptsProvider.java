@@ -190,14 +190,13 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
-		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
-			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
-			return Cast.unchecked(Views.permute(image, 0, 1));
-		} else {
-			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
-			return Cast.unchecked(Views.permute(image, 0, 1));
-			//return Cast.unchecked(ImageJFunctions.wrap(activeImage));
-		}
+		//if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
+		boolean isColorRGB = activeImage.getType() == ImagePlus.COLOR_RGB;
+		Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(activeImage) : activeImage);
+		return Cast.unchecked(Views.permute(image, 0, 1));
+		//} else {
+		//	return Cast.unchecked(ImageJFunctions.wrap(activeImage));
+		//}
 	}
 
 	@Override
