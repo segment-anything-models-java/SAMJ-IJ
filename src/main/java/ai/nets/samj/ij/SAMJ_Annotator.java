@@ -51,10 +51,10 @@ public class SAMJ_Annotator implements PlugIn {
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
 
-	// TODO I (Carlos) don't know how to develop in IJ2 @Override
 	/**
 	 * Run the plugin
 	 */
+	@Override
 	public void run() {
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
