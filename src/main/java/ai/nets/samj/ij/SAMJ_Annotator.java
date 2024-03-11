@@ -24,6 +24,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.SAMJDialog;
@@ -82,23 +83,26 @@ public class SAMJ_Annotator implements PlugIn {
 	            public void error(String text) {System.out.println("network -- " + text);}
 	        };
 			
-	        SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
-			//create the GUI adapter between the user inputs/prompts and SAMJ outputs
-			samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
-			
-			JDialog dialog = new JDialog(new JFrame(), "SAMJ Annotator");
-			dialog.addWindowListener(new WindowAdapter() {
-				@Override
-	            public void windowClosing(WindowEvent e) {
-					samjDialog.close();
-				}
-			});
-			dialog.add(samjDialog);
-			dialog.pack();
-			dialog.setResizable(false);
-			dialog.setModal(false);
-			dialog.setVisible(true);
-			GUI.center(dialog);
+	        
+	        SwingUtilities.invokeLater(() -> {
+		        SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
+				//create the GUI adapter between the user inputs/prompts and SAMJ outputs
+				samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
+				
+				JDialog dialog = new JDialog(new JFrame(), "SAMJ Annotator");
+				dialog.addWindowListener(new WindowAdapter() {
+					@Override
+		            public void windowClosing(WindowEvent e) {
+						samjDialog.close();
+					}
+				});
+				dialog.add(samjDialog);
+				dialog.pack();
+				dialog.setResizable(false);
+				dialog.setModal(false);
+				dialog.setVisible(true);
+				GUI.center(dialog);
+	        });
 		} catch (RuntimeException e) {
 			//TODO log.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();
