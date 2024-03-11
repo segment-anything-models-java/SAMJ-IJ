@@ -58,9 +58,10 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of SAMJ {@link PromptsResultsDisplay} used to communicate with the SAMJ GUI and SAMJ models.
@@ -256,11 +257,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * {@inheritDoc}
 	 */
 	public List<Polygon> getPolygonsFromRoiManager() {
-		//TODO log.error("Sorry, retrieving collected Polygons is not yet implemented.");
-		//TODO: we would use the TODO infrastructure for this, as this infrastructure
-		//      is probably going to memorize both inputs and their outputs... and outpus
-		//      is what this method is after
-		return Collections.emptyList();
+		return Arrays.stream(roiManager.getRoisAsArray()).map(i -> i.getPolygon()).collect(Collectors.toList());
 	}
 
 	@Override
@@ -586,5 +583,11 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
+	}
+
+	@Override
+	public void createInstanceSegmentationMask() {
+		List<Polygon> pols = this.getPolygonsFromRoiManager();
+		
 	}
 }
