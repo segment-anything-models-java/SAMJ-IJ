@@ -51,10 +51,10 @@ public class SAMJ_Annotator implements PlugIn {
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
 
-	// TODO I (Carlos) don't know how to develop in IJ2 @Override
 	/**
 	 * Run the plugin
 	 */
+	@Override
 	public void run() {
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
@@ -65,34 +65,34 @@ public class SAMJ_Annotator implements PlugIn {
 			
 			// TODO I (Carlos) don't know how to develop in IJ2 Logger guiSublogger = log.subLogger("PromptsResults window");
 			SAMJLogger guilogger = new SAMJLogger() {
-	            @Override
-	            public void info(String text) {System.out.println(text);}
-	            @Override
-	            public void warn(String text) {System.out.println(text);}
-	            @Override
-	            public void error(String text) {System.out.println(text);}
-	        };
+				@Override
+				public void info(String text) {System.out.println(text);}
+				@Override
+				public void warn(String text) {System.out.println(text);}
+				@Override
+				public void error(String text) {System.out.println(text);}
+			};
 
-	     // TODO I (Carlos) don't know how to develop in IJ2 Logger networkSublogger = log.subLogger("Networks window");
+			// TODO I (Carlos) don't know how to develop in IJ2 Logger networkSublogger = log.subLogger("Networks window");
 			SAMJLogger networkLogger = new SAMJLogger() {
-	            @Override
-	            public void info(String text) {System.out.println("network -- " + text);}
-	            @Override
-	            public void warn(String text) {System.out.println("network -- " + text);}
-	            @Override
-	            public void error(String text) {System.out.println("network -- " + text);}
-	        };
-			
-	        
-	        SwingUtilities.invokeLater(() -> {
-		        SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
+				@Override
+				public void info(String text) {System.out.println("network -- " + text);}
+				@Override
+				public void warn(String text) {System.out.println("network -- " + text);}
+				@Override
+				public void error(String text) {System.out.println("network -- " + text);}
+			};
+
+
+			SwingUtilities.invokeLater(() -> {
+				SAMJDialog samjDialog = new SAMJDialog( availableModels, new IJSamMethods(), guilogger, networkLogger);
 				//create the GUI adapter between the user inputs/prompts and SAMJ outputs
 				samjDialog.setPromptsProvider((obj) -> {return new IJ1PromptsProvider((ImagePlus) obj, null);});// TODO log.subLogger("PromptsResults window"));});
-				
+
 				JDialog dialog = new JDialog(new JFrame(), "SAMJ Annotator");
 				dialog.addWindowListener(new WindowAdapter() {
 					@Override
-		            public void windowClosing(WindowEvent e) {
+					public void windowClosing(WindowEvent e) {
 						samjDialog.close();
 					}
 				});
@@ -102,7 +102,7 @@ public class SAMJ_Annotator implements PlugIn {
 				dialog.setModal(false);
 				dialog.setVisible(true);
 				GUI.center(dialog);
-	        });
+		});
 		} catch (RuntimeException e) {
 			//TODO log.error("SAMJ error: "+e.getMessage());
 			e.printStackTrace();

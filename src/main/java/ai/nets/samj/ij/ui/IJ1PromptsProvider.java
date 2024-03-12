@@ -22,6 +22,10 @@ package ai.nets.samj.ij.ui;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
+import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.Overlay;
@@ -154,8 +158,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * @param log
 	 * 	logging of the events of the GUI and network
 	 */
-	public IJ1PromptsProvider(final ImagePlus imagePlus,
-	                          final Logger log) {
+	public IJ1PromptsProvider(final ImagePlus imagePlus, final Logger log) {
 		this.promptsToNet = null;
 		this.roiManager = startRoiManager();
 		activeImage = imagePlus;
@@ -191,14 +194,13 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public RandomAccessibleInterval<?> giveProcessedSubImage(SAMModel selectedModel) {
 		//the IJ1 image operates always on the full image
-		if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
-			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
-			return Cast.unchecked(Views.permute(image, 0, 1));
-		} else {
-			Img<?> image = ImageJFunctions.wrap(activeImage.getType() == 4 ? CompositeConverter.makeComposite(activeImage) : activeImage);
-			return Cast.unchecked(Views.permute(image, 0, 1));
-			//return Cast.unchecked(ImageJFunctions.wrap(activeImage));
-		}
+		//if (selectedModel.getName().equals(EfficientSAM.FULL_NAME)) {
+		boolean isColorRGB = activeImage.getType() == ImagePlus.COLOR_RGB;
+		Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(activeImage) : activeImage);
+		return Cast.unchecked(Views.permute(image, 0, 1));
+		//} else {
+		//	return Cast.unchecked(ImageJFunctions.wrap(activeImage));
+		//}
 	}
 
 	@Override
@@ -258,6 +260,42 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public List<Polygon> getPolygonsFromRoiManager() {
 		return Arrays.stream(roiManager.getRoisAsArray()).map(i -> i.getPolygon()).collect(Collectors.toList());
+	}
+
+	@Override
+	public void exportImageLabeling() {
+		Roi[] rois = this.roiManager.getRoisAsArray();
+		if (rois.length == 0) return; // no ROIs to export
+
+		int width = activeImage.getWidth();
+		int height = activeImage.getHeight();
+
+		ImageProcessor ip = null;
+		if (rois.length <= 255) {
+			ip = new ByteProcessor(width, height);
+		}
+		else if (rois.length <= 65535) {
+			ip = new ShortProcessor(width, height);
+		}
+		else {
+			ip = new FloatProcessor(width, height);
+		}
+
+		ImagePlus imp = new ImagePlus(activeImage.getTitle() + "-labeling", ip);
+
+		int value = 1;
+		for (Roi roi : rois) {
+			ip.setValue(value++);
+			Rectangle bounds = roi.getBounds();
+			for (int y = 0; y < bounds.height; ++y) {
+				for (int x = 0; x < bounds.width; ++x) {
+					if (roi.contains(bounds.x + x, bounds.y + y)) {
+						ip.drawPixel(bounds.x + x, bounds.y + y);
+					}
+				}
+			}
+		}
+		imp.show();
 	}
 
 	@Override
