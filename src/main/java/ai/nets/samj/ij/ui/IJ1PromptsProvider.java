@@ -295,7 +295,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				}
 			}
 		}
-		ip.resetMinAndMax();
+		ip.setMinAndMax(0, rois.length);
 		imp.show();
 	}
 
