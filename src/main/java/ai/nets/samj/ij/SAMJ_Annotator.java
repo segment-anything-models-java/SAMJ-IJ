@@ -54,7 +54,6 @@ public class SAMJ_Annotator implements PlugIn {
 	/**
 	 * Run the plugin
 	 */
-	@Override
 	public void run() {
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
