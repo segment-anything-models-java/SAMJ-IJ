@@ -26,6 +26,7 @@ import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import io.bioimage.modelrunner.system.PlatformDetection;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.Overlay;
@@ -401,7 +402,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				break;
 			case Roi.POINT:
 				if (!isPoints) break;
-				if (e.isControlDown() && e.isAltDown()) {
+				// TODO think what to do with negative points
+				if (e.isControlDown() && e.isAltDown() && false) {
 					roi.setFillColor(Color.red);
 					//add point to the list only
 					isCollectingPoints = true;
@@ -410,7 +412,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 					while (iterator.hasNext()) p = iterator.next();
 					collecteNegPoints.add( new Point(p.x,p.y) ); //NB: add ImgLib2 Point
 					//TODO log.info("Image window: collecting points..., already we have: "+collectedPoints.size());
-				} else if (e.isControlDown()) {
+				} else if ((e.isControlDown() && !PlatformDetection.isMacOS()) || (e.isMetaDown() && PlatformDetection.isMacOS())) {
 					//add point to the list only
 					isCollectingPoints = true;
 					Iterator<java.awt.Point> iterator = roi.iterator();
@@ -513,7 +515,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * are sent to SAMJ
 	 */
 	public void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+		if ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS()) 
+				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
 			submitAndClearPoints();
 		}
 	}
