@@ -571,6 +571,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.isRect = false;
 		this.isPoints = false;
 		this.isFreehand = false;
+		this.deRegisterListeners();
 	}
 
 	@Override
