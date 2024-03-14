@@ -18,6 +18,9 @@ Documentation preliminary version. Needs to be reviewed, improved and, of course
 Before you can annotate images using SAMJ-IJ, you need to install the plugin in Fiji:
 
 1. **Install Fiji**: If you haven't already, download and install [Fiji](https://fiji.sc/).
+
+> [!IMPORTANT]
+> For MacOS users, if your Fiji instance is launched from the Downloads folder, SAMJ will not work! Move Fiji to another folder, Documents or DEsktop for example.
 2. **Install SAMJ Plugin**: Open Fiji and navigate to `Help > Update...`. In the `Manage update sites` window, and look for an update site named `SAMJ`, select it, click on `Apply and close` and then `Apply changes`. Finally restart Fiji.
 
    If you cannot find `SAMJ` among the update sites list click on `Add update site`/`Add unlisted site`, write `SAMJ` in the `Name` field and `https://sites.imagej.net/SAMJ/` in the `URL` field. Click on `Apply and close`, click on `Apply changes` and restart Fiji. 
@@ -34,11 +37,19 @@ To use the SAMJ-IJ plugin, you must install a SAM model. These are the models av
 * **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
 * **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
 
+> [!WARNING]
+> Low end computers are advised not to use the **EfficientSAM** model as it might take up to 10 minutes to load the first time, or even freeze the computer. The fastest and lightest model is **EfficientViTSAM-l0** but low resources machines might take up to 2-3 minutes to load the first time. Subsequent loading times will be much faster (~10s).
+
 This are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
 4. Wait for the installation process to complete. This may take some time depending on the model size, your computer and your internet connection.
+
+> [!CAUTION]
+> Model installation times vary based on your machine's specifications, ranging from seconds to up to 20 minutes. Please be patient.
+
+
 
 This video demonstrates the live installation of EfficientViTSAM-l1 on a Mac M1.
 ![Installing EfficientViTSAM-l1](./images/installing-gif.gif)
