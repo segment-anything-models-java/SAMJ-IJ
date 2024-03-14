@@ -22,7 +22,7 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 1. **Install Fiji**: If you haven't already, download and install [Fiji](https://fiji.sc/).
 
 > [!IMPORTANT]
-> For MacOS users, if your Fiji instance is launched from the Downloads folder, SAMJ will not work! Move Fiji to another folder, Documents or DEsktop for example.
+> For MacOS users, if your Fiji instance is launched from the Downloads folder, SAMJ will not work! Move Fiji to another folder, Documents or Desktop for example.
 2. **Install SAMJ Plugin**: Open Fiji and navigate to `Help > Update...`. In the `Manage update sites` window, and look for an update site named `SAMJ`, select it, click on `Apply and close` and then `Apply changes`. Finally restart Fiji.
 
    If you cannot find `SAMJ` among the update sites list click on `Add update site`/`Add unlisted site`, write `SAMJ` in the `Name` field and `https://sites.imagej.net/SAMJ/` in the `URL` field. Click on `Apply and close`, click on `Apply changes` and restart Fiji. 
