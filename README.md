@@ -123,7 +123,7 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 **Kevin Eliceri**, *Center for Quantitative Cell Imaging, University of Wisconsin, Madison, USA*  
 **J.C. Olivo-Marin**, *CNRS UMR 3691, Institut Pasteur, Paris, France*  
 **Daniel Sage**, *Biomedical Imaging Group and Center for Imaging, École Polytechnique Fédérale de Lausanne (EPFL), Lausanne, Switzerland* - [@dasv74](https://github.com/dasv74)  
-**Arrate Muñoz-Barrutia**, *Bioengineering Department, Universidad Carlos III de Madrid, Leganés, Spain*
+**Arrate Muñoz-Barrutia**, *Bioengineering Department, Universidad Carlos III de Madrid, Leganés, Spain* - [@arratemunoz](https://github.com/arratemunoz)
 
 
 ## Notes
