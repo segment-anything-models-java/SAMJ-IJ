@@ -1,5 +1,5 @@
-[![Build Status](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml/badge.svg)](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml)
 
+[![Build Status](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml/badge.svg)](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml)
 
 # SAMJ-IJ
 
@@ -24,13 +24,24 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 
 ## Model Installation
 
-To use the SAMJ-IJ plugin, you must install a SAM model:
+To use the SAMJ-IJ plugin, you must install a SAM model. These are the models available for installation:
+* **EfficientSAM:** A base model designed for segmentation tasks, optimized for efficiency and performance on standard computational resources. Ideal for quick, accurate segmentation in real-time applications.
+* **EfficientViTSAM-l0:** A lightweight variant of the EfficientViTSAM model, offering a balance between segmentation accuracy and computational demand, suitable for use on normal computers.
+* **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
+* **EfficientViTSAM-l2:** A more advanced version, designed for high-accuracy segmentation in demanding scenarios, requiring higher computational resources.
+* **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
+* **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
 
+This are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
 4. Wait for the installation process to complete. This may take some time depending on the model size, your computer and your internet connection.
-> **Comment:** Maybe we could add a section somewhere with more details on how long can take depending on the model and some guideance on which model to choose depending on your comptuer specs.
+
+This video demonstrates the live installation of EfficientViTSAM-l1 on a Mac M1.
+![Installing EfficientViTSAM-l1](./images/installing-gif.gif)
+
+
 
 ## Annotating Images
 
@@ -38,34 +49,53 @@ Once you have installed a model, follow these steps to annotate your image:
 
 1. **Open Image**: Open the microscopy image you want to annotate in Fiji.
 2. **Select the Image**: In the SAMJ Annotator plugin, ensure your image is selected in the dropdown bar.
-3. **Start Annotation**: Click on `Start/Encode` to begin the annotation process.
+3. **Start Annotation**: Click on `Go` to begin the annotation process. This button will encode your image so you can start annotating. It can take a while.
 4. **Choose Annotation Method**: Use one of the following tools to annotate your image:
-   - `Rectangle (Rect)`: Draw rectangular regions of interest (ROIs).
+   - `Rectangle (Rect)`: Draw rectangular Regions Of Interest (ROIs).
    - `Points`: Click to mark points on the image. Hold `Ctrl` to select multiple points for a single object.
    - `Brush`: Paint freeform ROIs.
 
    Optionally, untick the `Add to ROI Manager` checkbox if you don't want your annotations to be added to the Fiji ROI Manager automatically.
+   *Note: the first annotation can take several seconds.*
 5. **Annotate**: Annotate as many objects as needed. With each ROI drawn using one of the three tools, the installed SAM version will run and the object will be annotated.
 6. **Manage Annotations**: All annotations will be sent to the ROI Manager (if the checkbox is ticked), where you can perform various operations as allowed by Fiji's ROI Manager functionality.
 
 ## Saving Annotations
 
-To save your annotations:
+### All ROIs or the largest one
+To save your annotations, you can opt for either exporting every ROI using the "Return all ROIs" feature or selecting "Only return the largest ROI" to export solely the largest one. In the context of annotating heterogeneous images with various ROIs, as displayed below, you have the choice to either preserve the entirety of the ROIs, which would include every annotated point such as the nuclei and the entire embryo, or to conserve exclusively the predominant ROI, which, in this instance, would be the complete embryo.
 
-1. Open the ROI Manager in Fiji.
-2. Select the annotations you wish to save.
-3. Choose `More > Save` to save the selected annotations as a roi.
-4. Choose a location and name for the file and click `Save` to save the annotations as a .roi file.
-> **Comment:** Can we use the `Edit > Selection > Create Mask` to save the annotations as a mask? This would be more useful for the user, as the .roi file is not very useful for further analysis.
+![Embryo Annotation](./images/allROI-largestROI.png)
 
-This functionality allows you to save your annotations for further analysis or documentation purposes.
+### Export to Labelling
+
+With this button it is easy to export your annotations. It is exported as a semantic annotation meaning that each of the annotated regions will have a different value. We recommend change its Look Up Table (LUT) in Fiji for better visualization (`Image > Lookup Tables > Glasbey` or any other one).
+
+<p float="center">
+  <img src="/images/embryo.png" width="25%" />
+  <img src="/images/embryo-nuclei-labeling.png" width="25%" /> 
+</p>
+
 
 ## Usage Example
 
 ![Usage Example](images/usage-example.png)
-> **Comment:** Add some screenshots of the plugin usage when available.
 
 The image shows an example of how objects are annotated within the SAMJ-IJ plugin. Each annotated object is clearly marked and labeled, indicating the ease and efficiency of the plugin's use for image analysis.
+
+## Contributors
+
+**Carlos García-López-de-Haro**, *Bioimage Analysis Unit, Institut Pasteur, Université Paris Cité, Paris, France* - [@carlosuc3m](https://github.com/carlosuc3m)  
+**Caterina Fuster-Barceló**, *Bioengineering Department, Universidad Carlos III de Madrid, Leganés, Spain* - [@cfusterbarcelo](https://github.com/cfusterbarcelo)  
+**Curtis T. Rueden**, *Center for Quantitative Cell Imaging, University of Wisconsin, Madison, USA* - [@ctrueden](https://github.com/ctrueden)  
+**Jónathan Heras**, *Department of Mathematics and Computer Science, University of La Rioja, Logroño, Spain* - [@joheras](https://github.com/joheras)  
+**Vladimir Ulman**, *IT4Innovations, VSB - Technical University of Ostrava, Ostrava, Czech Republic* - [@xulman](https://github.com/xulman)  
+**Adrián Inés**, *Department of Mathematics and Computer Science, University of La Rioja, Logroño, Spain* - [@adines](https://github.com/adines)  
+**Kevin Eliceri**, *Center for Quantitative Cell Imaging, University of Wisconsin, Madison, USA*  
+**J.C. Olivo-Marin**, *CNRS UMR 3691, Institut Pasteur, Paris, France*  
+**Daniel Sage**, *Biomedical Imaging Group and Center for Imaging, École Polytechnique Fédérale de Lausanne (EPFL), Lausanne, Switzerland* - [@dasv74](https://github.com/dasv74)  
+**Arrate Muñoz-Barrutia**, *Bioengineering Department, Universidad Carlos III de Madrid, Leganés, Spain*
+
 
 ## Notes
 
