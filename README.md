@@ -49,7 +49,7 @@ Once you have installed a model, follow these steps to annotate your image:
 
 1. **Open Image**: Open the microscopy image you want to annotate in Fiji.
 2. **Select the Image**: In the SAMJ Annotator plugin, ensure your image is selected in the dropdown bar.
-3. **Start Annotation**: Click on `Go` to begin the annotation process. This button will encode your image so you can start annotating. It can take a while.
+3. **Start Annotation**: Click on `Go!` to begin the annotation process. This button will encode your image so you can start annotating. It can take a while.
 4. **Choose Annotation Method**: Use one of the following tools to annotate your image:
    - `Rectangle (Rect)`: Draw rectangular Regions Of Interest (ROIs).
    - `Points`: Click to mark points on the image. Hold `Ctrl` to select multiple points for a single object.
@@ -69,7 +69,7 @@ To save your annotations, you can opt for either exporting every ROI using the "
 
 ### Export to Labelling
 
-With this button it is easy to export your annotations. It is exported as a semantic annotation meaning that each of the annotated regions will have a different value. We recommend change its Look Up Table (LUT) in Fiji for better visualization (`Image > Lookup Tables > Glasbey` or any other one).
+This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
 
 <p float="center">
   <img src="/images/embryo.png" width="25%" />
@@ -79,9 +79,23 @@ With this button it is easy to export your annotations. It is exported as a sema
 
 ## Usage Example
 
-![Usage Example](images/usage-example.png)
+Below is an illustration of object annotation using the SAMJ-IJ plugin. Each object is delineated and labeled to showcase the plugin's straightforward and efficient capabilities in image analysis.
 
-The image shows an example of how objects are annotated within the SAMJ-IJ plugin. Each annotated object is clearly marked and labeled, indicating the ease and efficiency of the plugin's use for image analysis.
+![Usage Example](/images/usage-example.png)
+
+Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
+
+1. **Model Installation**: Choose and install your preferred model for image annotation. Refer to [Model Installation](#model-installation) for detailed information on each model.
+2. **Open Image in Fiji**: Navigate to `File > Open` in Fiji or drag and drop your image directly into the interface.
+3. **Encode Image**: With the model installed and the image open, select your image from the dropdown menu and click `Go!` to encode it. This may take some time depending on your system's capabilities.
+4. **Annotation**: Annotate your image freely. All annotations will appear in the ROI manager. For clarity when dealing with numerous closely spaced ROIs, uncheck the `Labels` option in the ROI manager. See [Annotating Images](#annotating-images) for more details.
+5. **Export Annotations**: Once finished with the annotations, click `Export to Labelling...` to save your semantic annotations.
+6. **Enhance Visualization**: Improve the visibility of your mask by altering the LUT. For example, you can apply the Glasbey LUT via `Image > Lookup Tables > Glasbey`.
+
+![Complete workflow](/images/complete-workflow-gif.gif)
+
+
+
 
 ## Contributors
 
