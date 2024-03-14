@@ -1,4 +1,3 @@
-
 # SAMJ-IJ
 
 The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the Segment Anything Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
@@ -35,7 +34,11 @@ This are the steps to install a model:
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
 4. Wait for the installation process to complete. This may take some time depending on the model size, your computer and your internet connection.
-> **Comment:** Maybe we could add a section somewhere with more details on how long can take depending on the model and some guideance on which model to choose depending on your comptuer specs.
+
+This video demonstrates the live installation of EfficientViTSAM-l1 on a Mac M1.
+![Installing EfficientViTSAM-l1](./images/installing-gif.gif)
+
+
 
 ## Annotating Images
 
@@ -43,27 +46,33 @@ Once you have installed a model, follow these steps to annotate your image:
 
 1. **Open Image**: Open the microscopy image you want to annotate in Fiji.
 2. **Select the Image**: In the SAMJ Annotator plugin, ensure your image is selected in the dropdown bar.
-3. **Start Annotation**: Click on `Start/Encode` to begin the annotation process.
+3. **Start Annotation**: Click on `Go` to begin the annotation process. This button will encode your image so you can start annotating. It can take a while.
 4. **Choose Annotation Method**: Use one of the following tools to annotate your image:
-   - `Rectangle (Rect)`: Draw rectangular regions of interest (ROIs).
+   - `Rectangle (Rect)`: Draw rectangular Regions Of Interest (ROIs).
    - `Points`: Click to mark points on the image. Hold `Ctrl` to select multiple points for a single object.
    - `Brush`: Paint freeform ROIs.
 
    Optionally, untick the `Add to ROI Manager` checkbox if you don't want your annotations to be added to the Fiji ROI Manager automatically.
+   *Note: the first annotation can take several seconds.*
 5. **Annotate**: Annotate as many objects as needed. With each ROI drawn using one of the three tools, the installed SAM version will run and the object will be annotated.
 6. **Manage Annotations**: All annotations will be sent to the ROI Manager (if the checkbox is ticked), where you can perform various operations as allowed by Fiji's ROI Manager functionality.
 
 ## Saving Annotations
 
-To save your annotations:
+### All ROIs or the largest one
+To save your annotations, you can opt for either exporting every ROI using the "Return all ROIs" feature or selecting "Only return the largest ROI" to export solely the largest one. In the context of annotating heterogeneous images with various ROIs, as displayed below, you have the choice to either preserve the entirety of the ROIs, which would include every annotated point such as the nuclei and the entire embryo, or to conserve exclusively the predominant ROI, which, in this instance, would be the complete embryo.
 
-1. Open the ROI Manager in Fiji.
-2. Select the annotations you wish to save.
-3. Choose `More > Save` to save the selected annotations as a roi.
-4. Choose a location and name for the file and click `Save` to save the annotations as a .roi file.
-> **Comment:** Can we use the `Edit > Selection > Create Mask` to save the annotations as a mask? This would be more useful for the user, as the .roi file is not very useful for further analysis.
+![Embryo Annotation](./images/allROI-largestROI.png)
 
-This functionality allows you to save your annotations for further analysis or documentation purposes.
+### Export to Labelling
+
+With this button it is easy to export your annotations. It is exported as a semantic annotation meaning that each of the annotated regions will have a different value. We recommend change its Look Up Table (LUT) in Fiji for better visualization (`Image > Lookup Tables > Glasbey` or any other one).
+
+<p float="center">
+  <img src="/images/embryo.png" width="25%" />
+  <img src="/images/embryo-nuclei-labeling.png" width="25%" /> 
+</p>
+
 
 ## Usage Example
 
