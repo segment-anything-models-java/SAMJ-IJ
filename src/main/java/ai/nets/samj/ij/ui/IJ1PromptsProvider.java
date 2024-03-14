@@ -575,12 +575,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 
 	@Override
-	public void createInstanceSegmentationMask() {
-		List<Polygon> pols = this.getPolygonsFromRoiManager();
-		
-	}
-
-	@Override
 	public SAMModel getNetBeingUsed() {
 		return this.promptsToNet;
 	}
