@@ -1,4 +1,4 @@
-
+![image](https://github.com/segment-anything-models-java/SAMJ-IJ/assets/49989524/61dcced2-e2e0-41ba-8cc8-4018fa183ba4)
 [![Build Status](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml/badge.svg)](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml)
 
 # SAMJ-IJ
@@ -19,7 +19,7 @@ Documentation preliminary version. Needs to be reviewed, improved and, of course
 Before you can annotate images using SAMJ-IJ, you need to install the plugin in Fiji:
 
 1. **Install Fiji**: If you haven't already, download and install [Fiji](https://fiji.sc/).
-2. **Install SAMJ Plugin***: Open Fiji and navigate to `Help > Update...`. In the `Manage update sites` window, click on `Add update site` and look for the SAMJ Annotator Plugin. Click `OK` to add the update site. Restart Fiji to apply the changes.
+2. **Install SAMJ Plugin**: Open Fiji and navigate to `Help > Update...`. In the `Manage update sites` window, and look for an update site named `SAMJ`, select it, click on `Apply and close` and then `Apply changes`. Finally restart Fiji. If you cannot find `SAMJ` among the update sites list click on `Add update site`/`Add unlisted site`, write `SAMJ` in the `Name` field and `https://sites.imagej.net/SAMJ/` in the `URL` field. Click on `Apply and close`, click on `Apply changes` and restart Fiji. 
 3. **Open SAMJ-IJ Annotator**: Start Fiji and navigate to `Plugins > SAMJ > SAMJ Annotator` to open the plugin.
 
 ## Model Installation
