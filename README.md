@@ -2,10 +2,10 @@
 
 # SAMJ-IJ
 
-The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the Segment Anything Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
+The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the [Segment Anything](https://github.com/facebookresearch/segment-anything) Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
 
 > [!NOTE]
-> This is and **EARLY RELEASE**, many more improvements are coming! Your valuable suggestions for enhancements are encouraged in the [Issues section](https://github.com/segment-anything-models-java/SAMJ-IJ/issues) or on the [image.sc forum](https://forum.image.sc/).
+> This is an **EARLY RELEASE**, many more improvements are coming! Your valuable suggestions for enhancements are encouraged in the [Issues section](https://github.com/segment-anything-models-java/SAMJ-IJ/issues) or on the [image.sc forum](https://forum.image.sc/).
 
 ## Contents
 - [Installation](#installation)
@@ -33,7 +33,7 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 
 To use the SAMJ-IJ plugin, you must install a SAM model. These are the models available for installation:
 * **EfficientSAM:** A base model designed for segmentation tasks, optimized for efficiency and performance on standard computational resources. Ideal for quick, accurate segmentation in real-time applications.
-* **EfficientViTSAM-l0:** A lightweight variant of the EfficientViTSAM model, offering a balance between segmentation accuracy and computational demand, suitable for use on normal computers.
+* **EfficientViTSAM-l0:** A lightweight variant of the ]EfficientViTSAM](https://arxiv.org/abs/2402.05008) model, offering a balance between segmentation accuracy and computational demand, suitable for use on normal computers.
 * **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
 * **EfficientViTSAM-l2:** A more advanced version, designed for high-accuracy segmentation in demanding scenarios, requiring higher computational resources.
 * **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
@@ -42,7 +42,7 @@ To use the SAMJ-IJ plugin, you must install a SAM model. These are the models av
 > [!WARNING]
 > Low end computers are advised not to use the **EfficientSAM** model as it might take up to 10 minutes to load the first time, or even freeze the computer. The fastest and lightest model is **EfficientViTSAM-l0** but low resources machines might take up to 2-3 minutes to load the first time. Subsequent loading times will be much faster (~10s).
 
-This are the steps to install a model:
+These are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
@@ -84,7 +84,7 @@ To save your annotations, you can opt for either exporting every ROI using the "
 
 ### Export to Labelling
 
-This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
+This button simplifies the process of exporting your annotations, which are saved as instance annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
 
 <p float="center">
   <img src="/images/embryo.png" width="25%" />
