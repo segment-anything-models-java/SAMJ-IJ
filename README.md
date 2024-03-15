@@ -2,7 +2,7 @@
 
 # SAMJ-IJ
 
-The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the Segment Anything Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
+The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the [Segment Anything](https://github.com/facebookresearch/segment-anything) Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
 
 > [!NOTE]
 > This is an **EARLY RELEASE**, many more improvements are coming! Your valuable suggestions for enhancements are encouraged in the [Issues section](https://github.com/segment-anything-models-java/SAMJ-IJ/issues) or on the [image.sc forum](https://forum.image.sc/).
@@ -23,6 +23,7 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 
 > [!IMPORTANT]
 > For MacOS users, if your Fiji instance is launched from the Downloads folder, SAMJ will not work! Move Fiji to another folder, Documents or Desktop, for example.
+
 2. **Install SAMJ Plugin**: Open Fiji and navigate to `Help > Update...`. In the `Manage update sites` window, and look for an update site named `SAMJ`, select it, click on `Apply and close` and then `Apply changes`. Finally restart Fiji.
 
    If you cannot find `SAMJ` among the update sites list, click on `Add update site`/`Add unlisted site`, write `SAMJ` in the `Name` field and `https://sites.imagej.net/SAMJ/` in the `URL` field. Click on `Apply and close`, click on `Apply changes` and restart Fiji. 
@@ -37,6 +38,11 @@ To use the SAMJ-IJ plugin, you must install a SAM model. These are the models av
 * **EfficientViTSAM-l1:** This is an intermediate version that provides enhanced accuracy for complex segmentation tasks with manageable resource requirements.
 * **EfficientViTSAM-l2:** This is a more advanced version designed for high-accuracy segmentation in demanding scenarios that require higher computational resources.
 * **EfficientViTSAM-xl0:** This is an extra-large model variant that pushes the boundaries of segmentation accuracy at the expense of increased computational demand.
+* **EfficientSAM:** A base model designed for segmentation tasks, optimized for efficiency and performance on standard computational resources. Ideal for quick, accurate segmentation in real-time applications.
+* **EfficientViTSAM-l0:** A lightweight variant of the ]EfficientViTSAM](https://arxiv.org/abs/2402.05008) model, offering a balance between segmentation accuracy and computational demand, suitable for use on regular computers.
+* **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
+* **EfficientViTSAM-l2:** A more advanced version, designed for high-accuracy segmentation in demanding scenarios, requiring higher computational resources.
+* **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
 * **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
 
 > [!WARNING]
@@ -84,7 +90,7 @@ To save your annotations, you can opt for either exporting every ROI using the "
 
 ### Export to Labelling
 
-This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
+This button simplifies the process of exporting your annotations, which are saved as instance annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
 
 <p float="center">
   <img src="/images/embryo.png" width="25%" />
