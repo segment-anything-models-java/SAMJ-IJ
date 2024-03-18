@@ -240,6 +240,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * 
 	 */
 	public void switchToThisNet(final SAMModel promptsToNetAdapter) {
+		// TODO decide what to do with roi manager
+		if (!this.roiManager.isVisible()) this.roiManager.setVisible(true);
 		this.promptsToNet = promptsToNetAdapter;
 		this.registerListeners();
 	}
