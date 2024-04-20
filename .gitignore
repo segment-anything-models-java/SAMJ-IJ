@@ -1,5 +1,6 @@
 # maven specific files
 /target/
+.idea
 
 # eclipse specific files
 /.settings/
@@ -25,3 +26,6 @@ setting.xml
 /appose_x86_64/
 /_appose_x86_64/
 /appose_arm64/
+
+# VIM editor
+*.sw*
