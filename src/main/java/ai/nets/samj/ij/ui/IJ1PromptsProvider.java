@@ -33,6 +33,7 @@ import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
+import ij.macro.MacroRunner;
 import ij.plugin.CompositeConverter;
 import ij.plugin.OverlayLabels;
 import ij.plugin.frame.RoiManager;
@@ -48,6 +49,7 @@ import net.imglib2.view.Views;
 
 import org.scijava.log.Logger;
 
+import ai.nets.samj.AbstractSamJ;
 import ai.nets.samj.communication.model.EfficientSAM;
 import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
@@ -479,6 +481,43 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
+	
+	/**
+	 * This method is a workaround to be able to represent the polygon created by SAMJ properly.
+	 * 
+	 * ImageJ uses the upper left vertex of a pixel to anchor the polygon vertex. This causes the polygons
+	 * to miss the right down last pixel of a mask
+	 * @param p
+	 * 	the polygon returned by SAM and to be modified
+	 * @return the modified polygon that fixes the rightmost south pixel and yields the same segmentation as SAMJ
+	 */
+	private Polygon imageJPolygonWorkaround(Polygon p) {
+		Polygon pol = new Polygon();
+		int[] xs = new int[pol.npoints];
+		int[] ys = new int[pol.npoints];
+		int x_dir = pol.xpoints[0] - pol.xpoints[pol.npoints - 1];
+		int y_dir = pol.ypoints[0] - pol.ypoints[pol.npoints - 1];
+		for (int i = 1; i < pol.npoints; i ++) {
+			x_dir = pol.xpoints[i] - pol.xpoints[i - 1];
+			y_dir = pol.ypoints[i] - pol.ypoints[i - 1];
+			if (x_dir <= 0 && y_dir <= 0) {
+				xs[i - 1] = pol.xpoints[i - 1];
+				ys[i - 1] = pol.ypoints[i - 1];
+			} else if (y_dir > 0) {
+				xs[i - 1] = pol.xpoints[i - 1] + 1;
+				ys[i - 1] = pol.ypoints[i - 1];
+			} else if (x_dir <= 0) {
+				xs[i - 1] = pol.xpoints[i - 1];
+				ys[i - 1] = pol.ypoints[i - 1] + 1;
+			} else  if (x_dir <= 0 && y_dir <= 0) {
+				xs[i - 1] = pol.xpoints[i - 1] + 1;
+				ys[i - 1] = pol.ypoints[i - 1] + 1;
+			}
+		}
+		pol.xpoints = xs;
+		pol.ypoints = ys;
+		return pol;
+	}
 
 	/**
 	 * Send the point prompts to SAM and clear the lists collecting them
@@ -490,9 +529,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
+		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
 		try {
-			addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints),
-					(collectedPoints.size() > 1 ? "points" : "point"));
+			if (activeImage.getWidth() * activeImage.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
+					|| activeImage.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || activeImage.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
+				addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle),
+						(collectedPoints.size() > 1 ? "points" : "point"));
+			else
+				addToRoiManager(promptsToNet.fetch2dSegmentation(collectedPoints, collecteNegPoints),
+						(collectedPoints.size() > 1 ? "points" : "point"));
 		} catch (Exception ex) {
 			this.notifyException(SAMJException.DECODING, ex);
 		}
