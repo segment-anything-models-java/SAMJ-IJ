@@ -102,5 +102,11 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>fiji</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
