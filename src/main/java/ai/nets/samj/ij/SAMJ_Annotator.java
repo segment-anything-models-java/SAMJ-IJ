@@ -65,14 +65,4 @@ public class SAMJ_Annotator implements Command {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * method for tesitng during development
-	 * @param args
-	 * 	nothing
-	 */
-	public static void main(String[] args) {
-		ImageJ ij = new ImageJ();
-		new SAMJ_Annotator().run();
-	}
 }
