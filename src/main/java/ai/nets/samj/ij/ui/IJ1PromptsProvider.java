@@ -33,7 +33,6 @@ import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
-import ij.macro.MacroRunner;
 import ij.plugin.CompositeConverter;
 import ij.plugin.OverlayLabels;
 import ij.plugin.frame.RoiManager;
@@ -49,8 +48,7 @@ import net.imglib2.view.Views;
 
 import org.scijava.log.Logger;
 
-import ai.nets.samj.AbstractSamJ;
-import ai.nets.samj.communication.model.EfficientSAM;
+import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 

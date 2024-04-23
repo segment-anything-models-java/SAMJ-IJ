@@ -75,9 +75,10 @@ public class IJComboBoxItem extends ComboBoxItem {
 	 * 
 	 * Convert the {@link ImagePlus} into a {@link RandomAccessibleInterval}
 	 */
-	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageasImgLib2() {
+	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageAsImgLib2() {
 		Img<?> img = ImageJFunctions.wrap((ImagePlus) this.getValue());
-		return Cast.unchecked(Views.permute(img, 1, 2));
+		return Cast.unchecked(img);
+		//return Cast.unchecked(Views.permute(img, 1, 2));
 	}
 
 
