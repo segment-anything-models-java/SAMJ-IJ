@@ -53,8 +53,10 @@ import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -225,7 +227,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		} else if (SAMJException.ENCODING == type) {
 			IJ.error("Error providing or processing the prompts", nMessage);
 		} else {
-			IJ.error(nMessage);
+			IJ.error(ex.toString());
+			ex.printStackTrace();
 		}
 		
 	}
@@ -524,7 +527,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
-		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
+		Rectangle zoomedRectangle = findEncodingArea();
 		try {
 			if (activeImage.getWidth() * activeImage.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
 					|| activeImage.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || activeImage.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
@@ -540,6 +543,18 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		collecteNegPoints = new ArrayList<Localizable>();
 		temporalROIs = new ArrayList<Roi>();
 		temporalNegROIs = new ArrayList<Roi>();
+	}
+	
+	private Rectangle findEncodingArea() {
+		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		double width = screenSize.getWidth();
+		double height = screenSize.getHeight();
+		Rectangle bounds = this.activeCanvas.getBounds();
+
+		double xRatio = zoomedRectangle.x / width;
+		double yRatio = zoomedRectangle.y / height;
+		return this.activeCanvas.getSrcRect();
 	}
 	
 	private void submitRectPrompt(Interval rectInterval) {
