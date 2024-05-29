@@ -44,7 +44,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
-import net.imglib2.view.Views;
 
 import org.scijava.log.Logger;
 
@@ -53,10 +52,8 @@ import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -70,7 +67,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
+/** 
+ * TODO create SAMJ-IJ own roi manager
+ * TODO create SAMJ-IJ own roi manager
+ * TODO create SAMJ-IJ own roi manager
+ * TODO create SAMJ-IJ own roi manager
+ * 
  * Implementation of SAMJ {@link PromptsResultsDisplay} used to communicate with the SAMJ GUI and SAMJ models.
  * This class sends the prompts generated in ImageJ to SAMJ.
  * 
@@ -479,43 +481,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
-	
-	/**
-	 * This method is a workaround to be able to represent the polygon created by SAMJ properly.
-	 * 
-	 * ImageJ uses the upper left vertex of a pixel to anchor the polygon vertex. This causes the polygons
-	 * to miss the right down last pixel of a mask
-	 * @param p
-	 * 	the polygon returned by SAM and to be modified
-	 * @return the modified polygon that fixes the rightmost south pixel and yields the same segmentation as SAMJ
-	 */
-	private Polygon imageJPolygonWorkaround(Polygon p) {
-		Polygon pol = new Polygon();
-		int[] xs = new int[pol.npoints];
-		int[] ys = new int[pol.npoints];
-		int x_dir = pol.xpoints[0] - pol.xpoints[pol.npoints - 1];
-		int y_dir = pol.ypoints[0] - pol.ypoints[pol.npoints - 1];
-		for (int i = 1; i < pol.npoints; i ++) {
-			x_dir = pol.xpoints[i] - pol.xpoints[i - 1];
-			y_dir = pol.ypoints[i] - pol.ypoints[i - 1];
-			if (x_dir <= 0 && y_dir <= 0) {
-				xs[i - 1] = pol.xpoints[i - 1];
-				ys[i - 1] = pol.ypoints[i - 1];
-			} else if (y_dir > 0) {
-				xs[i - 1] = pol.xpoints[i - 1] + 1;
-				ys[i - 1] = pol.ypoints[i - 1];
-			} else if (x_dir <= 0) {
-				xs[i - 1] = pol.xpoints[i - 1];
-				ys[i - 1] = pol.ypoints[i - 1] + 1;
-			} else  if (x_dir <= 0 && y_dir <= 0) {
-				xs[i - 1] = pol.xpoints[i - 1] + 1;
-				ys[i - 1] = pol.ypoints[i - 1] + 1;
-			}
-		}
-		pol.xpoints = xs;
-		pol.ypoints = ys;
-		return pol;
-	}
 
 	/**
 	 * Send the point prompts to SAM and clear the lists collecting them
@@ -527,7 +492,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		activeImage.deleteRoi();
-		Rectangle zoomedRectangle = findEncodingArea();
+		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
 		try {
 			if (activeImage.getWidth() * activeImage.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
 					|| activeImage.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || activeImage.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
@@ -543,18 +508,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		collecteNegPoints = new ArrayList<Localizable>();
 		temporalROIs = new ArrayList<Roi>();
 		temporalNegROIs = new ArrayList<Roi>();
-	}
-	
-	private Rectangle findEncodingArea() {
-		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		double width = screenSize.getWidth();
-		double height = screenSize.getHeight();
-		Rectangle bounds = this.activeCanvas.getBounds();
-
-		double xRatio = zoomedRectangle.x / width;
-		double yRatio = zoomedRectangle.y / height;
-		return this.activeCanvas.getSrcRect();
 	}
 	
 	private void submitRectPrompt(Interval rectInterval) {
