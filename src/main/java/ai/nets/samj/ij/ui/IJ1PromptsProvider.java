@@ -20,6 +20,7 @@
 package ai.nets.samj.ij.ui;
 
 import ij.IJ;
+import ij.IJEventListener;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.process.ByteProcessor;
@@ -79,7 +80,7 @@ import java.util.stream.Collectors;
  * @author Vladimir Ulman
  * @author Carlos Garcia
  */
-public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener {
+public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener, KeyListener, WindowListener, IJEventListener {
 	/**
 	 * The image being processed
 	 */
@@ -150,18 +151,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * All the points being collected that reference the background (ctrl + alt)
 	 */
 	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
-	/**
-	 * Consumer to alter the state of the Rectangle ROI button
-	 */
-	private BooleanConsumer rectIconConsumer;
-	/**
-	 * Consumer to alter the state of the Points ROI button
-	 */
-	private BooleanConsumer pointsIconConsumer;
-	/**
-	 * Consumer to alter the state of the Freeline ROI button
-	 */
-	private BooleanConsumer freelineIconConsumer;
 	/**
 	 * The number of words per line in the error message dialogs
 	 */
@@ -339,6 +328,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		activeCanvas.addMouseListener(this);
 		activeCanvas.addKeyListener(this);
 		activeWindow.addWindowListener(this);
+		IJ.addEventListener(this);
 	}
 
 	/**
@@ -357,19 +347,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public void mouseReleased(MouseEvent e) {
 		if (!this.isRect && !this.isPoints && !this.isFreehand) return;
-		if (this.isRect && !IJ.getToolName().equals("rectangle")) {
-			this.rectIconConsumer.accept(false);
-			this.isRect = false;
-			return;
-		} else if (this.isPoints && !IJ.getToolName().equals("point") && !IJ.getToolName().equals("multipoint")) {
-			this.isPoints = false;
-			this.pointsIconConsumer.accept(false);
-			return;
-		} else if (this.isFreehand && !IJ.getToolName().equals("freeline")) {
-			this.freelineIconConsumer.accept(false);
-			this.isFreehand = false;
-			return;
-		}
 		final Roi roi = activeImage.getRoi();
 		if (roi == null) {
 			//TODO log.info("Image window: There's no ROI...");
@@ -639,21 +616,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 			throw new IllegalArgumentException("The file selected does not correspond to an image.");
 		}
 	}
-	
-	@Override
-	public void setRectIconConsumer(BooleanConsumer consumer) {
-		this.rectIconConsumer = consumer;
-	}
-
-	@Override
-	public void setPointsIconConsumer(BooleanConsumer consumer) {
-		this.pointsIconConsumer = consumer;
-	}
-
-	@Override
-	public void setFreelineIconConsumer(BooleanConsumer consumer) {
-		this.freelineIconConsumer = consumer;
-	}
 
 	// ===== unused events =====
 	@Override
@@ -681,5 +643,22 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
+	}
+
+	@Override
+	public void eventOccurred(int eventID) {
+		if (eventID != IJEventListener.TOOL_CHANGED)
+			return;
+		if (this.isRect && !IJ.getToolName().equals("rectangle")) {
+			this.isRect = false;
+			return;
+		} else if (this.isPoints && !IJ.getToolName().equals("point") && !IJ.getToolName().equals("multipoint")) {
+			this.isPoints = false;
+			return;
+		} else if (this.isFreehand && !IJ.getToolName().equals("freeline")) {
+			this.isFreehand = false;
+			return;
+		}
+		
 	}
 }
