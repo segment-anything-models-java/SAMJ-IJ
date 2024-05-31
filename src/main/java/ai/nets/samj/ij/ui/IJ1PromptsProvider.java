@@ -154,15 +154,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	/**
 	 * Consumer to alter the state of the Rectangle ROI button
 	 */
-	private BooleanConsumer rectIconConsumer;
+	private PromptsResultsDisplay.BooleanConsumer rectIconConsumer;
 	/**
 	 * Consumer to alter the state of the Points ROI button
 	 */
-	private BooleanConsumer pointsIconConsumer;
+	private PromptsResultsDisplay.BooleanConsumer pointsIconConsumer;
 	/**
 	 * Consumer to alter the state of the Freeline ROI button
 	 */
-	private BooleanConsumer freelineIconConsumer;
+	private PromptsResultsDisplay.BooleanConsumer freelineIconConsumer;
 	/**
 	 * The number of words per line in the error message dialogs
 	 */
@@ -630,17 +630,17 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	
 	@Override
-	public void setRectIconConsumer(BooleanConsumer consumer) {
+	public void setRectIconConsumer(PromptsResultsDisplay.BooleanConsumer consumer) {
 		this.rectIconConsumer = consumer;
 	}
 
 	@Override
-	public void setPointsIconConsumer(BooleanConsumer consumer) {
+	public void setPointsIconConsumer(PromptsResultsDisplay.BooleanConsumer consumer) {
 		this.pointsIconConsumer = consumer;
 	}
 
 	@Override
-	public void setFreelineIconConsumer(BooleanConsumer consumer) {
+	public void setFreelineIconConsumer(PromptsResultsDisplay.BooleanConsumer consumer) {
 		this.freelineIconConsumer = consumer;
 	}
 
