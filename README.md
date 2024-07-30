@@ -13,6 +13,8 @@ The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using var
 - [Annotating Images](#annotating-images)
 - [Saving Annotations](#saving-annotations)
 - [Usage Example](#usage-example)
+- [Use Cases](#use-cases)
+- [Contributors](#contributors)
 - [Notes](#notes)
 
 ## Fiji and Plugin Installation
@@ -111,7 +113,10 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 
 ![Complete workflow](/images/complete-workflow-gif.gif)
 
+## Use Cases
+This Fiji plugin is intended for working with microscopy images. To show its versatility among different images, here are some use cases. 
 
+![Use Cases of different annotations in microscpy images](annotation-examples.png)
 
 
 ## Contributors
@@ -130,9 +135,8 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 
 ## Notes
 
-- This plugin is intended for use with microscopy images.
+- This plugin is intended to use with microscopy images.
 - The documentation here is for users only. Developer documentation, including contribution guidelines, will be available in a separate repository.
-
-For further assistance or to report issues, please visit the [plugin's repository](https://github.com/segment-anything-models-java/SAMJ-IJ).
+- For further assistance or to report issues, please visit the [plugin's repository](https://github.com/segment-anything-models-java/SAMJ-IJ).
 
 Thank you for using the SAMJ-IJ Fiji plugin!
