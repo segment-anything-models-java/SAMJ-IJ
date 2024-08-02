@@ -132,7 +132,9 @@ The images (top right and bottom right in the figure) illustrate organoids captu
 
 #### References
 [1] Gomez‐Cruz, C., Fernandez‐de la Torre, M., Lachowski, D., Prados‐de‐Haro, M., del Río Hernández, A. E., Perea, G., ... & Garcia‐Gonzalez, D. (2024). Mechanical and Functional Responses in Astrocytes under Alternating Deformation Modes Using Magneto‐Active Substrates. Advanced Materials, 2312497.
+
 [2] Casado-Garcia, A., Chichón, G., Dominguez, C., Garcia-Dominguez, M., Heras, J., Ines, A., ... & Saenz, Y. (2021). MotilityJ: An open-source tool for the classification and segmentation of bacteria on motility images. Computers in biology and medicine, 136, 104673.
+
 [3] Segmentation, counting, measurement of area and eccentricity (circularity) of organoids in [image.sc forum](https://forum.image.sc/t/segmentation-counting-measurement-of-area-and-eccentricity-circularity-of-organoids/90751)
 
 ## Contributors
