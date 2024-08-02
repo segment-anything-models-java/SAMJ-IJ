@@ -129,10 +129,11 @@ The images (top center and bottom center in the figure) showcase the results of 
 The images (top right and bottom right in the figure) illustrate organoids captured for the purpose of segmentation, counting, and analysis of morphological features such as area and eccentricity [3]. These organoids are typically used to model biological processes in vitro, providing a robust platform for studies in developmental biology, disease pathology, and drug screening. The original images capture the diverse shapes and sizes of organoids, which can be challenging to quantify manually. Using the SAMJ plugin, researchers can automate the segmentation and counting of organoids, and accurately measure their area and eccentricity. This annotation capability not only enhances the precision and efficiency of the analysis but also supports high-throughput screening and detailed morphometric assessments. The ability of SAMJ to handle such complex image data demonstrates its utility in advanced biological research and experimental reproducibility.
 
 
+
 #### References
 [1] Gomez‐Cruz, C., Fernandez‐de la Torre, M., Lachowski, D., Prados‐de‐Haro, M., del Río Hernández, A. E., Perea, G., ... & Garcia‐Gonzalez, D. (2024). Mechanical and Functional Responses in Astrocytes under Alternating Deformation Modes Using Magneto‐Active Substrates. Advanced Materials, 2312497.
 [2] Casado-Garcia, A., Chichón, G., Dominguez, C., Garcia-Dominguez, M., Heras, J., Ines, A., ... & Saenz, Y. (2021). MotilityJ: An open-source tool for the classification and segmentation of bacteria on motility images. Computers in biology and medicine, 136, 104673.
-[3] Segmentation, counting, measurement of area and eccentricity (circularity) of organoids in image.sc forum
+[3] Segmentation, counting, measurement of area and eccentricity (circularity) of organoids in [image.sc forum](https://forum.image.sc/t/segmentation-counting-measurement-of-area-and-eccentricity-circularity-of-organoids/90751)
 
 ## Contributors
 
