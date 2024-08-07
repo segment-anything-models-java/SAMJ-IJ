@@ -21,6 +21,7 @@ package ai.nets.samj.ij;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -53,8 +54,10 @@ public class SAMJ_Annotator implements PlugIn {
 
 	/**
 	 * Run the plugin
+	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public void run() {
+	public void run() throws IOException, InterruptedException {
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
 		try {
@@ -112,8 +115,10 @@ public class SAMJ_Annotator implements PlugIn {
 	 * method for tesitng during development
 	 * @param args
 	 * 	nothing
+	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		ImageJ ij = new ImageJ();
 		new SAMJ_Annotator().run();
 	}
@@ -121,7 +126,11 @@ public class SAMJ_Annotator implements PlugIn {
 
 	@Override
 	public void run(String arg) {
-		run();
+		try {
+			run();
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 	}
 }
