@@ -13,6 +13,8 @@ The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using var
 - [Annotating Images](#annotating-images)
 - [Saving Annotations](#saving-annotations)
 - [Usage Example](#usage-example)
+- [Use Cases](#use-cases)
+- [Contributors](#contributors)
 - [Notes](#notes)
 
 ## Fiji and Plugin Installation
@@ -111,8 +113,29 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 
 ![Complete workflow](/images/complete-workflow-gif.gif)
 
+## Use Cases
+This Fiji plugin is intended for working with microscopy images. To show its versatility among different images, here are some use cases. 
+
+![Use Cases of different annotations in microscpy images](images/annotation-examples.png)
+
+#### a) Astrocytes stained for actin
+The original image (top left in the figure) displays astrocytes stained for actin following mechanical deformation, as part of a study exploring the mechanical and functional responses of astrocytes using magneto-active substrates [1]. The annotated image (bottom left in the figure) highlights individual astrocytes for detailed analysis. 
+This annotation was accomplished using the "Points Prompt" feature coupled with the "Return Only Largest ROI" option to selectively annotate each astrocyte visible in the image. The primary goal of this annotation is to facilitate a comparative study of astrocyte morphology pre- and post-deformation, thus contributing valuable insights into the biomechanical properties and adaptive responses of astrocytes under stress.
+
+#### b) Bacterial mobility on agar plates
+The images (top center and bottom center in the figure) showcase the results of mobility assays for *Pseudomonas aeruginosa* strains on agar plates [2]. These assays are crucial for studying the surface motility of bacteria, which is considered a key factor in pathogenicity due to its role in chemotaxis, biofilm formation, and overall virulence. The original images depict the spread of bacteria on agar plates following incubation, captured using the Chemi DOC™ image system. The annotations made using the SAMJ plugin allow for precise measurement and analysis of the spread area, significantly automating a task that was previously manual, tedious, and time-consuming. By leveraging SAMJ for these annotations, researchers can efficiently quantify bacterial motility, facilitating deeper insights into bacterial behavior and its implications on disease spreading and antimicrobial resistance. This enhances the plugin's value in microbial research, providing a robust tool for assessing bacterial dynamics in a consistent and reproducible manner.
+
+#### c) Organoids
+The images (top right and bottom right in the figure) illustrate organoids captured for the purpose of segmentation, counting, and analysis of morphological features such as area and eccentricity [3]. These organoids are typically used to model biological processes in vitro, providing a robust platform for studies in developmental biology, disease pathology, and drug screening. The original images capture the diverse shapes and sizes of organoids, which can be challenging to quantify manually. Using the SAMJ plugin, researchers can automate the segmentation and counting of organoids, and accurately measure their area and eccentricity. This annotation capability not only enhances the precision and efficiency of the analysis but also supports high-throughput screening and detailed morphometric assessments. The ability of SAMJ to handle such complex image data demonstrates its utility in advanced biological research and experimental reproducibility.
 
 
+
+#### References
+[1] Gomez‐Cruz, C., Fernandez‐de la Torre, M., Lachowski, D., Prados‐de‐Haro, M., del Río Hernández, A. E., Perea, G., ... & Garcia‐Gonzalez, D. (2024). Mechanical and Functional Responses in Astrocytes under Alternating Deformation Modes Using Magneto‐Active Substrates. Advanced Materials, 2312497.
+
+[2] Casado-Garcia, A., Chichón, G., Dominguez, C., Garcia-Dominguez, M., Heras, J., Ines, A., ... & Saenz, Y. (2021). MotilityJ: An open-source tool for the classification and segmentation of bacteria on motility images. Computers in biology and medicine, 136, 104673.
+
+[3] Segmentation, counting, measurement of area and eccentricity (circularity) of organoids in [image.sc forum](https://forum.image.sc/t/segmentation-counting-measurement-of-area-and-eccentricity-circularity-of-organoids/90751)
 
 ## Contributors
 
@@ -130,9 +153,8 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 
 ## Notes
 
-- This plugin is intended for use with microscopy images.
+- This plugin is intended to use with microscopy images.
 - The documentation here is for users only. Developer documentation, including contribution guidelines, will be available in a separate repository.
-
-For further assistance or to report issues, please visit the [plugin's repository](https://github.com/segment-anything-models-java/SAMJ-IJ).
+- For further assistance or to report issues, please visit the [plugin's repository](https://github.com/segment-anything-models-java/SAMJ-IJ).
 
 Thank you for using the SAMJ-IJ Fiji plugin!
