@@ -492,7 +492,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
 		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
-		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"-"+promptShape+"-"+promptsToNet.getName());
+		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"_"+promptShape+"_"+promptsToNet.getName());
+		System.out.println(pRoi.getName());
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
