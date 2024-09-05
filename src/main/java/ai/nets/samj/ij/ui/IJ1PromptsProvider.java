@@ -50,6 +50,7 @@ import org.scijava.log.Logger;
 
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.communication.model.SAMModel;
+import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.ui.PromptsResultsDisplay;
 
 import java.awt.Color;
@@ -66,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /** 
@@ -163,6 +165,14 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * Consumer to alter the state of the Freeline ROI button
 	 */
 	private PromptsResultsDisplay.BooleanConsumer freelineIconConsumer;
+	/**
+	 * Save lists of rois that have been added at the same time to delete them if necessary
+	 */
+    private Stack<List<PolygonRoi>> undoStack = new Stack<>();
+    /**
+     * Save lists of polygons deleted at the same time to undo their deleting
+     */
+    private Stack<List<PolygonRoi>> redoStack = new Stack<>(); 
 	/**
 	 * The number of words per line in the error message dialogs
 	 */
@@ -475,9 +485,16 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * 	String giving information about which prompt was used to generate the ROI
 	 */
 	void addToRoiManager(final List<Polygon> polys, final String promptShape) {
+		this.redoStack.clear();
 		promptsCreatedCnt++;
 		int resNo = 1;
-		for (Polygon p : polys) this.addToRoiManager(p, resNo++, promptShape);
+		List<PolygonRoi> undoRois = new ArrayList<PolygonRoi>();
+		for (Polygon p : polys) {
+			final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
+			pRoi.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + promptsToNet.getName());
+			this.addToRoiManager(pRoi);
+		}
+		this.undoStack.push(undoRois);
 	}
 	
 	/**
@@ -490,10 +507,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * @param promptShape
 	 * 	String giving information about which prompt was used to generate the ROI
 	 */
-	public void addToRoiManager(final Polygon p, final int resultNumber, final String promptShape) {
-		final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
-		pRoi.setName(promptsCreatedCnt+"."+resultNumber+"_"+promptShape+"_"+promptsToNet.getName());
-		System.out.println(pRoi.getName());
+	public void addToRoiManager(final PolygonRoi pRoi ) {
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
 	}
 
@@ -671,6 +685,21 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0) {
+        	try {
+	        	List<PolygonRoi> redoList = undoStack.peek();
+	        	int n = this.roiManager.getCount() - 1;
+	        	for (PolygonRoi pol : redoList) RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n --);
+	        	undoStack.pop();
+	        	redoStack.push(redoList);
+        	} catch (Exception ex) {
+        	}
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0) {
+        	List<PolygonRoi> redoList = redoStack.peek();
+        	for (PolygonRoi pol : redoList) this.addToRoiManager(pol);
+        	redoStack.pop();
+        	undoStack.push(redoList);
+        }
 	}
 
 	@Override
