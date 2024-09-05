@@ -172,7 +172,15 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
     /**
      * Save lists of polygons deleted at the same time to undo their deleting
      */
-    private Stack<List<PolygonRoi>> redoStack = new Stack<>(); 
+    private Stack<List<PolygonRoi>> redoStack = new Stack<>();
+    /**
+     * Tracks if Ctrl+Z has already been handled
+     */
+    private boolean undoPressed = false;
+    /**
+     * Tracks if Ctrl+Y has already been handled
+     */
+    private boolean redoPressed = false;
 	/**
 	 * The number of words per line in the error message dialogs
 	 */
@@ -350,6 +358,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		activeCanvas.addMouseListener(this);
 		activeCanvas.addKeyListener(this);
 		activeWindow.addWindowListener(this);
+		activeWindow.addKeyListener(this);
 		IJ.addEventListener(this);
 	}
 
@@ -360,6 +369,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		activeCanvas.removeMouseListener(this);
 		activeCanvas.removeKeyListener(this);
 		activeWindow.removeWindowListener(this);
+		activeWindow.removeKeyListener(this);
 	}
 
 	@Override
@@ -493,6 +503,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 			final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
 			pRoi.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + promptsToNet.getName());
 			this.addToRoiManager(pRoi);
+			undoRois.add(pRoi);
 		}
 		this.undoStack.push(undoRois);
 	}
@@ -558,6 +569,12 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
 			submitAndClearPoints();
 		}
+	    if (e.getKeyCode() == KeyEvent.VK_Z) {
+	        redoPressed = false;
+	    }
+	    if (e.getKeyCode() == KeyEvent.VK_Y) {
+	        undoPressed = false;
+	    }
 	}
 
 	@Override
@@ -685,7 +702,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0 && !redoPressed) {
+        	redoPressed = true;
         	try {
 	        	List<PolygonRoi> redoList = undoStack.peek();
 	        	int n = this.roiManager.getCount() - 1;
@@ -694,7 +712,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	        	redoStack.push(redoList);
         	} catch (Exception ex) {
         	}
-        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0) {
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
+        	undoPressed = true;
         	List<PolygonRoi> redoList = redoStack.peek();
         	for (PolygonRoi pol : redoList) this.addToRoiManager(pol);
         	redoStack.pop();
