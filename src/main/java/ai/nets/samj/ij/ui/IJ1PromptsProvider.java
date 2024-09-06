@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import javax.swing.SwingUtilities;
+
 /** 
  * TODO create SAMJ-IJ own roi manager
  * TODO create SAMJ-IJ own roi manager
@@ -181,6 +183,10 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
      * Tracks if Ctrl+Y has already been handled
      */
     private boolean redoPressed = false;
+    /**
+     * Whether the SAMJ specific listeners are registered or not.
+     */
+    private boolean registered = false;
 	/**
 	 * The number of words per line in the error message dialogs
 	 */
@@ -205,7 +211,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 
 		//make sure we start with no ROIs at all
 		activeImage.killRoi();
-		registerListeners();
 	}
 
 	private RoiManager startRoiManager() {
@@ -285,7 +290,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public void notifyNetToClose() {
 		//TODO log.info("Image window: Stopping service, stopping network");
-		deRegisterListeners();
 		if (promptsToNet != null) promptsToNet.notifyUiHasBeenClosed();
 		this.promptsToNet = null;
 	}
@@ -355,21 +359,35 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * Add the listeners to the new image once the image is selected
 	 */
 	private void registerListeners() {
-		activeCanvas.addMouseListener(this);
-		activeCanvas.addKeyListener(this);
-		activeWindow.addWindowListener(this);
-		activeWindow.addKeyListener(this);
-		IJ.addEventListener(this);
+		if (registered) return;
+		SwingUtilities.invokeLater(() -> {
+			IJ.addEventListener(this);
+			activeCanvas.removeKeyListener(IJ.getInstance());
+			activeWindow.removeKeyListener(IJ.getInstance());
+			activeCanvas.addMouseListener(this);
+			activeCanvas.addKeyListener(this);
+			activeWindow.addWindowListener(this);
+			activeWindow.addKeyListener(this);
+		});
+		registered = true;
 	}
 
 	/**
 	 * Remove the listeners from the image once the image is changed or de-selected
 	 */
 	private void deRegisterListeners() {
-		activeCanvas.removeMouseListener(this);
-		activeCanvas.removeKeyListener(this);
-		activeWindow.removeWindowListener(this);
-		activeWindow.removeKeyListener(this);
+		if (!registered) return;
+		SwingUtilities.invokeLater(() -> {
+			IJ.removeEventListener(this);
+			activeCanvas.removeMouseListener(this);
+			activeCanvas.removeKeyListener(this);
+			activeWindow.removeWindowListener(this);
+			activeWindow.removeKeyListener(this);
+			
+			activeWindow.addKeyListener(IJ.getInstance());
+			activeCanvas.addKeyListener(IJ.getInstance());
+		});
+		registered = false;
 	}
 
 	@Override
@@ -583,6 +601,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 */
 	public void windowClosed(WindowEvent e) {
 		roiManager.close();
+		this.switchToNone();
 		notifyNetToClose();
 	}
 
@@ -719,6 +738,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
         	redoStack.pop();
         	undoStack.push(redoList);
         }
+        e.consume();
 	}
 
 	@Override
