@@ -451,6 +451,26 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 						java.awt.Point p = it.next();
 						collectedPoints.add(new Point(p.x,p.y)); 
 					}
+					// TODO move this logic to SAMJ into the masks option
+					if (collectedPoints.size() > 1 && collectedPoints.size() < 6)
+						collectedPoints = Arrays.asList(new Localizable[] {collectedPoints.get(1)});
+					else if (collectedPoints.size() > 1 && collectedPoints.size() < 50) {
+						List<Localizable> newCollectedPoints = new ArrayList<Localizable>();
+						while (newCollectedPoints.size() == 0) {
+							for (Localizable pp : collectedPoints) {
+								if (Math.random() < 0.2) newCollectedPoints.add(pp);
+							}
+						}
+						collectedPoints = newCollectedPoints;
+					} else if (collectedPoints.size() > 50) {
+						List<Localizable> newCollectedPoints = new ArrayList<Localizable>();
+						while (newCollectedPoints.size() > 0) {
+							for (Localizable pp : collectedPoints) {
+								if (Math.random() < 0.1) newCollectedPoints.add(pp);
+							}
+						}
+						collectedPoints = newCollectedPoints;
+					}
 					submitAndClearPoints();
 				}
 				//TODO log.info("Image window: line... from "+p1+" to "+p2);
