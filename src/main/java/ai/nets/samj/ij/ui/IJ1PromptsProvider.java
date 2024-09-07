@@ -446,10 +446,21 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 					addTemporalRois();
 				} else {
 					isCollectingPoints = false;
-					Iterator<java.awt.Point> it = roi.iterator();
-					while (it.hasNext()) {
-						java.awt.Point p = it.next();
-						collectedPoints.add(new Point(p.x,p.y)); 
+					Rectangle rect = roi.getBounds();
+					if (rect.height == 1) {
+						for (int i = 0; i < rect.width; i ++) {
+							collectedPoints.add(new Point(rect.x + i, rect.y)); 
+						}
+					} else if (rect.width == 1) {
+						for (int i = 0; i < rect.height; i ++) {
+							collectedPoints.add(new Point(rect.x, rect.y + i)); 
+						}
+					} else {
+						Iterator<java.awt.Point> it = roi.iterator();
+						while (it.hasNext()) {
+							java.awt.Point p = it.next();
+							collectedPoints.add(new Point(p.x,p.y)); 
+						}
 					}
 					// TODO move this logic to SAMJ into the masks option
 					if (collectedPoints.size() > 1 && collectedPoints.size() < 6)
