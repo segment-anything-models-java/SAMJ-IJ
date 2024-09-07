@@ -634,6 +634,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.isRect = true;
 		this.isPoints = false;
 		this.isFreehand = false;
+		this.registerListeners();
 	}
 	
 	@Override
@@ -645,6 +646,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.isRect = false;
 		this.isPoints = false;
 		this.isFreehand = true;
+		this.registerListeners();
 	}
 	
 	@Override
@@ -656,6 +658,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		this.isRect = true;
 		this.isPoints = true;
 		this.isFreehand = false;
+		this.registerListeners();
 	}
 
 	@Override
