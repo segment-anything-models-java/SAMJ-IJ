@@ -559,13 +559,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	
 	/**
 	 * Add a single polygon to the ROI manager
-	 * @param p
-	 * 	the polygon to be added
-	 * @param resultNumber
-	 * 	this is for when various polygon are added at the same time from one prompt.
-	 * 	It is the position in the list of polygons produced by SAM, if not just 0
-	 * @param promptShape
-	 * 	String giving information about which prompt was used to generate the ROI
+	 * @param pRoi
 	 */
 	public void addToRoiManager(final PolygonRoi pRoi ) {
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);

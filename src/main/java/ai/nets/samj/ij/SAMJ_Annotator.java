@@ -54,8 +54,8 @@ public class SAMJ_Annotator implements PlugIn {
 
 	/**
 	 * Run the plugin
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException if there is any thread interruption error
+	 * @throws IOException if there is any file error
 	 */
 	public void run() throws IOException, InterruptedException {
 
@@ -115,8 +115,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * method for tesitng during development
 	 * @param args
 	 * 	nothing
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException if there is any thread related error
+	 * @throws IOException if there is any file related error
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 		ImageJ ij = new ImageJ();
