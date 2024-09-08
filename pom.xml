@@ -78,7 +78,7 @@
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<!-- FIXME: use release version of samj for reproducible builds. -->
-		<samj.version>0.0.2-SNAPSHOT</samj.version>
+		<samj.version>0.0.1-SNAPSHOT</samj.version>
 	</properties>
 
 	<repositories>
