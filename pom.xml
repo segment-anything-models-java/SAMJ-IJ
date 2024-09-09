@@ -106,7 +106,7 @@
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-		<samj.version>0.0.1</samj.version>
+		<samj.version>0.0.2-SNAPSHOT</samj.version>
 	</properties>
 
 	<repositories>
