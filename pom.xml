@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>37.0.0</version>
+		<version>38.0.1</version>
 		<relativePath />
 	</parent>
 
@@ -44,6 +44,36 @@
 			<url>https://imagej.net/people/ctrueden</url>
 			<properties><id>ctrueden</id></properties>
 		</contributor>
+		<contributor>
+			<name>Vladimir Ulman</name>
+			<url>https://github.com/xulman</url>
+			<properties><id>xulman</id></properties>
+		</contributor>
+		<contributor>
+			<name>Daniel Sage</name>
+			<url>https://github.com/dasv74</url>
+			<properties><id>dasv74</id></properties>
+		</contributor>
+		<contributor>
+			<name>Caterina Fuster-Barcelo</name>
+			<url>https://github.com/cfusterbarcelo</url>
+			<properties><id>cfusterbarcelo</id></properties>
+		</contributor>
+		<contributor>
+			<name>Arrate Muñoz-Barrutia</name>
+			<url>https://github.com/arrmunoz</url>
+			<properties><id>arrmunoz</id></properties>
+		</contributor>
+		<contributor>
+			<name>Jonathan Heras</name>
+			<url>https://github.com/joheras</url>
+			<properties><id>joheras</id></properties>
+		</contributor>
+		<contributor>
+			<name>Adrian Ines</name>
+			<url>https://github.com/adines</url>
+			<properties><id>adines</id></properties>
+		</contributor>
 	</contributors>
 
 	<mailingLists>
@@ -76,9 +106,7 @@
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-
-		<!-- FIXME: use release version of samj for reproducible builds. -->
-		<samj.version>0.0.1-SNAPSHOT</samj.version>
+		<samj.version>0.0.1</samj.version>
 	</properties>
 
 	<repositories>
