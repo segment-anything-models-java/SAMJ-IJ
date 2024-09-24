@@ -35,10 +35,10 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 ## Model Installation
 
 To use the SAMJ-IJ plugin, you must install a SAM model. These are the models available for installation:
-* **EfficientSAM:** A [base model](https://github.com/yformer/EfficientSAM/tree/main) designed for segmentation tasks, optimized for performance on standard computational resources. Ideal for accurate annotations and segmentations Computationally heavy. Do not use on low-end computers.
+* **EfficientSAM:** A [base model](https://github.com/yformer/EfficientSAM/tree/main) designed for segmentation tasks, optimized for performance on standard computational resources. Ideal for accurate annotations and segmentations Computationally heavy. Do not use it on low-end computers.
 * **EfficientViTSAM-l0:** A lightweight variant of the [EfficientViTSAM](https://arxiv.org/abs/2402.05008) model, offering a balance between segmentation accuracy and computational demand, suitable for use on regular computers.
 * **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
-* **EfficientViTSAM-l2:** A more advanced version, designed for high-accuracy segmentation in demanding scenarios, requiring higher computational resources.
+* **EfficientViTSAM-l2:** A more advanced version designed for high-accuracy segmentation in demanding scenarios requiring higher computational resources.
 * **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
 * **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
 
@@ -49,7 +49,7 @@ These are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
 2. Choose a SAM model from the list provided within the plugin.
 3. Click on the `Install` button next to the selected model.
-4. Wait for the installation process to complete. This may take some time, depending on the model size, your computer and your internet connection.
+4. Wait for the installation process to complete. This may take some time, depending on the model size, your computer, and your internet connection.
 
 > [!CAUTION]
 > Model installation times vary based on your machine's specifications, ranging from seconds to up to 20 minutes. Please be patient.
@@ -114,13 +114,13 @@ Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
 ![Complete workflow](/images/complete-workflow-gif.gif)
 
 ## Use Cases
-This Fiji plugin is intended for working with microscopy images. To show its versatility among different images, here are some use cases. 
+This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases. 
 
 ![Use Cases of different annotations in microscpy images](images/annotation-examples.png)
 
 #### a) Astrocytes stained for actin
-The original image (top left in the figure) displays astrocytes stained for actin following mechanical deformation, as part of a study exploring the mechanical and functional responses of astrocytes using magneto-active substrates [1]. The annotated image (bottom left in the figure) highlights individual astrocytes for detailed analysis. 
-This annotation was accomplished using the "Points Prompt" feature coupled with the "Return Only Largest ROI" option to selectively annotate each astrocyte visible in the image. The primary goal of this annotation is to facilitate a comparative study of astrocyte morphology pre- and post-deformation, thus contributing valuable insights into the biomechanical properties and adaptive responses of astrocytes under stress.
+The original image (top left in the figure) displays astrocytes stained for actin following mechanical deformation as part of a study exploring the mechanical and functional responses of astrocytes using magneto-active substrates [1]. The annotated image (bottom left in the figure) highlights individual astrocytes for detailed analysis. 
+This annotation was accomplished using the "Points Prompt" feature coupled with the "Return Only Largest ROI" option to annotate each astrocyte visible in the image selectively. The primary goal of this annotation is to facilitate a comparative study of astrocyte morphology pre- and post-deformation, thus contributing valuable insights into the biomechanical properties and adaptive responses of astrocytes under stress.
 
 #### b) Bacterial mobility on agar plates
 The images (top center and bottom center in the figure) showcase the results of mobility assays for *Pseudomonas aeruginosa* strains on agar plates [2]. These assays are crucial for studying the surface motility of bacteria, which is considered a key factor in pathogenicity due to its role in chemotaxis, biofilm formation, and overall virulence. The original images depict the spread of bacteria on agar plates following incubation, captured using the Chemi DOC™ image system. The annotations made using the SAMJ plugin allow for precise measurement and analysis of the spread area, significantly automating a task that was previously manual, tedious, and time-consuming. By leveraging SAMJ for these annotations, researchers can efficiently quantify bacterial motility, facilitating deeper insights into bacterial behavior and its implications on disease spreading and antimicrobial resistance. This enhances the plugin's value in microbial research, providing a robust tool for assessing bacterial dynamics in a consistent and reproducible manner.
@@ -135,7 +135,7 @@ The images (top right and bottom right in the figure) illustrate organoids captu
 
 [2] Casado-Garcia, A., Chichón, G., Dominguez, C., Garcia-Dominguez, M., Heras, J., Ines, A., ... & Saenz, Y. (2021). MotilityJ: An open-source tool for the classification and segmentation of bacteria on motility images. Computers in biology and medicine, 136, 104673.
 
-[3] Segmentation, counting, measurement of area and eccentricity (circularity) of organoids in [image.sc forum](https://forum.image.sc/t/segmentation-counting-measurement-of-area-and-eccentricity-circularity-of-organoids/90751)
+[3] Segmentation, counting, and measurement of area and eccentricity (circularity) of organoids in [image.sc forum](https://forum.image.sc/t/segmentation-counting-measurement-of-area-and-eccentricity-circularity-of-organoids/90751)
 
 ## Contributors
 
