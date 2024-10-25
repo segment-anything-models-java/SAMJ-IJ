@@ -49,6 +49,7 @@ import net.imglib2.util.Cast;
 import org.scijava.log.Logger;
 
 import ai.nets.samj.models.AbstractSamJ;
+import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.ui.PromptsResultsDisplay;
@@ -175,6 +176,14 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
      * Save lists of polygons deleted at the same time to undo their deleting
      */
     private Stack<List<PolygonRoi>> redoStack = new Stack<>();
+    /**
+     * List of the annotated masks on an image
+     */
+    private Stack<List<Mask>> annotatedMask = new Stack<List<Mask>>();
+    /**
+     * List that keeps track of the annotated masks
+     */
+    private Stack<List<Mask>> redoAnnotatedMask = new Stack<List<Mask>>();
     /**
      * Tracks if Ctrl+Z has already been handled
      */
@@ -404,7 +413,6 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		}
 
 		if (promptsToNet == null) {
-			//TODO log.warn("Please, choose some SAM implementation first before we can be sending prompts to it.");
 			activeImage.deleteRoi();
 			return;
 		}
@@ -543,18 +551,20 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	 * @param promptShape
 	 * 	String giving information about which prompt was used to generate the ROI
 	 */
-	void addToRoiManager(final List<Polygon> polys, final String promptShape) {
+	void addToRoiManager(final List<Mask> polys, final String promptShape) {
 		this.redoStack.clear();
+		this.redoAnnotatedMask.clear();
 		promptsCreatedCnt++;
 		int resNo = 1;
 		List<PolygonRoi> undoRois = new ArrayList<PolygonRoi>();
-		for (Polygon p : polys) {
-			final PolygonRoi pRoi = new PolygonRoi(p, PolygonRoi.POLYGON);
+		for (Mask m : polys) {
+			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
 			pRoi.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + promptsToNet.getName());
 			this.addToRoiManager(pRoi);
 			undoRois.add(pRoi);
 		}
 		this.undoStack.push(undoRois);
+		this.annotatedMask.push(polys);
 	}
 	
 	/**
@@ -701,7 +711,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	public void improveExistingMask(File mask) {
 		try {
 			ImagePlus imp = IJ.openImage(mask.getAbsolutePath());
-			List<Polygon> pols = this.promptsToNet.fetch2dSegmentationFromMask(Cast.unchecked(ImageJFunctions.wrap(imp)));
+			List<Mask> pols = this.promptsToNet.fetch2dSegmentationFromMask(Cast.unchecked(ImageJFunctions.wrap(imp)));
 			addToRoiManager(pols, "existing-mask"); 
 		} catch (Exception ex) {
 			throw new IllegalArgumentException("The file selected does not correspond to an image.");
@@ -757,6 +767,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 	        	for (PolygonRoi pol : redoList) RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n --);
 	        	undoStack.pop();
 	        	redoStack.push(redoList);
+	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
+	        	this.annotatedMask.pop();
         	} catch (Exception ex) {
         	}
         } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
@@ -765,6 +777,8 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
         	for (PolygonRoi pol : redoList) this.addToRoiManager(pol);
         	redoStack.pop();
         	undoStack.push(redoList);
+        	this.annotatedMask.push(this.redoAnnotatedMask.peek());
+        	this.redoAnnotatedMask.pop();
         }
         e.consume();
 	}
