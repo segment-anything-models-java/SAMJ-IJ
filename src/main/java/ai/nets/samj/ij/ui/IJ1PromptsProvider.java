@@ -23,10 +23,6 @@ import ij.IJ;
 import ij.IJEventListener;
 import ij.ImagePlus;
 import ij.Prefs;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
@@ -44,7 +40,7 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Cast;
 
 import org.scijava.log.Logger;
@@ -318,7 +314,7 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 		int height = activeImage.getHeight();
 		List<Mask> masks = new ArrayList<Mask>();
 		this.annotatedMask.stream().forEach(mm -> masks.addAll(mm));
-		RandomAccessibleInterval<UnsignedByteType> raiMask = Mask.getMask(width, height, masks);
+		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, masks);
 		ImagePlus impMask = ImageJFunctions.show(raiMask);
 		impMask.setTitle(activeImage.getTitle() + "-labeling");
 		impMask.getProcessor().setMinAndMax(0, annotatedMask.size());
