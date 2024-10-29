@@ -489,9 +489,9 @@ public class IJ1PromptsProvider implements PromptsResultsDisplay, MouseListener,
 						collectedPoints = newCollectedPoints;
 					} else if (collectedPoints.size() > 50) {
 						List<Localizable> newCollectedPoints = new ArrayList<Localizable>();
-						while (newCollectedPoints.size() > 0) {
+						while (newCollectedPoints.size() < 10) {
 							for (Localizable pp : collectedPoints) {
-								if (Math.random() < 0.1) newCollectedPoints.add(pp);
+								if (Math.random() < Math.min(0.1, 50.0 / collectedPoints.size())) newCollectedPoints.add(pp);
 							}
 						}
 						collectedPoints = newCollectedPoints;
