@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>38.0.1</version>
+		<version>39.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -106,7 +106,7 @@
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-		<samj.version>0.0.2-SNAPSHOT</samj.version>
+		<samj.version>0.0.2</samj.version>
 	</properties>
 
 	<repositories>
