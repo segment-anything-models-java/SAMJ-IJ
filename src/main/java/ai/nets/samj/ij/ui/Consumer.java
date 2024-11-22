@@ -205,6 +205,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		roiManager.close();
 		this.selectedModel.closeProcess();
 		this.selectedModel = null;
+		this.activeImage = null;
+		this.activeCanvas = null;
+		this.activeWindow = null;
 		this.deactivateListeners();
 	}
 
