@@ -197,7 +197,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.activeCanvas = this.activeImage.getCanvas();
 		this.activeWindow = this.activeImage.getWindow();
 		if (this.isAddingToRoiManager)
-			startRoiManager();
+			this.roiManager = startRoiManager();
 	}
 
 	@Override
