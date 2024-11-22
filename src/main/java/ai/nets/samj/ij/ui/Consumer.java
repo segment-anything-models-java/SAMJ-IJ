@@ -3,8 +3,12 @@ package ai.nets.samj.ij.ui;
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -16,6 +20,7 @@ import javax.swing.SwingUtilities;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
+import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
 import ij.IJ;
@@ -43,23 +48,23 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
  * 
  * @author Carlos Garcia Lopez de Haro
  */
-public class Consumer extends ConsumerInterface implements MouseListener {
+public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener {
 	/**
 	 * The image being processed
 	 */
-	private final ImagePlus activeImage;
+	private ImagePlus activeImage;
 	/**
 	 * Canvas of the image selected. Used to record the prompts drawn by the user
 	 */
-	private final ImageCanvas activeCanvas;
+	private ImageCanvas activeCanvas;
 	/**
 	 * Window of the selected image. Used to record the prompts drawn by the user
 	 */
-	private final ImageWindow activeWindow;
+	private ImageWindow activeWindow;
 	/**
 	 * Instance of the ROI manager to save the ROIs created
 	 */
-	private final RoiManager roiManager;
+	private RoiManager roiManager;
 	/**
 	 * Whether to add the ROIs created to the ROI manager or not
 	 */
@@ -188,19 +193,65 @@ public class Consumer extends ConsumerInterface implements MouseListener {
 	@Override
 	public void setFocusedImage(Object image) {
 		activeImage = (ImagePlus) image;
+		if (this.isAddingToRoiManager)
+			startRoiManager();
 	}
 
-	private RoiManager startRoiManager() {
-		RoiManager roiManager = RoiManager.getInstance();
-		if (roiManager == null) {
-			roiManager = new RoiManager();
+	@Override
+	/**
+	 * when the plugin is closed, close everything
+	 */
+	public void windowClosed(WindowEvent e) {
+		roiManager.close();
+		this.selectedModel.closeProcess();
+		this.selectedModel = null;
+		this.deactivateListeners();
+	}
+
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0 && !redoPressed) {
+        	redoPressed = true;
+        	try {
+	        	List<PolygonRoi> redoList = undoStack.peek();
+	        	int n = this.roiManager.getCount() - 1;
+	        	for (PolygonRoi pol : redoList) RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n --);
+	        	undoStack.pop();
+	        	redoStack.push(redoList);
+	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
+	        	this.annotatedMask.pop();
+        	} catch (Exception ex) {
+        	}
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
+        	undoPressed = true;
+        	List<PolygonRoi> redoList = redoStack.peek();
+        	for (PolygonRoi pol : redoList) this.addToRoiManager(pol);
+        	redoStack.pop();
+        	undoStack.push(redoList);
+        	this.annotatedMask.push(this.redoAnnotatedMask.peek());
+        	this.redoAnnotatedMask.pop();
+        }
+        e.consume();
+	}
+
+	@Override
+	/**
+	 * Monitor when the control key is being released for the point prompts.
+	 * Whenever it is released and the point prompt is selected, the points that have already been drawn 
+	 * are sent to SAMJ
+	 */
+	public void keyReleased(KeyEvent e) {
+		if ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS()) 
+				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
+			submitAndClearPoints();
 		}
-		roiManager.reset();
-		roiManager.setVisible(true);
-		roiManager.setTitle("SAM Roi Manager");
-		Prefs.useNamesAsLabels = true;
-		roiManager.setEditMode(activeImage, true);
-		return roiManager;
+	    if (e.getKeyCode() == KeyEvent.VK_Z) {
+	        redoPressed = false;
+	    }
+	    if (e.getKeyCode() == KeyEvent.VK_Y) {
+	        undoPressed = false;
+	    }
 	}
 
 	@Override
@@ -357,6 +408,19 @@ public class Consumer extends ConsumerInterface implements MouseListener {
 			submitAndClearPoints();
 		}
 	}
+
+	private RoiManager startRoiManager() {
+		RoiManager roiManager = RoiManager.getInstance();
+		if (roiManager == null) {
+			roiManager = new RoiManager();
+		}
+		roiManager.reset();
+		roiManager.setVisible(true);
+		roiManager.setTitle("SAM Roi Manager");
+		Prefs.useNamesAsLabels = true;
+		roiManager.setEditMode(activeImage, true);
+		return roiManager;
+	}
 	
 	private void addTemporalRois() {
 		//Overlay overlay = activeCanvas.getOverlay();
@@ -409,5 +473,19 @@ public class Consumer extends ConsumerInterface implements MouseListener {
 	public void mousePressed(MouseEvent e) {}
 	@Override
 	public void mouseExited(MouseEvent e) {}
+	@Override
+	public void windowOpened(WindowEvent e) {}
+	@Override
+	public void windowClosing(WindowEvent e) {}
+	@Override
+	public void windowIconified(WindowEvent e) {}
+	@Override
+	public void windowDeiconified(WindowEvent e) {}
+	@Override
+	public void windowActivated(WindowEvent e) {}
+	@Override
+	public void windowDeactivated(WindowEvent e) {}
+	@Override
+	public void keyTyped(KeyEvent e) {}
 
 }
