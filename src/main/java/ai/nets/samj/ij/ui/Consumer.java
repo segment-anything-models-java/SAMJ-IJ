@@ -163,31 +163,29 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void activateListeners() {
+		System.out.println("mm");
 		if (registered) return;
-		SwingUtilities.invokeLater(() -> {
-			activeCanvas.addMouseListener(this);
-			activeCanvas.addKeyListener(this);
-			activeWindow.addWindowListener(this);
-			activeWindow.addKeyListener(this);
+		activeCanvas.addMouseListener(this);
+		activeCanvas.addKeyListener(this);
+		activeWindow.addWindowListener(this);
+		activeWindow.addKeyListener(this);
 
-			activeCanvas.removeKeyListener(IJ.getInstance());
-			activeWindow.removeKeyListener(IJ.getInstance());
-		});
+		activeCanvas.removeKeyListener(IJ.getInstance());
+		activeWindow.removeKeyListener(IJ.getInstance());
 		registered = true;
 	}
 
 	@Override
 	public void deactivateListeners() {
 		if (!registered) return;
-		SwingUtilities.invokeLater(() -> {
-			activeCanvas.removeMouseListener(this);
-			activeCanvas.removeKeyListener(this);
-			activeWindow.removeWindowListener(this);
-			activeWindow.removeKeyListener(this);
-			
-			activeWindow.addKeyListener(IJ.getInstance());
-			activeCanvas.addKeyListener(IJ.getInstance());
-		});
+		System.out.println(activeCanvas == null);
+		activeCanvas.removeMouseListener(this);
+		activeCanvas.removeKeyListener(this);
+		activeWindow.removeWindowListener(this);
+		activeWindow.removeKeyListener(this);
+		
+		activeWindow.addKeyListener(IJ.getInstance());
+		activeCanvas.addKeyListener(IJ.getInstance());
 		registered = false;
 	}
 
@@ -215,10 +213,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		roiManager.close();
 		this.selectedModel.closeProcess();
 		this.selectedModel = null;
+		this.deactivateListeners();
 		this.activeImage = null;
 		this.activeCanvas = null;
 		this.activeWindow = null;
-		this.deactivateListeners();
 	}
 
 
