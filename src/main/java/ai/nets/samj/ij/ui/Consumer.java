@@ -277,6 +277,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			annotatePoints(e);
 		} else if (Toolbar.getToolName().equals("freeline")) {
 			annotateBrush(e);
+		} else {
+			return;
 		}
 		if (!isCollectingPoints) activeImage.deleteRoi();
 	}
