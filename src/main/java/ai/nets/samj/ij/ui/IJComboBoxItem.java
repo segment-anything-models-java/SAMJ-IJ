@@ -22,6 +22,7 @@ package ai.nets.samj.ij.ui;
 
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ij.ImagePlus;
+import ij.plugin.CompositeConverter;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -72,8 +73,10 @@ public class IJComboBoxItem extends ComboBoxItem {
 	 * Convert the {@link ImagePlus} into a {@link RandomAccessibleInterval}
 	 */
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageAsImgLib2() {
-		Img<?> img = ImageJFunctions.wrap((ImagePlus) this.getValue());
-		return Cast.unchecked(img);
+		ImagePlus imp = (ImagePlus) this.getValue();
+		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
+		Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+		return Cast.unchecked(image);
 	}
 
 
