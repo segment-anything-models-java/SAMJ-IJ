@@ -28,7 +28,6 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Cast;
-import net.imglib2.view.Views;
 
 /**
  * Implementation of the SAMJ interface {@link ComboBoxItem} that provides the SAMJ GUI
@@ -42,14 +41,11 @@ public class IJComboBoxItem extends ComboBoxItem {
 	 * 
 	 * Combobox item that contains an Object associated to a unique identifier.
 	 * For ImageJ the object is an ImageJ {@link ImagePlus}
-	 * @param uniqueID
-	 * 	unique indentifier of the combobox element to avoid confusion when there are two images
-	 * 	with the same name
 	 * @param seq
 	 * 	the object of interest, whihc in the case of ImageJ is and {@link ImagePlus}
 	 */
-	public IJComboBoxItem(int uniqueID, Object seq) {
-		super(uniqueID, seq);
+	public IJComboBoxItem(Object seq) {
+		super(seq);
 	}
 	
 	/**

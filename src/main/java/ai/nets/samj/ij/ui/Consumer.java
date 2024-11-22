@@ -135,7 +135,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 */
 	public List<ComboBoxItem> getListOfOpenImages() {
 		return Arrays.stream(WindowManager.getImageTitles())
-				.map(title -> new IJComboBoxItem(WindowManager.getImage(title).getID(), (Object) WindowManager.getImage(title)))
+				.map(title -> new IJComboBoxItem((Object) WindowManager.getImage(title)))
 				.collect(Collectors.toList());
 	}
 
@@ -165,12 +165,13 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public void activateListeners() {
 		if (registered) return;
 		SwingUtilities.invokeLater(() -> {
-			activeCanvas.removeKeyListener(IJ.getInstance());
-			activeWindow.removeKeyListener(IJ.getInstance());
 			activeCanvas.addMouseListener(this);
 			activeCanvas.addKeyListener(this);
 			activeWindow.addWindowListener(this);
 			activeWindow.addKeyListener(this);
+
+			activeCanvas.removeKeyListener(IJ.getInstance());
+			activeWindow.removeKeyListener(IJ.getInstance());
 		});
 		registered = true;
 	}
@@ -193,8 +194,17 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public void setFocusedImage(Object image) {
 		activeImage = (ImagePlus) image;
+		this.activeCanvas = this.activeImage.getCanvas();
+		this.activeWindow = this.activeImage.getWindow();
 		if (this.isAddingToRoiManager)
 			startRoiManager();
+	}
+
+	@Override
+	public void deselectImage() {
+		activeImage = null;
+		this.activeCanvas = null;
+		this.activeWindow = null;
 	}
 
 	@Override
