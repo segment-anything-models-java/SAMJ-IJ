@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import javax.swing.SwingUtilities;
-
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
@@ -137,6 +135,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		return Arrays.stream(WindowManager.getImageTitles())
 				.map(title -> new IJComboBoxItem((Object) WindowManager.getImage(title)))
 				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public void addPolygonsFromGUI(List<Mask> masks) {
+		// TODO improve the naming
+		this.addToRoiManager(masks, "batch");
 	}
 
 	@Override
