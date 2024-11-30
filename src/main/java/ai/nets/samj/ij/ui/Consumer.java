@@ -31,6 +31,7 @@ import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
+import ij.plugin.CompositeConverter;
 import ij.plugin.OverlayLabels;
 import ij.plugin.frame.RoiManager;
 import io.bioimage.modelrunner.system.PlatformDetection;
@@ -39,7 +40,10 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 /**
@@ -207,6 +211,71 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		activeImage = null;
 		this.activeCanvas = null;
 		this.activeWindow = null;
+	}
+
+	@Override
+	public Object getFocusedImage() {
+		return IJ.getImage();
+	}
+
+	@Override
+	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getFocusedImageAsRai() {
+		ImagePlus imp = IJ.getImage();
+		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
+		Img<T> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+		return image;
+	}
+
+	@Override
+	public List<Rectangle> getRectRoisOnFocusImage() {
+		Roi roi = IJ.getImage().getRoi();
+		List<Rectangle> list = getRectRoisFromRoiManager();
+		if (roi == null)
+			return list;
+		if (roi.getType() != Roi.RECTANGLE)
+			return list;
+		list.add(roi.getBounds());
+		return list;
+	}
+	
+	private List<Rectangle> getRectRoisFromRoiManager() {
+		List<Rectangle> list = new ArrayList<Rectangle>();
+		Roi[] rois = RoiManager.getInstance().getRoisAsArray();
+		if (rois.length == 0)
+			return list;
+		list = Arrays.stream(rois).filter(rr -> rr.getType() != Roi.RECTANGLE)
+				.map(rr -> rr.getBounds()).collect(Collectors.toList());
+		return list;
+	}
+
+	@Override
+	public List<long[]> getPointRoisOnFocusImage() {
+		Roi roi = IJ.getImage().getRoi();
+		List<long[]> list = getPointRoisFromRoiManager();
+		if (roi == null)
+			return list;
+		if (roi.getType() != Roi.POINT)
+			return list;
+		while (roi.iterator().hasNext()) {
+			java.awt.Point p = roi.iterator().next();
+			list.add(new long[] {(long) p.getX(), (long) p.getY()});
+		}
+		return list;
+	}
+	
+	private List<long[]> getPointRoisFromRoiManager() {
+		List<long[]> list = new ArrayList<long[]>();
+		Roi[] rois = RoiManager.getInstance().getRoisAsArray();
+		if (rois.length == 0)
+			return list;
+		List<Roi> roiList = Arrays.stream(rois).filter(rr -> rr.getType() != Roi.POINT).collect(Collectors.toList());
+		for (Roi rr : roiList) {
+			while (rr.iterator().hasNext()) {
+				java.awt.Point p = rr.iterator().next();
+				list.add(new long[] {(long) p.getX(), (long) p.getY()});
+			}
+		}
+		return list;
 	}
 
 	@Override

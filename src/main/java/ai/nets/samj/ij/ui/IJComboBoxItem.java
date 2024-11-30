@@ -28,7 +28,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Cast;
 
 /**
  * Implementation of the SAMJ interface {@link ComboBoxItem} that provides the SAMJ GUI
@@ -75,8 +74,8 @@ public class IJComboBoxItem extends ComboBoxItem {
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageAsImgLib2() {
 		ImagePlus imp = (ImagePlus) this.getValue();
 		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
-		Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-		return Cast.unchecked(image);
+		Img<T> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+		return image;
 	}
 
 
