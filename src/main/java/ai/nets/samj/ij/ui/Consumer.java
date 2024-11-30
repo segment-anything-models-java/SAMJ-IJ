@@ -249,22 +249,22 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	}
 
 	@Override
-	public List<long[]> getPointRoisOnFocusImage() {
+	public List<int[]> getPointRoisOnFocusImage() {
 		Roi roi = IJ.getImage().getRoi();
-		List<long[]> list = getPointRoisFromRoiManager();
+		List<int[]> list = getPointRoisFromRoiManager();
 		if (roi == null)
 			return list;
 		if (roi.getType() != Roi.POINT)
 			return list;
 		while (roi.iterator().hasNext()) {
 			java.awt.Point p = roi.iterator().next();
-			list.add(new long[] {(long) p.getX(), (long) p.getY()});
+			list.add(new int[] {(int) p.getX(), (int) p.getY()});
 		}
 		return list;
 	}
 	
-	private List<long[]> getPointRoisFromRoiManager() {
-		List<long[]> list = new ArrayList<long[]>();
+	private List<int[]> getPointRoisFromRoiManager() {
+		List<int[]> list = new ArrayList<int[]>();
 		Roi[] rois = RoiManager.getInstance().getRoisAsArray();
 		if (rois.length == 0)
 			return list;
@@ -272,7 +272,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		for (Roi rr : roiList) {
 			while (rr.iterator().hasNext()) {
 				java.awt.Point p = rr.iterator().next();
-				list.add(new long[] {(long) p.getX(), (long) p.getY()});
+				list.add(new int[] {(int) p.getX(), (int) p.getY()});
 			}
 		}
 		return list;
