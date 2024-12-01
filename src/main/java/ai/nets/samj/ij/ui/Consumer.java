@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.Overlay;
+import ij.gui.PointRoi;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
@@ -237,6 +239,79 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		list.add(roi.getBounds());
 		return list;
 	}
+
+	@Override
+	public List<int[]> getPointRoisOnFocusImage() {
+		Roi roi = IJ.getImage().getRoi();
+		List<int[]> list = getPointRoisFromRoiManager();
+		if (roi == null)
+			return list;
+		if (roi.getType() != Roi.POINT)
+			return list;
+		Iterator<java.awt.Point> it = roi.iterator();
+		while (it.hasNext()) {
+			java.awt.Point p = it.next();
+			list.add(new int[] {(int) p.getX(), (int) p.getY()});
+		}
+		return list;
+	}
+
+	@Override
+	public void deletePointRoi(int[] pp) {
+		Roi roi = IJ.getImage().getRoi();
+		if (roi.getType() == Roi.POINT) {
+			PointRoi pRoi = (PointRoi) roi;
+			Iterator<java.awt.Point> iter = roi.iterator();
+			while (iter.hasNext()) {
+				java.awt.Point point = iter.next();
+				if (point.x == pp[0] && point.y == pp[1]) {
+					pRoi.deleteHandle(pp[0], pp[1]);
+					return;
+				}
+			}
+		}
+		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
+		for (Roi managerRoi : roiManagerRois) {
+			if (managerRoi.getType() != Roi.POINT)
+				continue;
+			PointRoi pRoi = (PointRoi) managerRoi;
+			Iterator<java.awt.Point> iter = pRoi.iterator();
+			while (iter.hasNext()) {
+				java.awt.Point point = iter.next();
+				if (point.x == pp[0] && point.y == pp[1]) {
+					pRoi.deleteHandle(pp[0], pp[1]);
+					return;
+				}
+			}
+		}
+	}
+
+	@Override
+	public void deleteRectRoi(Rectangle rect) {
+		Roi roi = IJ.getImage().getRoi();
+		if (roi.getType() == Roi.RECTANGLE) {
+			if (roi.getBounds() == rect) {
+				activeImage.deleteRoi();
+				return;
+			}
+		}
+		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
+		for (int i = 0; i < roiManagerRois.length; i ++) {
+			Roi managerRoi = roiManagerRois[i];
+			if (managerRoi.getType() != Roi.RECTANGLE)
+				continue;
+			if (roi.getBounds() == rect) {
+				try {
+					RoiManagerPrivateViolator.deleteRoiAtPosition(RoiManager.getInstance(), i);
+				} catch (NoSuchFieldException | SecurityException | NoSuchMethodException | IllegalAccessException
+						| IllegalArgumentException | InvocationTargetException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+			
+		}
+	}
 	
 	private List<Rectangle> getRectRoisFromRoiManager() {
 		List<Rectangle> list = new ArrayList<Rectangle>();
@@ -247,21 +322,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				.map(rr -> rr.getBounds()).collect(Collectors.toList());
 		return list;
 	}
-
-	@Override
-	public List<int[]> getPointRoisOnFocusImage() {
-		Roi roi = IJ.getImage().getRoi();
-		List<int[]> list = getPointRoisFromRoiManager();
-		if (roi == null)
-			return list;
-		if (roi.getType() != Roi.POINT)
-			return list;
-		while (roi.iterator().hasNext()) {
-			java.awt.Point p = roi.iterator().next();
-			list.add(new int[] {(int) p.getX(), (int) p.getY()});
-		}
-		return list;
-	}
 	
 	private List<int[]> getPointRoisFromRoiManager() {
 		List<int[]> list = new ArrayList<int[]>();
@@ -270,8 +330,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			return list;
 		List<Roi> roiList = Arrays.stream(rois).filter(rr -> rr.getType() != Roi.POINT).collect(Collectors.toList());
 		for (Roi rr : roiList) {
-			while (rr.iterator().hasNext()) {
-				java.awt.Point p = rr.iterator().next();
+			Iterator<java.awt.Point> it = rr.iterator();
+			while (it.hasNext()) {
+				java.awt.Point p = it.next();
 				list.add(new int[] {(int) p.getX(), (int) p.getY()});
 			}
 		}
