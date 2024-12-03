@@ -242,7 +242,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public List<Rectangle> getRectRoisOnFocusImage() {
 		Roi roi = IJ.getImage().getRoi();
-		List<Rectangle> list = getRectRoisFromRoiManager();
+		//List<Rectangle> list = getRectRoisFromRoiManager();
+		List<Rectangle> list = new ArrayList<Rectangle>();
 		if (roi == null)
 			return list;
 		if (roi.getType() != Roi.RECTANGLE)
@@ -255,6 +256,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public List<int[]> getPointRoisOnFocusImage() {
 		Roi roi = IJ.getImage().getRoi();
 		List<int[]> list = getPointRoisFromRoiManager();
+		//List<int[]> list = new ArrayList<int[]>();
 		if (roi == null)
 			return list;
 		if (roi.getType() != Roi.POINT)
@@ -262,31 +264,46 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		Iterator<java.awt.Point> it = roi.iterator();
 		while (it.hasNext()) {
 			java.awt.Point p = it.next();
-			list.add(new int[] {(int) p.getX(), (int) p.getY()});
+			int[] arr = new int[] {(int) p.getX(), (int) p.getY()};
+			if (list.stream().anyMatch(a -> Arrays.equals(a, arr)))
+				continue;
+			list.add(arr);
 		}
 		return list;
 	}
 
 	@Override
 	public void deletePointRoi(int[] pp) {
-		Roi roi = IJ.getImage().getRoi();
-		if (roi.getType() == Roi.POINT) {
-			PointRoi pRoi = (PointRoi) roi;
-			Iterator<java.awt.Point> iter = roi.iterator();
-			while (iter.hasNext()) {
-				java.awt.Point point = iter.next();
-				if (point.x == pp[0] && point.y == pp[1]) {
-					pRoi.deleteHandle(pp[0], pp[1]);
-					return;
+		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
+		int ii = -1;
+		if (roiManagerRois != null) {
+			ii ++;
+			for (Roi managerRoi : roiManagerRois) {
+				if (managerRoi.getType() != Roi.POINT)
+					continue;
+				PointRoi pRoi = (PointRoi) managerRoi;
+				Iterator<java.awt.Point> iter = pRoi.iterator();
+				while (iter.hasNext()) {
+					java.awt.Point point = iter.next();
+					if (point.x == pp[0] && point.y == pp[1]) {
+						pRoi.deleteHandle(pp[0], pp[1]);
+						if (!iter.hasNext()) {
+							try {
+								RoiManagerPrivateViolator.deleteRoiAtPosition(RoiManager.getInstance(), ii);
+							} catch (NoSuchFieldException | SecurityException | NoSuchMethodException
+									| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+								e.printStackTrace();
+							}
+						}
+						return;
+					}
 				}
 			}
 		}
-		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
-		for (Roi managerRoi : roiManagerRois) {
-			if (managerRoi.getType() != Roi.POINT)
-				continue;
-			PointRoi pRoi = (PointRoi) managerRoi;
-			Iterator<java.awt.Point> iter = pRoi.iterator();
+		Roi roi = IJ.getImage().getRoi();
+		if (roi != null && roi.getType() == Roi.POINT) {
+			PointRoi pRoi = (PointRoi) roi;
+			Iterator<java.awt.Point> iter = roi.iterator();
 			while (iter.hasNext()) {
 				java.awt.Point point = iter.next();
 				if (point.x == pp[0] && point.y == pp[1]) {
@@ -329,7 +346,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		Roi[] rois = RoiManager.getInstance().getRoisAsArray();
 		if (rois.length == 0)
 			return list;
-		list = Arrays.stream(rois).filter(rr -> rr.getType() != Roi.RECTANGLE)
+		list = Arrays.stream(rois).filter(rr -> rr.getType() == Roi.RECTANGLE)
 				.map(rr -> rr.getBounds()).collect(Collectors.toList());
 		return list;
 	}
@@ -339,13 +356,14 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		Roi[] rois = RoiManager.getInstance().getRoisAsArray();
 		if (rois.length == 0)
 			return list;
-		List<Roi> roiList = Arrays.stream(rois).filter(rr -> rr.getType() != Roi.POINT).collect(Collectors.toList());
+		List<Roi> roiList = Arrays.stream(rois).filter(rr -> rr.getType() == Roi.POINT).collect(Collectors.toList());
 		for (Roi rr : roiList) {
 			Iterator<java.awt.Point> it = rr.iterator();
 			while (it.hasNext()) {
 				java.awt.Point p = it.next();
 				list.add(new int[] {(int) p.getX(), (int) p.getY()});
 			}
+			rr.setImage(activeImage);
 		}
 		return list;
 	}
