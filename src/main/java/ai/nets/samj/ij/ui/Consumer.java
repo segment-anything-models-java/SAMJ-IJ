@@ -23,6 +23,7 @@ import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
 import ij.IJ;
+import ij.IJEventListener;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;
@@ -52,7 +53,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
  * 
  * @author Carlos Garcia Lopez de Haro
  */
-public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener {
+public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener, IJEventListener {
 	/**
 	 * The image being processed
 	 */
@@ -130,6 +131,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
      * Whether the SAMJ specific listeners are registered or not.
      */
     private boolean registered = false;
+    
+    public Consumer() {
+    	IJ.addEventListener(this);
+    }
 
 	@Override
 	/**
@@ -173,7 +178,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void activateListeners() {
-		System.out.println("mm");
 		if (registered) return;
 		activeCanvas.addMouseListener(this);
 		activeCanvas.addKeyListener(this);
@@ -197,6 +201,13 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		activeWindow.addKeyListener(IJ.getInstance());
 		activeCanvas.addKeyListener(IJ.getInstance());
 		registered = false;
+	}
+
+	@Override
+	public boolean isValidPromptSelected() {
+		return Toolbar.getToolName().equals("rectangle")
+				 || Toolbar.getToolName().equals("point")
+				 || Toolbar.getToolName().equals("multipoint");
 	}
 
 	@Override
@@ -609,6 +620,16 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		}
 		this.undoStack.push(undoRois);
 		this.annotatedMask.push(polys);
+	}
+	
+	@Override
+	public void eventOccurred(int eventID) {
+		if (eventID != IJEventListener.TOOL_CHANGED)
+			return;
+		boolean isvalid = IJ.getToolName().equals("rectangle") 
+				|| IJ.getToolName().equals("point") 
+				|| IJ.getToolName().equals("multipoint");
+		this.callback.validPromptChosen(isvalid);
 	}
 	
 	// ===== unused events =====

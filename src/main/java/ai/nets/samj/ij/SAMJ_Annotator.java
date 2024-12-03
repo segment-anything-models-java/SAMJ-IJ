@@ -19,19 +19,13 @@
  */
 package ai.nets.samj.ij;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import ai.nets.samj.communication.model.SAMModels;
 import ai.nets.samj.gui.MainGUI;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.ImageJ;
-import ij.ImagePlus;
 import ij.gui.GUI;
 import ij.plugin.PlugIn;
 import ai.nets.samj.ij.ui.Consumer;
