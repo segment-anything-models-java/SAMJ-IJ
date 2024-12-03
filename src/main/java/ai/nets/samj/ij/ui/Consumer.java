@@ -242,11 +242,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public List<Rectangle> getRectRoisOnFocusImage() {
 		Roi roi = IJ.getImage().getRoi();
-		//List<Rectangle> list = getRectRoisFromRoiManager();
-		List<Rectangle> list = new ArrayList<Rectangle>();
+		List<Rectangle> list = getRectRoisFromRoiManager();
 		if (roi == null)
 			return list;
 		if (roi.getType() != Roi.RECTANGLE)
+			return list;
+		if (list.stream().anyMatch(a -> a.equals(roi.getBounds())))
 			return list;
 		list.add(roi.getBounds());
 		return list;
@@ -256,7 +257,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public List<int[]> getPointRoisOnFocusImage() {
 		Roi roi = IJ.getImage().getRoi();
 		List<int[]> list = getPointRoisFromRoiManager();
-		//List<int[]> list = new ArrayList<int[]>();
 		if (roi == null)
 			return list;
 		if (roi.getType() != Roi.POINT)
@@ -316,28 +316,29 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void deleteRectRoi(Rectangle rect) {
+		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
+		if (roiManagerRois != null) {
+			for (int i = 0; i < roiManagerRois.length; i ++) {
+				Roi managerRoi = roiManagerRois[i];
+				if (managerRoi.getType() != Roi.RECTANGLE)
+					continue;
+				if (managerRoi.getBounds().equals(rect)) {
+					try {
+						RoiManagerPrivateViolator.deleteRoiAtPosition(RoiManager.getInstance(), i);
+					} catch (NoSuchFieldException | SecurityException | NoSuchMethodException | IllegalAccessException
+							| IllegalArgumentException | InvocationTargetException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+			}
+		}
 		Roi roi = IJ.getImage().getRoi();
-		if (roi.getType() == Roi.RECTANGLE) {
-			if (roi.getBounds() == rect) {
+		if (roi != null && roi.getType() == Roi.RECTANGLE) {
+			if (roi.getBounds().equals(rect)) {
 				activeImage.deleteRoi();
 				return;
 			}
-		}
-		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
-		for (int i = 0; i < roiManagerRois.length; i ++) {
-			Roi managerRoi = roiManagerRois[i];
-			if (managerRoi.getType() != Roi.RECTANGLE)
-				continue;
-			if (roi.getBounds() == rect) {
-				try {
-					RoiManagerPrivateViolator.deleteRoiAtPosition(RoiManager.getInstance(), i);
-				} catch (NoSuchFieldException | SecurityException | NoSuchMethodException | IllegalAccessException
-						| IllegalArgumentException | InvocationTargetException e) {
-					e.printStackTrace();
-				}
-				return;
-			}
-			
 		}
 	}
 	
@@ -347,7 +348,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		if (rois.length == 0)
 			return list;
 		list = Arrays.stream(rois).filter(rr -> rr.getType() == Roi.RECTANGLE)
-				.map(rr -> rr.getBounds()).collect(Collectors.toList());
+				.map(rr -> {
+					rr.setImage(activeImage);
+					return rr.getBounds();
+				}).collect(Collectors.toList());
 		return list;
 	}
 	
