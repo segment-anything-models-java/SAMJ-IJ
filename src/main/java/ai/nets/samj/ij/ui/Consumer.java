@@ -212,6 +212,11 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void setFocusedImage(Object image) {
+		boolean changed = activeImage != (ImagePlus) image;
+		if (!changed) {
+			WindowManager.setCurrentWindow(activeWindow);
+			return;
+		}
 		activeImage = (ImagePlus) image;
 		this.activeCanvas = this.activeImage.getCanvas();
 		this.activeWindow = this.activeImage.getWindow();
@@ -594,7 +599,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		if (roiManager == null) {
 			roiManager = new RoiManager();
 		}
-		roiManager.reset();
+		// TODO what to do? roiManager.reset();
 		roiManager.setVisible(true);
 		roiManager.setTitle("SAM Roi Manager");
 		Prefs.useNamesAsLabels = true;
