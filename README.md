@@ -34,13 +34,9 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 
 ## Model Installation
 
-To use the SAMJ-IJ plugin, you must install a SAM model. These are the models available for installation:
-* **EfficientSAM:** A [base model](https://github.com/yformer/EfficientSAM/tree/main) designed for segmentation tasks, optimized for performance on standard computational resources. Ideal for accurate annotations and segmentations Computationally heavy. Do not use it on low-end computers.
-* **EfficientViTSAM-l0:** A lightweight variant of the [EfficientViTSAM](https://arxiv.org/abs/2402.05008) model, offering a balance between segmentation accuracy and computational demand, suitable for use on regular computers.
-* **EfficientViTSAM-l1:** An intermediate version, providing enhanced accuracy for complex segmentation tasks with manageable resource requirements.
-* **EfficientViTSAM-l2:** A more advanced version designed for high-accuracy segmentation in demanding scenarios requiring higher computational resources.
-* **EfficientViTSAM-xl0:** An extra-large model variant, pushing the boundaries of segmentation accuracy at the expense of increased computational demand.
-* **EfficientViTSAM-xl1:** The most advanced and resource-intensive version, offering state-of-the-art segmentation performance for the most challenging tasks.
+The different models available to install can change over time as new models are added or removed. Up to this date, the models available for installation are SAM2 Tiny, SAM2 Small,  SAM2 Large, EfficientSAM, and EfficientViTSAM-l2. All these models do not need the use of GPU but the CPU of your workstation can impact its performance.
+
+Model references and github repositories can be found directly on the SAMJ plugin.
 
 > [!WARNING]
 > Users with a low-end computer are advised not to use the **EfficientSAM** model as it might take up to 10 minutes to load the first time, or the computer can even be frozen. The fastest and lightest model is **EfficientViTSAM-l0**, but low-resource machines might take up to 2-3 minutes to load the first time. Subsequent loading times will be much faster (~10s).
