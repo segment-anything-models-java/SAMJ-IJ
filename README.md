@@ -12,7 +12,6 @@ The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using var
 - [Model Installation](#model-installation)
 - [Annotating Images](#annotating-images)
 - [Saving Annotations](#saving-annotations)
-- [Usage Example](#usage-example)
 - [Use Cases](#use-cases)
 - [Contributors](#contributors)
 - [Notes](#notes)
@@ -39,7 +38,7 @@ The different models available to install can change over time as new models are
 Model references and github repositories can be found directly on the SAMJ plugin.
 
 > [!WARNING]
-> Users with a low-end computer are advised not to use the **EfficientSAM** model as it might take up to 10 minutes to load the first time, or the computer can even be frozen. The fastest and lightest model is **EfficientViTSAM-l0**, but low-resource machines might take up to 2-3 minutes to load the first time. Subsequent loading times will be much faster (~10s).
+> Users with a low-end computer are advised not to use the **EfficientSAM** model as it might take up to 10 minutes to load the first time, or the computer can even be frozen. The fastest and lightest model is **EfficientViTSAM-L2**, but low-resource machines might take up to 2-3 minutes to load the first time. Subsequent loading times will be much faster (~10s).
 
 These are the steps to install a model:
 1. Open the SAMJ Annotator plugin as described above.
@@ -51,63 +50,46 @@ These are the steps to install a model:
 > Model installation times vary based on your machine's specifications, ranging from seconds to up to 20 minutes. Please be patient.
 
 
-
 This video demonstrates the live installation of EfficientViTSAM-l1 on a Mac M1.
-![Installing EfficientViTSAM-l1](./images/installing-gif.gif)
+![Installing Model](./images/samj-installing-gif.gif)
 
 
 
 ## Annotating Images
 
-Once you have installed a model, follow these steps to annotate your image:
+Once you have one model installed, you can start to annotate your images. Firstly, you will need to open you image in Fiji and then encode it by clicking the "Go!" button in the SAMJ Annotator plugin. This will encode your image so you can start annotating it.
 
-1. **Open Image**: Open the microscopy image you want to annotate in Fiji.
-2. **Select the Image**: In the SAMJ Annotator plugin, ensure your image is selected in the dropdown bar.
-3. **Start Annotation**: Click on `Go!` to begin the annotation process. This button will encode your image so you can start annotating. It can take a while.
-4. **Choose Annotation Method**: Use one of the following tools to annotate your image:
-   - `Rectangle (Rect)`: Draw rectangular Regions Of Interest (ROIs).
-   - `Points`: Click to mark points on the image. Hold `Ctrl` to select multiple points for a single object.
-   - `Brush`: Paint freeform ROIs.
+There are two different ways to annotate your images: using manual prompts (*Manual*) or with prompts that are already given by a previous routine (*Preset prompts*), for example, in Fiji.
 
-   Optionally, untick the `Add to ROI Manager` checkbox if you don't want your annotations to be added to the Fiji ROI Manager automatically.
-   *Note: the first annotation can take several seconds.*
-5. **Annotate**: Annotate as many objects as needed. With each ROI drawn using one of the three tools, the installed SAM version will run, and the object will be annotated.
-6. **Manage Annotations**: All annotations will be sent to the ROI Manager (if the checkbox is ticked), where you can perform various operations as allowed by Fiji's ROI Manager functionality.
+### Manual Prompts
+Once the image is encoded, to annotate, choose either rectangles or points to draw ROIs or mark points on the image. The annotations will be sent to the ROI Manager, where you can manage them. 
+When you are done annotating, you can export the resulting mask. 
+
+Check this video to see how to annotate with manual prompts.
+![Annotating images with Manual Prompts](./images/manual-prompts-samj.gif)
+
+
+
+### Preset Prompts
+Again, after your image is encoded, you will be able to use preset prompts for previous routines or workflows. SAMJ only needs points in the image or ROIs in the ROI Manager to annotate the image. These ROIs or points can be created by any other plugin or routine in Fiji.
+
+As an example, in this video you can see some points created through "Find Maxima" in Fiji and then used to annotate the image with SAMJ.
+![Annotating images with Preset Prompts](./images/preset-prompts-samj.gif)
 
 ## Saving Annotations
 
-### All ROIs or the largest one
-To save your annotations, you can opt for either exporting every ROI using the "Return all ROIs" feature or selecting "Only return the largest ROI" to export solely the largest one. In the context of annotating heterogeneous images with various ROIs, as displayed below, you have the choice to either preserve the entirety of the ROIs, which would include every annotated object, such as the nuclei and the entire embryo or to conserve exclusively the predominant ROI, which, in this example, would be the complete embryo.
+### Return all ROIs vs. Only return largest ROI
+When doing your annotations, depending on the nature of your images and the final goal of your annotations, you can choose to return all ROIs of the image or only the largest ROI. This can be done by checking or unchecking the `Only return largest ROI` checkbox in the ROI Manager.
 
-![Embryo Annotation](./images/allROI-largestROI.png)
+In this table you can see the difference between these two options over the same image.
+
+Only return largest ROI activated         |  Only return largest ROI NOT activated
+:-------------------------:|:-------------------------:
+![](./images/only-return-largest-roi.png)  |  ![](./images/NOT-only-return-largest-roi.png)
 
 ### Export to Labelling
+This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look-Up Table (LUT) in Fiji when necessary(Image > Lookup Tables > Glasbey or choose another option).
 
-This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look-Up Table (LUT) in Fiji (Image > Lookup Tables > Glasbey or choose another option).
-
-
-<p float="center">
-  <img src="/images/embryo.png" width="25%" />
-  <img src="/images/embryo-nuclei-labeling.png" width="25%" /> 
-</p>
-
-
-## Usage Example
-
-Below is an illustration of object annotation using the SAMJ-IJ plugin. Each object is delineated and labelled to showcase the plugin's straightforward and efficient capabilities in image analysis.
-
-![Usage Example](/images/usage-example.png)
-
-Follow this comprehensive workflow to annotate your image with SAMJ-IJ:
-
-1. **Model Installation**: Choose and install your preferred model for image annotation. Refer to [Model Installation](#model-installation) for detailed information on each model.
-2. **Open Image in Fiji**: Navigate to `File > Open` in Fiji or drag and drop your image directly into the interface.
-3. **Encode Image**: With the model installed and the image open, select your image from the dropdown menu and click `Go!` to encode it. This may take some time depending on your system's capabilities.
-4. **Annotation**: Annotate your image freely. All annotations will appear in the ROI manager. For clarity, when dealing with numerous closely spaced ROIs, uncheck the `Labels` option in the ROI manager. See [Annotating Images](#annotating-images) for more details.
-5. **Export Annotations**: Once finished with the annotations, click `Export to Labelling...` to save your semantic annotations.
-6. **Enhance Visualization**: Improve the visibility of your mask by altering the LUT. For example, you can apply the Glasbey LUT via `Image > Lookup Tables > Glasbey`.
-
-![Complete workflow](/images/complete-workflow-gif.gif)
 
 ## Use Cases
 This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases. 
