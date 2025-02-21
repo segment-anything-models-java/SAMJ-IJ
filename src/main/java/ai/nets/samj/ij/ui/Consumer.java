@@ -634,6 +634,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 * 	String giving information about which prompt was used to generate the ROI
 	 */
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
+		if (this.roiManager.getCount() == 0 && undoStack.size() != 0)
+			annotatedMask.clear();
+			
 		this.redoStack.clear();
 		this.redoAnnotatedMask.clear();
 		promptsCreatedCnt++;
