@@ -86,32 +86,4 @@ jobs:
       - name: Set up engine using Jython script and Fiji headless
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console scripts/download_engines.py -engines_path fiji/Fiji.app/engines
-
-      - name: Check files in the engines
-        shell: bash
-        run: |
-          DIR_OF_INTEREST="fiji/Fiji.app/engines"
-          for dir in "$DIR_OF_INTEREST"/*/; do
-            echo "Directory: $dir"
-            find "$dir" -type f -exec echo "  File: {}" \;
-          done
-
-      - name: Set up the wanted models to test and create macro
-        shell: bash
-        run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/create_macro.py \
-            -model_nicknames "${{ env.MODELS }}" \
-            -models_dir fiji/Fiji.app/models \
-            -macro_path ${{ env.MACRO_FPATH }} \
-            -json_fpath ${{ env.JSON_FPATH }}
-
-      - name: Run macros
-        shell: bash
-        run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console -macro ${{ env.MACRO_FPATH }}
-
-      - name: Check that the expected result has been produced
-        shell: bash
-        run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/check_outputs.py -json_fpath ${{ env.JSON_FPATH }}
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py 
