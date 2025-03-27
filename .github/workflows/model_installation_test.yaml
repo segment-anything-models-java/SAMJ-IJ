@@ -83,7 +83,7 @@ jobs:
         shell: bash
         run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji.app/plugins/
 
-      - name: Set up engine using Jython script and Fiji headless
+      - name: Install SAM model
         shell: bash
         run: |
           fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py 
