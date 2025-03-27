@@ -1,0 +1,117 @@
+name: Model installation test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu
+            os: ubuntu-latest
+            url_file_name: fiji-linux64.zip
+            fiji_executable: ImageJ-linux64
+          - name: windows
+            os: windows-latest
+            url_file_name: fiji-win64.zip
+            fiji_executable: ImageJ-win64.exe
+          - name: macos-arm64
+            os: macos-14
+            url_file_name: fiji-macosx.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-x86_64
+            os: macos-13
+            url_file_name: fiji-macosx.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'zulu'
+
+      - name: Set up Fiji
+        shell: bash
+        run: |
+          mkdir -p fiji
+          curl -L -o fiji.zip https://downloads.imagej.net/fiji/latest/${{ matrix.url_file_name }}
+          unzip fiji.zip -d fiji
+
+      - name: Install SAMJ
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update update
+
+      - name: rm SAMJ-IJ file
+        shell: bash
+        run: |
+          rm -f /fiji/Fiji.app/plugins/SAMJ-IJ-*.jar
+
+      - name: Build Plugin
+        shell: bash
+        run: mvn clean package
+
+      - name: Get plugin name and version
+        shell: bash
+        run: |
+          MVN_VERSION=$(mvn -q \
+            -Dexec.executable=echo \
+            -Dexec.args='${project.version}' \
+            --non-recursive \
+            exec:exec)
+          MVN_NAME=$(mvn -q \
+            -Dexec.executable=echo \
+            -Dexec.args='${project.artifactId}' \
+            --non-recursive \
+            exec:exec)
+          echo "version=${MVN_VERSION}" >> $GITHUB_OUTPUT
+          echo "name=${MVN_NAME}" >> $GITHUB_OUTPUT
+        id: mvn_info
+
+      - name: Copy Plugin to Fiji
+        shell: bash
+        run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji.app/plugins/
+
+      - name: Set up engine using Jython script and Fiji headless
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console scripts/download_engines.py -engines_path fiji/Fiji.app/engines
+
+      - name: Check files in the engines
+        shell: bash
+        run: |
+          DIR_OF_INTEREST="fiji/Fiji.app/engines"
+          for dir in "$DIR_OF_INTEREST"/*/; do
+            echo "Directory: $dir"
+            find "$dir" -type f -exec echo "  File: {}" \;
+          done
+
+      - name: Set up the wanted models to test and create macro
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/create_macro.py \
+            -model_nicknames "${{ env.MODELS }}" \
+            -models_dir fiji/Fiji.app/models \
+            -macro_path ${{ env.MACRO_FPATH }} \
+            -json_fpath ${{ env.JSON_FPATH }}
+
+      - name: Run macros
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console -macro ${{ env.MACRO_FPATH }}
+
+      - name: Check that the expected result has been produced
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/check_outputs.py -json_fpath ${{ env.JSON_FPATH }}
