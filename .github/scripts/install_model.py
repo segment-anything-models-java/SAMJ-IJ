@@ -10,4 +10,4 @@ model = SAM2Tiny()
 model.getInstallationManger().setConsumer(PrintConsumer());
 model.getInstallationManger().installEverything();
 
-assert not model.isInstalled(), "Model not installed correctly"
+assert model.isInstalled(), "Model not installed correctly"
