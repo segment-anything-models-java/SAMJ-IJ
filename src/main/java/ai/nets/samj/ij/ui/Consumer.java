@@ -662,6 +662,14 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.callback.validPromptChosen(isvalid);
 	}
 	
+	@Override
+	public void notifyBatchSamize() {
+		// macro: run("SAMJ BatchSAMize")
+		// macro: run("SAMJ BatchSAMize", "image_name=null")
+		// macro: run("SAMJ BatchSAMize", "image_path=null")
+		// macro: run("SAMJ BatchSAMize", "image_name=null prompt_name=")
+	}
+	
 	// ===== unused events =====
 	@Override
 	public void mouseEntered(MouseEvent e) {}
