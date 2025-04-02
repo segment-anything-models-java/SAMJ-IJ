@@ -36,6 +36,7 @@ import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.plugin.CompositeConverter;
 import ij.plugin.OverlayLabels;
+import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.FinalInterval;
@@ -234,6 +235,11 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public Object getFocusedImage() {
 		return IJ.getImage();
+	}
+
+	@Override
+	public String getFocusedImageName() {
+		return IJ.getImage().getTitle();
 	}
 
 	@Override
@@ -663,11 +669,20 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	}
 	
 	@Override
-	public void notifyBatchSamize() {
-		// macro: run("SAMJ BatchSAMize")
-		// macro: run("SAMJ BatchSAMize", "image_name=null")
-		// macro: run("SAMJ BatchSAMize", "image_path=null")
-		// macro: run("SAMJ BatchSAMize", "image_name=null prompt_name=")
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * For more info about how the macros work, please go to 
+	 * https://github.com/segment-anything-models-java/SAMJ-IJ/blob/main/README.md#macros
+	 */
+	public void notifyBatchSamize(String modelName, String maskPrompt) {
+		if (!Recorder.record)
+			return;
+		
+		String formatedMacro = "run(\"SAMJ Annotator\", \"model=[%s]%s\");" + System.lineSeparator();
+		String formatedMaskPrompt = " mask_prompt=[%s]";
+		String promptArg = maskPrompt == null ? "" : String.format(formatedMaskPrompt, maskPrompt);
+		Recorder.recordString(String.format(formatedMacro, modelName, promptArg));
 	}
 	
 	// ===== unused events =====

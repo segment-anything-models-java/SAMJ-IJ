@@ -28,6 +28,7 @@ import ai.nets.samj.ui.SAMJLogger;
 import ij.ImageJ;
 import ij.gui.GUI;
 import ij.plugin.PlugIn;
+import ij.plugin.frame.Recorder;
 import ai.nets.samj.ij.ui.Consumer;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
@@ -41,6 +42,15 @@ import ai.nets.samj.ij.ui.Consumer;
  */
 public class SAMJ_Annotator implements PlugIn {
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
+	
+	final static String MACRO_RECORD_COMMENT = ""
+	        + System.lineSeparator()
+	        + "// Note: SAMJ macros are supported only in BatchSAMize mode with preset prompts." + System.lineSeparator()
+	        + "// The macro recording feature will capture the command 'run(\"SAMJ Annotator\");', but executing it will have no effect." + System.lineSeparator()
+	        + "// To record something, please click the 'SAMJ BatchSAMize' button." + System.lineSeparator()
+	        + "// For more information, visit:" + System.lineSeparator()
+	        + "// https://github.com/segment-anything-models-java/SAMJ-IJ/blob/main/README.md#macros" + System.lineSeparator()
+	        + System.lineSeparator();
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
@@ -51,6 +61,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * @throws IOException if there is any file error
 	 */
 	public void run() throws IOException, InterruptedException {
+		if (Recorder.record)
+			Recorder.recordString(MACRO_RECORD_COMMENT);
 
 		// TODO I (Carlos) don't know how to develop in IJ2 final Logger log = logService.subLogger("SAMJ");
 		try {
