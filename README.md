@@ -91,6 +91,9 @@ Only return largest ROI activated         |  Only return largest ROI NOT activat
 This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look-Up Table (LUT) in Fiji when necessary(Image > Lookup Tables > Glasbey or choose another option).
 
 
+## Macros
+
+
 ## Use Cases
 This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases. 
 
