@@ -167,6 +167,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void exportImageLabeling() {
+		if (Recorder.record)
+			Recorder.recordString("run(\"SAMJ Annotator\", \"export=true\");" + System.lineSeparator());
 		int width = activeImage.getWidth();
 		int height = activeImage.getHeight();
 		List<Mask> masks = new ArrayList<Mask>();
@@ -609,7 +611,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		roiManager.setVisible(true);
 		roiManager.setTitle("SAM Roi Manager");
 		Prefs.useNamesAsLabels = true;
+		Roi imRoi = activeImage.getRoi();
 		roiManager.setEditMode(activeImage, true);
+		activeImage.setRoi(imRoi);
 		return roiManager;
 	}
 	
@@ -660,7 +664,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	
 	@Override
 	public void eventOccurred(int eventID) {
-		if (eventID != IJEventListener.TOOL_CHANGED)
+		if (eventID != IJEventListener.TOOL_CHANGED || callback == null)
 			return;
 		boolean isvalid = IJ.getToolName().equals("rectangle") 
 				|| IJ.getToolName().equals("point") 
@@ -679,7 +683,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		if (!Recorder.record)
 			return;
 		
-		String formatedMacro = "run(\"SAMJ Annotator\", \"model=[%s]%s\");" + System.lineSeparator();
+		String formatedMacro = "run(\"SAMJ Annotator\", \"model=[%s]%s export=false\");" + System.lineSeparator();
 		String formatedMaskPrompt = " maskPrompt=[%s]";
 		String promptArg = maskPrompt == null ? "" : String.format(formatedMaskPrompt, maskPrompt);
 		Recorder.recordString(String.format(formatedMacro, modelName, promptArg));

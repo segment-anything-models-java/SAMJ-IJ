@@ -39,7 +39,6 @@ import ij.plugin.frame.Recorder;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Cast;
 import ai.nets.samj.ij.ui.Consumer;
 import ai.nets.samj.models.AbstractSamJ.BatchCallback;
 
@@ -54,9 +53,11 @@ import ai.nets.samj.models.AbstractSamJ.BatchCallback;
  */
 public class SAMJ_Annotator implements PlugIn {
 	
-	private String macroModelName;
+	private String macroModel;
 	
 	private String macroMaskPrompt;
+	
+	private String macroExport;
 	
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
 	
@@ -70,15 +71,10 @@ public class SAMJ_Annotator implements PlugIn {
 	        + "// For more information, visit:" + System.lineSeparator()
 	        + "// " + MACRO_INFO + System.lineSeparator()
 	        + System.lineSeparator();
-	
 	/**
-	 * Keys required to run deepImageJ with a macro
+	 * Optional keys to run SAMJ run with a macro or in headless mode
 	 */
-	private final static String[] macroKeys = new String[] {"model="};
-	/**
-	 * Optional keys to run deepImageJ with a macro or in headless mode
-	 */
-	private final static String[] macroOptionalKeys = new String[] {"maskPrompt="};
+	private final static String[] macroOptionalKeys = new String[] {"model=", "maskPrompt=", "export="};
 	
 	private static Consumer MACRO_CONSUMER;
 	
@@ -182,16 +178,34 @@ public class SAMJ_Annotator implements PlugIn {
 		}
 	}
 	
-	private < T extends RealType< T > & NativeType< T > > 
-	void runMacro() throws IOException, RuntimeException, InterruptedException {
-		parseCommand();
-		if (macroModelName == null)
+	private void runMacro() throws IOException, RuntimeException, InterruptedException {
+		if (Macro.getOptions() == null)
 			return;
+		parseCommand();
 		
+		if (macroModel == null && macroExport.equals("true")) {
+			macroExport();
+		} else if (macroModel != null && macroExport.equals("true")) {
+			macroRunSAMJ();
+			macroExport();
+		} else if (macroModel != null ) {
+			macroRunSAMJ();
+		}
+	}
+	
+	private void macroExport() {
+		if (MACRO_CONSUMER == null)
+			throw new IllegalArgumentException("In order to be able to export annotations to mask, "
+					+ "some annotations with the SAMJ Macro should have been done first.");
+		MACRO_CONSUMER.exportImageLabeling();
+	}
+
+	private < T extends RealType< T > & NativeType< T > > 
+	void macroRunSAMJ() throws IOException, RuntimeException, InterruptedException {
 		MACRO_CONSUMER = new Consumer();
 		MACRO_CONSUMER.setFocusedImage(MACRO_CONSUMER.getFocusedImage());
 		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
-				.filter(mm -> mm.getName().equals(macroModelName)).findFirst().orElse(null);
+				.filter(mm -> mm.getName().equals(macroModel)).findFirst().orElse(null);
 		if (selected == null)
 			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
 					+ MACRO_INFO);
@@ -202,16 +216,29 @@ public class SAMJ_Annotator implements PlugIn {
     	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
     	
 		selected.processBatchOfPrompts(pointPrompts, rectPrompts, rai, MACRO_CALLBACK);
+    	pointPrompts.stream().forEach(pp -> MACRO_CONSUMER.deletePointRoi(pp));
+    	rectPrompts.stream().forEach(pp -> MACRO_CONSUMER.deleteRectRoi(pp));
+		
+		selected.closeProcess();
 	}
-
 	
 	private void parseCommand() {
 		String macroArg = Macro.getOptions();
-		if (macroArg == null)
-			return;
 
-		macroModelName = parseArg(macroArg, macroKeys[0], true);
-		macroMaskPrompt = parseArg(macroArg, macroOptionalKeys[0], false);
+		macroModel = parseArg(macroArg, macroOptionalKeys[0], false);
+		macroMaskPrompt = parseArg(macroArg, macroOptionalKeys[1], false);
+		macroExport = parseArg(macroArg, macroOptionalKeys[2], false);
+		if (macroModel == null && macroExport == null)
+			throw new IllegalArgumentException("SAMJ macro requires the parameter 'model' to be"
+					+ " specified to make annotations or the parameter 'export' if the "
+					+ "user wants to export already annotated masks. More info at: " + MACRO_INFO);
+		if (macroExport == null)
+			macroExport = "false";
+		macroExport = macroExport.toLowerCase().equals("false") ? "false" : macroExport;
+		macroExport = macroExport.toLowerCase().equals("true") ? "true" : macroExport;
+		if (!macroExport.equals("false") && !macroExport.equals("true"))
+			throw new IllegalArgumentException("The SAMJ macro argument 'export' can only be true or false."
+					+ " For more info: " + MACRO_INFO);
 	}
 	
 	private static String parseArg(String macroArg, String arg, boolean required) {
