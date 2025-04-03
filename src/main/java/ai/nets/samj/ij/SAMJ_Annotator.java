@@ -19,17 +19,29 @@
  */
 package ai.nets.samj.ij;
 
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import ai.nets.samj.annotation.Mask;
+import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.gui.MainGUI;
 import ai.nets.samj.ui.SAMJLogger;
+import ij.IJ;
 import ij.ImageJ;
+import ij.Macro;
 import ij.gui.GUI;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Cast;
 import ai.nets.samj.ij.ui.Consumer;
+import ai.nets.samj.models.AbstractSamJ.BatchCallback;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
 //TODO I (Carlos) don't know how to develop in IJ2 public class Plugin_SamJAnnotator implements Command {
@@ -41,7 +53,14 @@ import ai.nets.samj.ij.ui.Consumer;
  * @author Vladimir Ulman
  */
 public class SAMJ_Annotator implements PlugIn {
+	
+	private String macroModelName;
+	
+	private String macroMaskPrompt;
+	
 	final static long MAX_IMAGE_SIZE_IN_BYTES = ((long)4)<<30; //4 GB
+	
+	private final static String MACRO_INFO = "https://github.com/segment-anything-models-java/SAMJ-IJ/blob/main/README.md#macros";
 	
 	final static String MACRO_RECORD_COMMENT = ""
 	        + System.lineSeparator()
@@ -49,8 +68,45 @@ public class SAMJ_Annotator implements PlugIn {
 	        + "// The macro recording feature will capture the command 'run(\"SAMJ Annotator\");', but executing it will have no effect." + System.lineSeparator()
 	        + "// To record something, please click the 'SAMJ BatchSAMize' button." + System.lineSeparator()
 	        + "// For more information, visit:" + System.lineSeparator()
-	        + "// https://github.com/segment-anything-models-java/SAMJ-IJ/blob/main/README.md#macros" + System.lineSeparator()
+	        + "// " + MACRO_INFO + System.lineSeparator()
 	        + System.lineSeparator();
+	
+	/**
+	 * Keys required to run deepImageJ with a macro
+	 */
+	private final static String[] macroKeys = new String[] {"modelName="};
+	/**
+	 * Optional keys to run deepImageJ with a macro or in headless mode
+	 */
+	private final static String[] macroOptionalKeys = new String[] {"maskPrompt="};
+	
+	private static Consumer MACRO_CONSUMER;
+	
+	private final static BatchCallback MACRO_CALLBACK = new BatchCallback() {
+		@Override
+		public void setTotalNumberOfRois(int nRois) {}
+		@Override
+		public void updateProgress(int n) {}
+
+		@Override
+		public void drawRoi(List<Mask> masks) {
+			SwingUtilities.invokeLater(() -> MACRO_CONSUMER.addPolygonsFromGUI(masks));
+			
+		}
+
+		@Override
+		public void deletePointPrompt(List<int[]> promptList) {
+			SwingUtilities.invokeLater(() -> promptList.forEach(proi -> MACRO_CONSUMER.deletePointRoi(proi)));
+		}
+
+		@Override
+		public void deleteRectPrompt(List<int[]> promptList) {
+			SwingUtilities.invokeLater(() -> promptList.stream()
+					.map(rect -> new Rectangle(rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]))
+					.forEach(roi -> MACRO_CONSUMER.deleteRectRoi(roi)));
+		}
+    	
+    };
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
@@ -112,11 +168,68 @@ public class SAMJ_Annotator implements PlugIn {
 
 	@Override
 	public void run(String arg) {
+		boolean isMacro = IJ.isMacro();
+		boolean isHeadless = GraphicsEnvironment.isHeadless();
 		try {
-			run();
+			if (isMacro) {
+				runMacro();
+			} else if (isHeadless) {
+			} else {
+				run();
+			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private < T extends RealType< T > & NativeType< T > > 
+	void runMacro() throws IOException, RuntimeException, InterruptedException {
+		parseCommand();
+		if (macroModelName == null)
+			return;
 		
+		MACRO_CONSUMER = new Consumer();
+		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
+				.filter(mm -> mm.getName().equals(macroModelName)).findFirst().orElse(null);
+		if (selected == null)
+			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
+					+ MACRO_INFO);
+		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
+		selected.setImage(rai, null);
+    	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
+    	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
+    	
+		selected.processBatchOfPrompts(pointPrompts, rectPrompts, rai, MACRO_CALLBACK);
+	}
+
+	
+	private void parseCommand() {
+		String macroArg = Macro.getOptions();
+		if (macroArg == null)
+			return;
+
+		macroModelName = parseArg(macroArg, macroKeys[0], true);
+		macroMaskPrompt = parseArg(macroArg, macroOptionalKeys[0], false);
+	}
+	
+	private static String parseArg(String macroArg, String arg, boolean required) {
+		int modelFolderInd = macroArg.indexOf(arg);
+		if (modelFolderInd == -1 && required)
+			throw new IllegalArgumentException("SAMJ macro requires to the variable '" + arg + "'. "
+					+ "For more info, please visit: " + MACRO_INFO);
+		else if (modelFolderInd == -1)
+			return null;
+		int modelFolderInd2 = macroArg.indexOf(arg + "[");
+		int endInd = macroArg.indexOf(" ", modelFolderInd);
+		String value;
+		if (modelFolderInd2 != -1) {
+			endInd = macroArg.indexOf("] ", modelFolderInd2);
+			value = macroArg.substring(modelFolderInd2 + arg.length() + 1, endInd);
+		} else {
+			value = macroArg.substring(modelFolderInd + arg.length(), endInd);
+		}
+		if (value.equals("null") || value.equals(""))
+			value = null;
+		return value;
 	}
 }

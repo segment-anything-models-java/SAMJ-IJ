@@ -680,7 +680,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			return;
 		
 		String formatedMacro = "run(\"SAMJ Annotator\", \"model=[%s]%s\");" + System.lineSeparator();
-		String formatedMaskPrompt = " mask_prompt=[%s]";
+		String formatedMaskPrompt = " maskPrompt=[%s]";
 		String promptArg = maskPrompt == null ? "" : String.format(formatedMaskPrompt, maskPrompt);
 		Recorder.recordString(String.format(formatedMacro, modelName, promptArg));
 	}
