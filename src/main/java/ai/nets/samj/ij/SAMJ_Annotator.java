@@ -74,7 +74,7 @@ public class SAMJ_Annotator implements PlugIn {
 	/**
 	 * Keys required to run deepImageJ with a macro
 	 */
-	private final static String[] macroKeys = new String[] {"modelName="};
+	private final static String[] macroKeys = new String[] {"model="};
 	/**
 	 * Optional keys to run deepImageJ with a macro or in headless mode
 	 */
@@ -189,11 +189,13 @@ public class SAMJ_Annotator implements PlugIn {
 			return;
 		
 		MACRO_CONSUMER = new Consumer();
+		MACRO_CONSUMER.setFocusedImage(MACRO_CONSUMER.getFocusedImage());
 		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
 				.filter(mm -> mm.getName().equals(macroModelName)).findFirst().orElse(null);
 		if (selected == null)
 			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
 					+ MACRO_INFO);
+		MACRO_CONSUMER.setModel(selected);
 		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
 		selected.setImage(rai, null);
     	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
