@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
@@ -612,9 +613,42 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		roiManager.setTitle("SAM Roi Manager");
 		Prefs.useNamesAsLabels = true;
 		Roi imRoi = activeImage.getRoi();
+		deleteOtherImageRois();
 		roiManager.setEditMode(activeImage, true);
 		activeImage.setRoi(imRoi);
 		return roiManager;
+	}
+	
+	private void deleteOtherImageRois() {
+    	try {
+        	int n = RoiManager.getInstance().getCount() - 1;
+        	int originalSize = undoStack.size();
+    		for (int i = 0; i < originalSize; i ++) {
+	        	List<Mask> maskList = annotatedMask.peek();
+	        	for (int j = maskList.size() - 1; j > -1; j --) {
+	        		Polygon pol = maskList.get(j).getContour();
+	        		for (int k = n; k > -1; k --) {
+	    	        	Roi roi = this.roiManager.getRoi(k);
+	    	        	Polygon roiPol = roi.getPolygon();
+	    	        	if (pol.npoints != roiPol.npoints) continue;
+	    	            boolean equal = IntStream.range(0, pol.npoints)
+	    	                            .allMatch(ii -> pol.xpoints[ii] == roiPol.xpoints[ii] &&
+	    	                            		pol.ypoints[ii] == roiPol.ypoints[ii]);
+	    	        	if (equal) {
+	    	        		RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, k);
+	    	        		n --;
+	    	        		break;
+	    	        	}
+	        			
+	        		}
+	        	}
+        		undoStack.pop();
+	        	annotatedMask.pop();
+    		}
+        	this.redoAnnotatedMask.clear();
+        	this.redoStack.clear();
+    	} catch (Exception ex) {
+    	}
 	}
 	
 	private void addTemporalRois() {
