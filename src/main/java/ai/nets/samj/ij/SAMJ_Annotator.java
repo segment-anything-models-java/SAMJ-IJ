@@ -202,7 +202,8 @@ public class SAMJ_Annotator implements PlugIn {
 
 	private < T extends RealType< T > & NativeType< T > > 
 	void macroRunSAMJ() throws IOException, RuntimeException, InterruptedException {
-		MACRO_CONSUMER = new Consumer();
+		if (MACRO_CONSUMER == null)
+			MACRO_CONSUMER = new Consumer();
 		MACRO_CONSUMER.setFocusedImage(MACRO_CONSUMER.getFocusedImage());
 		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
 				.filter(mm -> mm.getName().equals(macroModel)).findFirst().orElse(null);

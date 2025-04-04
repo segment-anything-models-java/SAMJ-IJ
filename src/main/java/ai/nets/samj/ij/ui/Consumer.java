@@ -18,6 +18,8 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.security.auth.callback.Callback;
+
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
@@ -25,6 +27,7 @@ import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
 import ij.IJ;
 import ij.IJEventListener;
+import ij.ImageListener;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;
@@ -136,6 +139,24 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
     
     public Consumer() {
     	IJ.addEventListener(this);
+    	ImagePlus.addImageListener(new ImageListener() {
+
+			@Override
+			public void imageOpened(ImagePlus imp) {}
+			@Override
+			public void imageUpdated(ImagePlus imp) {}
+
+			@Override
+			public void imageClosed(ImagePlus imp) {
+				if (guiCallback == null)
+					return;
+				if (imp != Consumer.this.activeImage)
+					return;
+				Consumer.this.deactivateListeners();
+				Consumer.this.guiCallback.run();
+			}
+    		
+    	});
     }
 
 	@Override
