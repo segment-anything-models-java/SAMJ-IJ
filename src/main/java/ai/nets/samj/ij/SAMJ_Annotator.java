@@ -213,10 +213,13 @@ public class SAMJ_Annotator implements PlugIn {
 		MACRO_CONSUMER.setModel(selected);
 		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
 		selected.setImage(rai, null);
+		selected.setReturnOnlyBiggest(true);
     	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
     	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
-    	
-		selected.processBatchOfPrompts(pointPrompts, rectPrompts, rai, MACRO_CALLBACK);
+    	RandomAccessibleInterval<T> maskRai = null;
+    	if (macroMaskPrompt != null)
+    		maskRai = null;
+		selected.processBatchOfPrompts(pointPrompts, rectPrompts, maskRai, MACRO_CALLBACK);
     	pointPrompts.stream().forEach(pp -> MACRO_CONSUMER.deletePointRoi(pp));
     	rectPrompts.stream().forEach(pp -> MACRO_CONSUMER.deleteRectRoi(pp));
 		
