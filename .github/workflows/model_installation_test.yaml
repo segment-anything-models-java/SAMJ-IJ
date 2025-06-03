@@ -19,7 +19,7 @@ jobs:
           - name: windows
             os: windows-latest
             url_file_name: fiji-stable-win64-jdk.zip
-            fiji_executable: ImageJ-win64.exe
+            fiji_executable: Im ageJ-win64.exe
           - name: macos-arm64
             os: macos-14
             url_file_name: fiji-stable-macosx-jdk.zip
@@ -91,6 +91,11 @@ jobs:
         shell: bash
         run: |
           fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_os_specs.py 
+
+      - name: Print Fiji folder
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/help_script.py 
 
       - name: Install SAM model
         shell: bash
