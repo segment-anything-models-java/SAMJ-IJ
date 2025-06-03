@@ -24,6 +24,10 @@ jobs:
             os: macos-14
             url_file_name: fiji-stable-macosx-jdk.zip
             fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-latest
+            os: macos-latest
+            url_file_name: fiji-stable-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
           - name: macos-x86_64
             os: macos-13
             url_file_name: fiji-stable-macosx-jdk.zip
