@@ -19,7 +19,7 @@ jobs:
           - name: windows
             os: windows-latest
             url_file_name: fiji-stable-win64-jdk.zip
-            fiji_executable: Im ageJ-win64.exe
+            fiji_executable: ImageJ-win64.exe
           - name: macos-arm64
             os: macos-14
             url_file_name: fiji-stable-macosx-jdk.zip
