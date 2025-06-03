@@ -90,14 +90,14 @@ jobs:
       - name: Print information about the OS
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_os_specs.py 
-
-      - name: Print Fiji folder
-        shell: bash
-        run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/help_script.py 
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_os_specs.py
 
       - name: Install SAM model
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py 
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
+
+      - name: Run Macro for annotation
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/run_model.py
