@@ -22,6 +22,7 @@ package ai.nets.samj.ij;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -330,13 +331,16 @@ public class SAMJ_Annotator implements PlugIn {
 		selected.setImage(rai, null);
 		selected.setReturnOnlyBiggest(true);
     	RandomAccessibleInterval<T> maskRai = null;
+    	List<Mask> callbackedContours = new ArrayList<Mask>();
     	BatchCallback callback = new BatchCallback() {
     		@Override
     		public void setTotalNumberOfRois(int nRois) {}
     		@Override
     		public void updateProgress(int n) {}
     		@Override
-    		public void drawRoi(List<Mask> masks) {}
+    		public void drawRoi(List<Mask> masks) {
+    			callbackedContours.addAll(masks);
+    		}
     		@Override
     		public void deletePointPrompt(List<int[]> promptList) {}
     		@Override
@@ -344,9 +348,11 @@ public class SAMJ_Annotator implements PlugIn {
         	
         };
 		List<Mask> contours = selected.processBatchOfPrompts(pointPrompts, rectPrompts, maskRai, callback);
+		callbackedContours.addAll(contours);
+		
 		
 		selected.closeProcess();
-		return contours;
+		return callbackedContours;
 	}
 	
 	private void runMacro() throws IOException, RuntimeException, InterruptedException {
