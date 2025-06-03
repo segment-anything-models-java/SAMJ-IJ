@@ -10,7 +10,7 @@ from net.imglib2.img.display.imagej import ImageJFunctions
 
 
 blobs = IJ.openImage("https://imagej.net/images/blobs.gif")
-wrapImg = ImageJFunctions.convertFloat(imp)
+wrapImg = ImageJFunctions.convertFloat(blobs)
 
 model = SAM2Tiny()
 
