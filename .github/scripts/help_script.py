@@ -1,6 +1,7 @@
 from java.io import File
 
 
+created = File("models").mkdir()
 
-
-print("Fiji's dir: " + File(".").getAbsolutePath())
+print("created " + created)
+print("exists: " + File("models").exists())
