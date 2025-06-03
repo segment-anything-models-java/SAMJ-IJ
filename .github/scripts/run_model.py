@@ -18,7 +18,7 @@ model = SAM2Tiny()
 point_prompt = ArrayList()
 
 
-my_seq = (100, 100)
+my_seq = (104, 113)
 
 arr1 = array(my_seq,'i')
 
