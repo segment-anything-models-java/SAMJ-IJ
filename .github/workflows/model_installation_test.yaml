@@ -83,6 +83,11 @@ jobs:
         shell: bash
         run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji.app/plugins/
 
+      - name: Print information about the OS
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_os_specs.py 
+
       - name: Install SAM model
         shell: bash
         run: |
