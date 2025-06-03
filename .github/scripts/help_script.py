@@ -3,5 +3,5 @@ from java.io import File
 
 created = File("models").mkdir()
 
-print("created " + created)
-print("exists: " + File("models").exists())
+print("created " + str(created))
+print("exists: " + str(File("models").exists()))
