@@ -8,11 +8,16 @@ filename = "micromamba-" + str(UUID.randomUUID()) + ".tar.bz2"
 
 home = java.lang.System.getProperty("user.home")
 
-folder_path = os.path.join(home, ".local", "share", "appose", "micromamba2", filename)
+folder_path = os.path.join(home, ".local", "share", "appose", "micromamba3", filename)
 
-File(folder_path).createNewFile()
+ff = File(folder_path)
+
+if not ff.getParentFile().exists():
+	ff.getParentFile().mkdirs()
+
+ff.createNewFile()
 
 #created = File(folder_path).mkdir()
-print(folder_path)
+
 #print("created " + str(created))
 print("exists: " + str(File(folder_path).isFile()))
