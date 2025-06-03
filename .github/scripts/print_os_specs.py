@@ -1,9 +1,13 @@
 import java.lang
+from java.io import File
+import os
 
 
-os_name = java.lang.System.getProperty("os.name")
-os_version = java.lang.System.getProperty("os.version")
+home = java.lang.System.getProperty("user.home")
 
+folder_path = os.path.join(home, ".local", "share", "appose", "micromamba")
 
-print("Operating System: " + os_name)
-print("OS Version:       " + os_version)
+created = File(folder_path).mkdir()
+
+print("created " + str(created))
+print("exists: " + str(File("models").exists()))
