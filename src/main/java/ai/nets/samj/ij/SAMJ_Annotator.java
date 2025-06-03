@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import ai.nets.samj.annotation.Mask;
+import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.communication.model.SAMModel;
 import ai.nets.samj.gui.MainGUI;
 import ai.nets.samj.ui.SAMJLogger;
@@ -39,6 +40,7 @@ import ij.plugin.frame.Recorder;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import ai.nets.samj.ij.ui.Consumer;
 import ai.nets.samj.models.AbstractSamJ.BatchCallback;
 
@@ -176,6 +178,175 @@ public class SAMJ_Annotator implements PlugIn {
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Processes an image using SAM2 Tiny to generate segmentation masks based on provided prompts.
+	 * This method is suitable for scripting within ImageJ/Fiji environments.
+	 * If you want to use another SAM variant use {@link #samJReturnContours(SAMModel, RandomAccessibleInterval, List, List)}
+	 * 
+	 * <p>The user must specify a SAM model variant, supply an input image as a {@link RandomAccessibleInterval}
+	 * with dimensions structured as (X, Y, C), and provide point and/or rectangular prompts indicating
+	 * regions or points of interest.
+	 * 
+	 * @param <T>
+	 * 	 the ImgLib2 data type of the input image
+	 * @param rai
+	 * 	 the input image as a {@link RandomAccessibleInterval} with dimensions ordered as (X, Y, C)
+	 * @param pointPrompts
+	 * 	 a list of point-based prompts, where each prompt is defined by an integer array {x_pos, y_pos}
+	 * @param rectPrompts
+	 * 	 a list of rectangular prompts, where each rectangle is defined by an integer array {x_pos, y_pos, width, height}
+	 * @return
+	 * 	 a {@link RandomAccessibleInterval} of type {@link UnsignedShortType} containing segmentation masks corresponding to each provided prompt
+	 * @throws IOException
+	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
+	 * @throws RuntimeException
+	 * 	 if an error occurs during the segmentation process
+	 * @throws InterruptedException
+	 * 	 if the segmentation process is unexpectedly interrupted
+	 */
+	public static < T extends RealType< T > & NativeType< T > > 
+	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(RandomAccessibleInterval<T> rai,
+																List<int[]> pointPrompts,
+																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
+		return samJReturnMask(new SAM2Tiny(), rai, pointPrompts, rectPrompts);
+	}
+
+	/**
+	 * Processes an image using a Segment Anything Model (SAM) variant to generate segmentation masks based on provided prompts.
+	 * This method is suitable for scripting within ImageJ/Fiji environments.
+	 * 
+	 * <p>The user must specify a SAM model variant, supply an input image as a {@link RandomAccessibleInterval}
+	 * with dimensions structured as (X, Y, C), and provide point and/or rectangular prompts indicating
+	 * regions or points of interest.
+	 * 
+	 * @param <T>
+	 * 	 the ImgLib2 data type of the input image
+	 * @param model
+	 * 	 the SAM model instance used for segmentation (e.g., SAM2Tiny, SAM2Small, SAM2Large, EfficientSAM). 
+	 *   Example instantiation:
+	 *   <pre>{@code
+	 *   import ai.nets.samj.communication.model.SAM2Tiny;
+	 *   SAMModel model = new SAM2Tiny();
+	 *   }</pre>
+	 * @param rai
+	 * 	 the input image as a {@link RandomAccessibleInterval} with dimensions ordered as (X, Y, C)
+	 * @param pointPrompts
+	 * 	 a list of point-based prompts, where each prompt is defined by an integer array {x_pos, y_pos}
+	 * @param rectPrompts
+	 * 	 a list of rectangular prompts, where each rectangle is defined by an integer array {x_pos, y_pos, width, height}
+	 * @return
+	 * 	 a {@link RandomAccessibleInterval} of type {@link UnsignedShortType} containing segmentation masks corresponding to each provided prompt
+	 * @throws IOException
+	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
+	 * @throws RuntimeException
+	 * 	 if an error occurs during the segmentation process
+	 * @throws InterruptedException
+	 * 	 if the segmentation process is unexpectedly interrupted
+	 */
+	public static < T extends RealType< T > & NativeType< T > > 
+	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(SAMModel model, RandomAccessibleInterval<T> rai,
+																List<int[]> pointPrompts,
+																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
+		List<Mask> masks = samJReturnContours(model, rai, pointPrompts, rectPrompts);
+		return Mask.getMask(rai.dimensionsAsLongArray()[0], rai.dimensionsAsLongArray()[1], masks);
+	}
+
+	/**
+	 * Processes an image using a SAM2 Tiny to generate segmentation contours based on provided prompts.
+	 * This method is suitable for scripting within ImageJ/Fiji environments.
+	 * If you want to use another SAM variant use {@link #samJReturnContours(SAMModel, RandomAccessibleInterval, List, List)}
+	 * 
+	 * <p>The user must specify a SAM model variant, supply an input image as a {@link RandomAccessibleInterval}
+	 * with dimensions structured as (X, Y, C), and provide point and/or rectangular prompts indicating
+	 * regions or points of interest.
+	 * 
+	 * @param <T>
+	 * 	 the ImgLib2 data type of the input image
+	 * @param rai
+	 * 	 the input image as a {@link RandomAccessibleInterval} with dimensions ordered as (X, Y, C)
+	 * @param pointPrompts
+	 * 	 a list of point-based prompts, where each prompt is defined by an integer array {x_pos, y_pos}
+	 * @param rectPrompts
+	 * 	 a list of rectangular prompts, where each rectangle is defined by an integer array {x_pos, y_pos, width, height}
+	 * @return
+	 * 	 a List of {@link Mask} that contain the polygons that define the contour of each of the segmented objects.
+	 * @throws IOException
+	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
+	 * @throws RuntimeException
+	 * 	 if an error occurs during the segmentation process
+	 * @throws InterruptedException
+	 * 	 if the segmentation process is unexpectedly interrupted
+	 */
+	public static < T extends RealType< T > & NativeType< T > > 
+	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
+		return samJReturnContours(new SAM2Tiny(), rai, pointPrompts, rectPrompts);
+	}
+
+	/**
+	 * Processes an image using a Segment Anything Model (SAM) variant to generate segmentation contours based on provided prompts.
+	 * This method is suitable for scripting within ImageJ/Fiji environments.
+	 * 
+	 * <p>The user must specify a SAM model variant, supply an input image as a {@link RandomAccessibleInterval}
+	 * with dimensions structured as (X, Y, C), and provide point and/or rectangular prompts indicating
+	 * regions or points of interest.
+	 * 
+	 * @param <T>
+	 * 	 the ImgLib2 data type of the input image
+	 * @param model
+	 * 	 the SAM model instance used for segmentation (e.g., SAM2Tiny, SAM2Small, SAM2Large, EfficientSAM). 
+	 *   Example instantiation:
+	 *   <pre>{@code
+	 *   import ai.nets.samj.communication.model.SAM2Tiny;
+	 *   SAMModel model = new SAM2Tiny();
+	 *   }</pre>
+	 * @param rai
+	 * 	 the input image as a {@link RandomAccessibleInterval} with dimensions ordered as (X, Y, C)
+	 * @param pointPrompts
+	 * 	 a list of point-based prompts, where each prompt is defined by an integer array {x_pos, y_pos}
+	 * @param rectPrompts
+	 * 	 a list of rectangular prompts, where each rectangle is defined by an integer array {x_pos, y_pos, width, height}
+	 * @return
+	 * 	 a List of {@link Mask} that contain the polygons that define the contour of each of the segmented objects.
+	 * @throws IOException
+	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
+	 * @throws RuntimeException
+	 * 	 if an error occurs during the segmentation process
+	 * @throws InterruptedException
+	 * 	 if the segmentation process is unexpectedly interrupted
+	 */
+	public static < T extends RealType< T > & NativeType< T > > 
+	List<Mask> samJReturnContours(SAMModel model, RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
+		if ((pointPrompts == null || pointPrompts.size() == 0) && (rectPrompts == null || rectPrompts.size() == 0))
+			throw new IllegalArgumentException("Please provide at least one point prompt or rectangular prompt.");
+		if (MACRO_CONSUMER == null)
+			MACRO_CONSUMER = new Consumer();
+		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
+				.filter(mm -> mm.getName().equals(model.getName())).findFirst().orElse(null);
+		if (selected == null)
+			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
+					+ MACRO_INFO);
+		selected.setImage(rai, null);
+		selected.setReturnOnlyBiggest(true);
+    	RandomAccessibleInterval<T> maskRai = null;
+    	BatchCallback callback = new BatchCallback() {
+    		@Override
+    		public void setTotalNumberOfRois(int nRois) {}
+    		@Override
+    		public void updateProgress(int n) {}
+    		@Override
+    		public void drawRoi(List<Mask> masks) {}
+    		@Override
+    		public void deletePointPrompt(List<int[]> promptList) {}
+    		@Override
+    		public void deleteRectPrompt(List<int[]> promptList) {}
+        	
+        };
+		List<Mask> contours = selected.processBatchOfPrompts(pointPrompts, rectPrompts, maskRai, callback);
+		
+		selected.closeProcess();
+		return contours;
 	}
 	
 	private void runMacro() throws IOException, RuntimeException, InterruptedException {
