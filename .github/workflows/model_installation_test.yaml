@@ -14,19 +14,19 @@ jobs:
         include:
           - name: ubuntu
             os: ubuntu-latest
-            url_file_name: fiji-linux64.zip
+            url_file_name: fiji-stable-linux64-jdk.zip
             fiji_executable: ImageJ-linux64
           - name: windows
             os: windows-latest
-            url_file_name: fiji-win64.zip
+            url_file_name: fiji-stable-win64-jdk.zip
             fiji_executable: ImageJ-win64.exe
           - name: macos-arm64
             os: macos-14
-            url_file_name: fiji-macosx.zip
+            url_file_name: fiji-stable-macosx-jdk.zip
             fiji_executable: Contents/MacOS/ImageJ-macosx
           - name: macos-x86_64
             os: macos-13
-            url_file_name: fiji-macosx.zip
+            url_file_name: fiji-stable-macosx-jdk.zip
             fiji_executable: Contents/MacOS/ImageJ-macosx
     runs-on: ${{ matrix.os }}
 
@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p fiji
-          curl -L -o fiji.zip https://downloads.imagej.net/fiji/latest/${{ matrix.url_file_name }}
+          curl -L -o fiji.zip https://downloads.imagej.net/fiji/stable/${{ matrix.url_file_name }}
           unzip fiji.zip -d fiji
 
       - name: Install SAMJ
