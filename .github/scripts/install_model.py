@@ -19,7 +19,7 @@ if PlatformDetection.isUsingRosseta() or PlatformDetection.getArch() == Platform
 else:
         relative_mamba = "appose_" + PlatformDetection.getArch()
 
-manager = Sam2EnvManager(os.path.join(Constants.FIJI_FOLDER, relative_mamba), "tiny")
+manager = Sam2EnvManager.create(os.path.join(Constants.FIJI_FOLDER, relative_mamba), "tiny")
 model = SAM2Tiny(manager)
 model.getInstallationManger().setConsumer(PrintConsumer());
 model.getInstallationManger().installEverything();
