@@ -1,12 +1,12 @@
 name: Model inference test Fiji latest
 
 on:
-#  push:
-#    branches: [ main ]
-#    paths-ignore:
-#      - .github/workflows/model_inference_test_fiji_stable.yaml
-#  pull_request:
-#    branches: [ main ]
+  workflow_dispatch:
+    inputs: 
+      run_tests:
+        description: "Trigger the model‐inference‐test workflow by hand"
+        required: false
+        default: "true"
 
 jobs:
   integration-tests:
