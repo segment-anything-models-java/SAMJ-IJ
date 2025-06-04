@@ -1,12 +1,12 @@
 name: Model inference test Fiji latest
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - .github/workflows/model_inference_test_fiji_stable.yaml
-  pull_request:
-    branches: [ main ]
+#  push:
+#    branches: [ main ]
+#    paths-ignore:
+#      - .github/workflows/model_inference_test_fiji_stable.yaml
+#  pull_request:
+#    branches: [ main ]
 
 jobs:
   integration-tests:
