@@ -95,7 +95,7 @@ jobs:
       - name: Install SAM model
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
 
       - name: Check if mps is available (only macos)
         if: runner.os == 'macOS'
