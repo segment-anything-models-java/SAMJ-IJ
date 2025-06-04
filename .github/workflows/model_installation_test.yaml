@@ -90,7 +90,7 @@ jobs:
       - name: Print information about the OS
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_os_specs.py
+          python -c "import platform; print(platform.platform())"
 
       - name: Install SAM model
         shell: bash
