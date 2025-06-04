@@ -1,7 +1,7 @@
 from ai.nets.samj.communication.model import SAM2Tiny
 from java.lang import System
 from java.util.function import Consumer
-from deepimagej import Constants
+from ai.nets.samj.ij.utils import Constants
 
 from io.bioimage.modelrunner.system import PlatformDetection
 
