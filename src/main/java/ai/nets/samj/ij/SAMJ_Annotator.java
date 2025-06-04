@@ -21,6 +21,7 @@ package ai.nets.samj.ij;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +39,14 @@ import ij.Macro;
 import ij.gui.GUI;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
+import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import ai.nets.samj.ij.ui.Consumer;
+import ai.nets.samj.ij.utils.Constants;
+import ai.nets.samj.install.SamEnvManagerAbstract;
 import ai.nets.samj.models.AbstractSamJ.BatchCallback;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
@@ -106,6 +110,15 @@ public class SAMJ_Annotator implements PlugIn {
 		}
     	
     };
+    
+    static
+    {
+    	// IMPORTANT: Set the DEFAULT DIR WHERE MODELS ARE DOWNLOADED TO THE WANTED DIR.
+		// IF NOT IN MACS IT WILL DEFAULT TO "/" AND RAISE AN ERROR
+		SamEnvManagerAbstract.DEFAULT_DIR = Constants.FIJI_FOLDER + File.separator + "appose_"
+				+ ((!PlatformDetection.isMacOS() || !PlatformDetection.isUsingRosseta()) ? PlatformDetection.getArch()
+						: PlatformDetection.ARCH_ARM64 );
+    }
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
@@ -141,7 +154,6 @@ public class SAMJ_Annotator implements PlugIn {
 				@Override
 				public void error(String text) {System.out.println("network -- " + text);}
 			};
-
 
 			SwingUtilities.invokeLater(() -> {
 				MainGUI samjDialog = new MainGUI(new Consumer());
