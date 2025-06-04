@@ -2,6 +2,7 @@ from ai.nets.samj.communication.model import SAM2Tiny
 from java.lang import System
 from java.util.function import Consumer
 from ai.nets.samj.ij.utils import Constants
+from ai.nets.samj.install import Sam2EnvManager
 
 from io.bioimage.modelrunner.system import PlatformDetection
 
@@ -18,8 +19,8 @@ if PlatformDetection.isUsingRosseta() or PlatformDetection.getArch() == Platform
 else:
         relative_mamba = "appose_" + PlatformDetection.getArch()
 
-
-model = SAM2Tiny(os.path.join(Constants.FIJI_FOLDER, relative_mamba))
+manager = Sam2EnvManager(os.path.join(Constants.FIJI_FOLDER, relative_mamba), "tiny")
+model = SAM2Tiny(manager)
 model.getInstallationManger().setConsumer(PrintConsumer());
 model.getInstallationManger().installEverything();
 
