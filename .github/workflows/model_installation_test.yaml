@@ -95,7 +95,13 @@ jobs:
       - name: Install SAM model
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.
+
+      - name: Check if mps is available (only macos)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          fiji/Fiji.app/appose_*/envs/sam2/bin/python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available());"
 
       - name: Run Macro for annotation
         shell: bash
