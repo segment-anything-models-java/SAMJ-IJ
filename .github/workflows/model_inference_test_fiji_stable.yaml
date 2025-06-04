@@ -1,4 +1,4 @@
-name: Model installation test
+name: Model inference test Fiji stable
 
 on:
   push:

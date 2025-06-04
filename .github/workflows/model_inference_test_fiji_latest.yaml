@@ -1,0 +1,115 @@
+name: Model inference test Fiji latest
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu
+            os: ubuntu-latest
+            url_file_name: fiji-latest-linux64-jdk.zip
+            fiji_executable: ImageJ-linux64
+          - name: windows
+            os: windows-latest
+            url_file_name: fiji-latest-win64-jdk.zip
+            fiji_executable: ImageJ-win64.exe
+          - name: macos-arm64
+            os: macos-14
+            url_file_name: fiji-latest-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-arm64-15
+            os: macos-15
+            url_file_name: fiji-latest-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-x86_64
+            os: macos-13
+            url_file_name: fiji-latest-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+
+      - name: Set up Fiji
+        shell: bash
+        run: |
+          mkdir -p fiji
+          curl -L -o fiji.zip https://downloads.imagej.net/fiji/stable/${{ matrix.url_file_name }}
+          unzip fiji.zip -d fiji
+
+      - name: Install SAMJ
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update update
+
+      - name: rm SAMJ-IJ file
+        shell: bash
+        run: |
+          rm -f /fiji/Fiji.app/plugins/SAMJ-IJ-*.jar
+
+      - name: Build Plugin
+        shell: bash
+        run: mvn clean package
+
+      - name: Get plugin name and version
+        shell: bash
+        run: |
+          MVN_VERSION=$(mvn -q \
+            -Dexec.executable=echo \
+            -Dexec.args='${project.version}' \
+            --non-recursive \
+            exec:exec)
+          MVN_NAME=$(mvn -q \
+            -Dexec.executable=echo \
+            -Dexec.args='${project.artifactId}' \
+            --non-recursive \
+            exec:exec)
+          echo "version=${MVN_VERSION}" >> $GITHUB_OUTPUT
+          echo "name=${MVN_NAME}" >> $GITHUB_OUTPUT
+        id: mvn_info
+
+      - name: Copy Plugin to Fiji
+        shell: bash
+        run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji.app/plugins/
+
+      - name: Print information about the OS
+        shell: bash
+        run: |
+          python -c "import platform; print(platform.platform())"
+
+      - name: Install SAM model
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
+
+      - name: Get chip
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/get_chip.py
+
+      - name: Check if mps is available (only macos)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          python -c "import os; print(os.listdir());"
+          appose_*/envs/sam2/bin/python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available());"
+
+      - name: Run Macro for annotation
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/run_model.py
