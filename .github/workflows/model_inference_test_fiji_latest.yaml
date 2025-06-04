@@ -56,13 +56,13 @@ jobs:
       - name: Install SAMJ
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update update
+          fiji/Fiji/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
+          fiji/Fiji/${{ matrix.fiji_executable }} --headless --update update
 
       - name: rm SAMJ-IJ file
         shell: bash
         run: |
-          rm -f /fiji/Fiji.app/plugins/SAMJ-IJ-*.jar
+          rm -f /fiji/Fiji/plugins/SAMJ-IJ-*.jar
 
       - name: Build Plugin
         shell: bash
@@ -87,7 +87,7 @@ jobs:
 
       - name: Copy Plugin to Fiji
         shell: bash
-        run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji.app/plugins/
+        run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji/plugins/
 
       - name: Print information about the OS
         shell: bash
@@ -97,12 +97,12 @@ jobs:
       - name: Install SAM model
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
+          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
 
       - name: Get chip
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/get_chip.py
+          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/get_chip.py
 
       - name: Check if mps is available (only macos)
         if: runner.os == 'macOS'
@@ -114,4 +114,4 @@ jobs:
       - name: Run Macro for annotation
         shell: bash
         run: |
-          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/run_model.py
+          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/run_model.py
