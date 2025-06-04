@@ -3,6 +3,8 @@ name: Model inference test Fiji stable
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - .github/workflows/model_inference_test_fiji_latest.yaml
   pull_request:
     branches: [ main ]
 

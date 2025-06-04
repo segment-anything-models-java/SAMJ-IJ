@@ -3,6 +3,8 @@ name: Model inference test Fiji latest
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - .github/workflows/model_inference_test_fiji_stable.yaml
   pull_request:
     branches: [ main ]
 
@@ -48,7 +50,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p fiji
-          curl -L -o fiji.zip https://downloads.imagej.net/fiji/stable/${{ matrix.url_file_name }}
+          curl -L -o fiji.zip https://downloads.imagej.net/fiji/latest/${{ matrix.url_file_name }}
           unzip fiji.zip -d fiji
 
       - name: Install SAMJ
