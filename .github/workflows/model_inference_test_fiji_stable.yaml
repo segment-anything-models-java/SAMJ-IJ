@@ -109,7 +109,7 @@ jobs:
         shell: bash
         run: |
           python -c "import os; print(os.listdir());"
-          appose_*/envs/sam2/bin/python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available());"
+          fiji/Fiji.app/appose_*/envs/sam2/bin/python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available());"
 
       - name: Run Macro for annotation
         shell: bash
