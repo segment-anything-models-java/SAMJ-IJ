@@ -29,3 +29,5 @@ setting.xml
 
 # VIM editor
 *.sw*
+
+prep.sh
