@@ -441,7 +441,7 @@ public class SAMJ_Annotator implements PlugIn {
 					+ "For more info, please visit: " + MACRO_INFO);
 		else if (modelFolderInd == -1)
 			return null;
-		int modelFolderInd2 = macroArg.indexOf(arg + "[");
+		int modelFolderInd2 = macroArg.indexOf(arg + "=[");
 		int endInd = macroArg.indexOf(" ", modelFolderInd);
 		String value;
 		if (modelFolderInd2 != -1) {
