@@ -18,8 +18,6 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.security.auth.callback.Callback;
-
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
@@ -258,17 +256,17 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public Object getFocusedImage() {
-		return IJ.getImage();
+		return WindowManager.getCurrentImage();
 	}
 
 	@Override
 	public String getFocusedImageName() {
-		return IJ.getImage().getTitle();
+		return WindowManager.getCurrentImage().getTitle();
 	}
 
 	@Override
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getFocusedImageAsRai() {
-		ImagePlus imp = IJ.getImage();
+		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
 		Img<T> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
 		return image;
@@ -276,7 +274,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public List<Rectangle> getRectRoisOnFocusImage() {
-		Roi roi = IJ.getImage().getRoi();
+		Roi roi = WindowManager.getCurrentImage().getRoi();
 		List<Rectangle> list = getRectRoisFromRoiManager();
 		if (roi == null)
 			return list;
@@ -290,7 +288,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public List<int[]> getPointRoisOnFocusImage() {
-		Roi roi = IJ.getImage().getRoi();
+		Roi roi = WindowManager.getCurrentImage().getRoi();
 		List<int[]> list = getPointRoisFromRoiManager();
 		if (roi == null)
 			return list;
@@ -335,7 +333,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				}
 			}
 		}
-		Roi roi = IJ.getImage().getRoi();
+		Roi roi = WindowManager.getCurrentImage().getRoi();
 		if (roi != null && roi.getType() == Roi.POINT) {
 			PointRoi pRoi = (PointRoi) roi;
 			Iterator<java.awt.Point> iter = roi.iterator();
@@ -368,7 +366,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				}
 			}
 		}
-		Roi roi = IJ.getImage().getRoi();
+		Roi roi = WindowManager.getCurrentImage().getRoi();
 		if (roi != null && roi.getType() == Roi.RECTANGLE) {
 			if (roi.getBounds().equals(rect)) {
 				activeImage.deleteRoi();
