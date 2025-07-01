@@ -802,6 +802,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public void intervalRemoved(ListDataEvent e) {
 		List<String> roiManagerNames = new ArrayList<String>();
+		List<PolygonRoi> redoListRoi = new ArrayList<PolygonRoi>();
+		List<Mask> redoListMask = new ArrayList<Mask>();
 		Enumeration<String> elems = listModel.elements();
 		while (elems.hasMoreElements())
 			roiManagerNames.add(elems.nextElement());
@@ -809,11 +811,18 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			for (int j = annotatedMask.get(i).size() - 1; j >= 0; j --) {
 				if (roiManagerNames.contains(annotatedMask.get(i).get(j).getName()))
 					continue;
+				redoListMask.add(annotatedMask.get(i).get(j));
+				redoListRoi.add(undoStack.get(i).get(j));
 				annotatedMask.get(i).remove(j);
+				undoStack.get(i).remove(j);
 			}
 			if (annotatedMask.get(i).size() == 0)
 				annotatedMask.remove(i);
+			if (undoStack.get(i).size() == 0)
+				undoStack.remove(i);
 		}
+		this.redoStack.push(redoListRoi);
+		this.redoAnnotatedMask.push(redoListMask);
 	}
 
 
