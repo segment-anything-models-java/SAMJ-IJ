@@ -1,6 +1,7 @@
 package ai.nets.samj.ij.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -12,11 +13,19 @@ import java.awt.event.WindowListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
@@ -56,7 +65,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
  * 
  * @author Carlos Garcia Lopez de Haro
  */
-public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener, IJEventListener {
+public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener, IJEventListener, ListDataListener {
 	/**
 	 * The image being processed
 	 */
@@ -73,6 +82,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 * Instance of the ROI manager to save the ROIs created
 	 */
 	private RoiManager roiManager;
+	/**
+	 * Instance of the list displayed in the ROI manager
+	 */
+	private DefaultListModel<String> listModel;
 	/**
 	 * Whether to add the ROIs created to the ROI manager or not
 	 */
@@ -626,6 +639,21 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		RoiManager roiManager = RoiManager.getInstance();
 		if (roiManager == null) {
 			roiManager = new RoiManager();
+			for (Component comp :roiManager.getComponents()) {
+				if (comp instanceof JScrollPane) {
+					for (Component comp2 : ((JScrollPane) comp).getComponents()) {
+						if (comp2 instanceof JViewport) {
+							for (Component comp3 : ((JViewport) comp2).getComponents()) {
+								if (comp3 instanceof JList) {
+									listModel = (DefaultListModel<String>) ((JList) comp3).getModel();
+									listModel.addListDataListener(this);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 		// TODO what to do? roiManager.reset();
 		roiManager.setVisible(true);
@@ -707,7 +735,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		List<PolygonRoi> undoRois = new ArrayList<PolygonRoi>();
 		for (Mask m : polys) {
 			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
-			pRoi.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.selectedModel.getName());
+			pRoi.setName(promptsCreatedCnt + "." + (resNo) + "_"+promptShape + "_" + this.selectedModel.getName());
+			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.selectedModel.getName());
 			this.addToRoiManager(pRoi);
 			undoRois.add(pRoi);
 		}
@@ -765,5 +794,27 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public void windowDeactivated(WindowEvent e) {}
 	@Override
 	public void keyTyped(KeyEvent e) {}
+	@Override
+	public void contentsChanged(ListDataEvent e) {}
+	@Override
+	public void intervalAdded(ListDataEvent e) {}
+
+	@Override
+	public void intervalRemoved(ListDataEvent e) {
+		List<String> roiManagerNames = new ArrayList<String>();
+		Enumeration<String> elems = listModel.elements();
+		while (elems.hasMoreElements())
+			roiManagerNames.add(elems.nextElement());
+		for (int i = annotatedMask.size() - 1; i >= 0; i --) {
+			for (int j = annotatedMask.get(i).size() - 1; j >= 0; j --) {
+				if (roiManagerNames.contains(annotatedMask.get(i).get(j).getName()))
+					continue;
+				annotatedMask.get(i).remove(j);
+			}
+			if (annotatedMask.get(i).size() == 0)
+				annotatedMask.remove(i);
+		}
+	}
+
 
 }
