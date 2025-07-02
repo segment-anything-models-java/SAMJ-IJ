@@ -1,18 +1,19 @@
 package ai.nets.samj.ij.ui.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ij.gui.PolygonRoi;
-import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 
 public class AddRoiCommand implements Command {
 	private RoiManager roiManager;
 	private final List<Mask> polys;
-	private List<Roi> rois;
+	private List<PolygonRoi> rois;
 	private boolean isAddingToRoiManager = true;
 	private String shape = "";
 	private int promptCount = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
@@ -39,7 +40,7 @@ public class AddRoiCommand implements Command {
 		this.isAddingToRoiManager = addToRoiManager;
 	}
 	
-	public List<Roi> getImageJRois(){
+	public List<PolygonRoi> getImageJRois(){
 		return rois;
 	}
 	
@@ -49,6 +50,7 @@ public class AddRoiCommand implements Command {
   
 	@Override
 	public void execute() {
+		rois = new ArrayList<PolygonRoi>();
 		int resNo = 1;
 		for (Mask m : polys) {
 			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
@@ -70,8 +72,18 @@ public class AddRoiCommand implements Command {
 	@Override
 	public void undo() {
 		try {
-	    	for (int n = this.roiManager.getCount() - 1; n >= 0; n --) 
-	    		RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n);
+			for (PolygonRoi rr2 : rois) {
+		    	for (int n = this.roiManager.getCount() - 1; n >= 0; n --) {
+		    		PolygonRoi rr = (PolygonRoi) roiManager.getRoi(n);
+	    			if (!Arrays.equals(rr.getXCoordinates(), rr2.getXCoordinates()))
+	    				continue;
+	    			if (!Arrays.equals(rr.getYCoordinates(), rr2.getYCoordinates()))
+	    				continue;
+		    		RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n);
+		    		break;		    		
+		    	}
+				
+			}
 		} catch (Exception ex) {
     		ex.printStackTrace();
     	}

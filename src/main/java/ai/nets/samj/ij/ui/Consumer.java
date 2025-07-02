@@ -142,6 +142,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
      * Whether the SAMJ specific listeners are registered or not.
      */
     private boolean registered = false;
+    /**
+     * Whether the delete operation comes from ctrl+Z or ctrl+Y or from the roi manager
+     */
+    private boolean isCommand = false;
     
     public Consumer() {
     	IJ.addEventListener(this);
@@ -223,7 +227,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public void deactivateListeners() {
 		if (!registered) return;
-		System.out.println(activeCanvas == null);
 		activeCanvas.removeMouseListener(this);
 		activeCanvas.removeKeyListener(this);
 		activeWindow.removeWindowListener(this);
@@ -432,16 +435,16 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public void keyPressed(KeyEvent e) {
         if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.annotatedMask.size() != 0 && !redoPressed) {
         	redoPressed = true;
-        	Command command = annotatedMask.peek();
+        	isCommand = true;
+        	Command command = annotatedMask.pop();
         	command.undo();
         	this.redoAnnotatedMask.push(command);
-        	this.annotatedMask.pop();
         } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoAnnotatedMask.size() != 0 && !undoPressed) {
         	undoPressed = true;
-        	Command command = redoAnnotatedMask.peek();
-        	command.undo();
+        	isCommand = true;
+        	Command command = redoAnnotatedMask.pop();
+        	command.execute();
         	this.annotatedMask.push(command);
-        	this.redoAnnotatedMask.pop();
         }
         e.consume();
 	}
@@ -658,7 +661,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
         	int n = RoiManager.getInstance().getCount() - 1;
         	int originalSize = this.annotatedMask.size();
     		for (int i = 0; i < originalSize; i ++) {
-	        	List<Mask> maskList = annotatedMask.peek().getMasks();
+	        	List<Mask> maskList = annotatedMask.pop().getMasks();
 	        	for (int j = maskList.size() - 1; j > -1; j --) {
 	        		Polygon pol = maskList.get(j).getContour();
 	        		for (int k = n; k > -1; k --) {
@@ -676,7 +679,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	        			
 	        		}
 	        	}
-	        	annotatedMask.pop();
     		}
         	this.redoAnnotatedMask.clear();
     	} catch (Exception ex) {
@@ -712,7 +714,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
 		if (this.roiManager.getCount() == 0 && annotatedMask.size() != 0)
 			annotatedMask.clear();
-			
 		this.redoAnnotatedMask.clear();
 		AddRoiCommand command = new AddRoiCommand(this.roiManager, polys);
 		command.setModelName(this.selectedModel.getName());
@@ -780,9 +781,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void intervalRemoved(ListDataEvent e) {
+		if (isCommand) {
+			isCommand = false;
+			return;
+		}
 		List<String> roiManagerNames = new ArrayList<String>();
 		List<Mask> deleteList = new ArrayList<Mask>();
-		List<Roi> deleteListRoi = new ArrayList<Roi>();
 		Enumeration<String> elems = listModel.elements();
 		while (elems.hasMoreElements())
 			roiManagerNames.add(elems.nextElement());
