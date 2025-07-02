@@ -204,7 +204,20 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		int width = activeImage.getWidth();
 		int height = activeImage.getHeight();
 		List<Mask> masks = new ArrayList<Mask>();
-		this.annotatedMask.stream().filter(comm -> comm instanceof AddRoiCommand).forEach(comm -> masks.addAll( ((AddRoiCommand) comm).getMasks() ));
+		List<String> doNotInclude = new ArrayList<String>();
+		for (int i = this.annotatedMask.size() - 1; i >= 0; i --) {
+			Command maskList = annotatedMask.get(i);
+			if (maskList instanceof DeleteRoiCommand) {
+				for (Mask mm: maskList.getMasks())
+					doNotInclude.add(mm.getName());
+			} else if (maskList instanceof AddRoiCommand) {
+				for (Mask mm : maskList.getMasks()) {
+					if (doNotInclude.contains(mm.getName()))
+						continue;
+					masks.add(mm);
+				}
+			}
+		}
 		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, masks);
 		ImagePlus impMask = ImageJFunctions.show(raiMask);
 		impMask.setTitle(activeImage.getTitle() + "-labeling");
