@@ -29,6 +29,8 @@ import javax.swing.event.ListDataListener;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
+import ai.nets.samj.ij.ui.commands.AddRoiCommand;
+import ai.nets.samj.ij.ui.commands.Command;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
@@ -119,22 +121,14 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 * All the points being collected that reference the background (ctrl + alt)
 	 */
 	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
-	/**
-	 * Save lists of rois that have been added at the same time to delete them if necessary
-	 */
-    private Stack<List<PolygonRoi>> undoStack = new Stack<>();
-    /**
-     * Save lists of polygons deleted at the same time to undo their deleting
-     */
-    private Stack<List<PolygonRoi>> redoStack = new Stack<>();
     /**
      * List of the annotated masks on an image
      */
-    private Stack<List<Mask>> annotatedMask = new Stack<List<Mask>>();
+    private Stack<Command> annotatedMask = new Stack<Command>();
     /**
      * List that keeps track of the annotated masks
      */
-    private Stack<List<Mask>> redoAnnotatedMask = new Stack<List<Mask>>();
+    private Stack<Command> redoAnnotatedMask = new Stack<Command>();
     /**
      * Tracks if Ctrl+Z has already been handled
      */
@@ -205,7 +199,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		int width = activeImage.getWidth();
 		int height = activeImage.getHeight();
 		List<Mask> masks = new ArrayList<Mask>();
-		this.annotatedMask.stream().forEach(mm -> masks.addAll(mm));
+		this.annotatedMask.stream().filter(comm -> comm instanceof AddRoiCommand).forEach(comm -> masks.addAll( ((AddRoiCommand) comm).getMasks() ));
 		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, masks);
 		ImagePlus impMask = ImageJFunctions.show(raiMask);
 		impMask.setTitle(activeImage.getTitle() + "-labeling");
@@ -435,25 +429,17 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0 && !redoPressed) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.annotatedMask.size() != 0 && !redoPressed) {
         	redoPressed = true;
-        	try {
-	        	List<PolygonRoi> redoList = undoStack.peek();
-	        	int n = this.roiManager.getCount() - 1;
-	        	for (PolygonRoi pol : redoList) RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n --);
-	        	undoStack.pop();
-	        	redoStack.push(redoList);
-	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
-	        	this.annotatedMask.pop();
-        	} catch (Exception ex) {
-        	}
-        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
+        	Command command = annotatedMask.peek();
+        	command.undo();
+        	this.redoAnnotatedMask.push(command);
+        	this.annotatedMask.pop();
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoAnnotatedMask.size() != 0 && !undoPressed) {
         	undoPressed = true;
-        	List<PolygonRoi> redoList = redoStack.peek();
-        	for (PolygonRoi pol : redoList) this.addToRoiManager(pol);
-        	redoStack.pop();
-        	undoStack.push(redoList);
-        	this.annotatedMask.push(this.redoAnnotatedMask.peek());
+        	Command command = redoAnnotatedMask.peek();
+        	command.undo();
+        	this.annotatedMask.push(command);
         	this.redoAnnotatedMask.pop();
         }
         e.consume();
@@ -669,9 +655,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	private void deleteOtherImageRois() {
     	try {
         	int n = RoiManager.getInstance().getCount() - 1;
-        	int originalSize = undoStack.size();
+        	int originalSize = this.annotatedMask.size();
     		for (int i = 0; i < originalSize; i ++) {
-	        	List<Mask> maskList = annotatedMask.peek();
+	        	List<Mask> maskList = annotatedMask.peek().getMasks();
 	        	for (int j = maskList.size() - 1; j > -1; j --) {
 	        		Polygon pol = maskList.get(j).getContour();
 	        		for (int k = n; k > -1; k --) {
@@ -689,11 +675,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	        			
 	        		}
 	        	}
-        		undoStack.pop();
 	        	annotatedMask.pop();
     		}
         	this.redoAnnotatedMask.clear();
-        	this.redoStack.clear();
     	} catch (Exception ex) {
     	}
 	}
@@ -725,23 +709,17 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 * 	String giving information about which prompt was used to generate the ROI
 	 */
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
-		if (this.roiManager.getCount() == 0 && undoStack.size() != 0)
+		if (this.roiManager.getCount() == 0 && annotatedMask.size() != 0)
 			annotatedMask.clear();
 			
-		this.redoStack.clear();
 		this.redoAnnotatedMask.clear();
-		promptsCreatedCnt++;
-		int resNo = 1;
-		List<PolygonRoi> undoRois = new ArrayList<PolygonRoi>();
-		for (Mask m : polys) {
-			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
-			pRoi.setName(promptsCreatedCnt + "." + (resNo) + "_"+promptShape + "_" + this.selectedModel.getName());
-			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.selectedModel.getName());
-			this.addToRoiManager(pRoi);
-			undoRois.add(pRoi);
-		}
-		this.undoStack.push(undoRois);
-		this.annotatedMask.push(polys);
+		AddRoiCommand command = new AddRoiCommand(this.roiManager, polys);
+		command.setModelName(this.selectedModel.getName());
+		command.setPromptShape(promptShape);
+		command.setPromptCount(++ promptsCreatedCnt);
+		command.setAddingToRoiManager(this.isAddingToRoiManager);
+		command.execute();
+		this.annotatedMask.push(command);
 	}
 	
 	@Override
@@ -802,27 +780,22 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public void intervalRemoved(ListDataEvent e) {
 		List<String> roiManagerNames = new ArrayList<String>();
-		List<PolygonRoi> redoListRoi = new ArrayList<PolygonRoi>();
-		List<Mask> redoListMask = new ArrayList<Mask>();
+		List<Mask> deleteList = new ArrayList<Mask>();
 		Enumeration<String> elems = listModel.elements();
 		while (elems.hasMoreElements())
 			roiManagerNames.add(elems.nextElement());
 		for (int i = annotatedMask.size() - 1; i >= 0; i --) {
-			for (int j = annotatedMask.get(i).size() - 1; j >= 0; j --) {
-				if (roiManagerNames.contains(annotatedMask.get(i).get(j).getName()))
+			for (int j = annotatedMask.get(i).getMasks().size() - 1; j >= 0; j --) {
+				if (roiManagerNames.contains(annotatedMask.get(i).getMasks().get(j).getName()))
 					continue;
-				redoListMask.add(annotatedMask.get(i).get(j));
-				redoListRoi.add(undoStack.get(i).get(j));
-				annotatedMask.get(i).remove(j);
-				undoStack.get(i).remove(j);
+				deleteList.add(annotatedMask.get(i).getMasks().get(j));
 			}
-			if (annotatedMask.get(i).size() == 0)
-				annotatedMask.remove(i);
-			if (undoStack.get(i).size() == 0)
-				undoStack.remove(i);
 		}
-		this.redoStack.push(redoListRoi);
-		this.redoAnnotatedMask.push(redoListMask);
+		Command command = new DeleteRoiCommand(this.roiManager, deleteList);
+		command.setAddingToRoiManager(this.isAddingToRoiManager);
+		command.execute();
+		this.annotatedMask.push(command);
+		this.redoAnnotatedMask.clear();
 	}
 
 

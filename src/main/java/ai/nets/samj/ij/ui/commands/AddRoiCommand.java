@@ -7,11 +7,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ij.gui.PolygonRoi;
+import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 
 public class AddRoiCommand implements Command {
 	private RoiManager roiManager;
 	private final List<Mask> polys;
+	private List<Roi> rois;
 	private boolean isAddingToRoiManager = true;
 	private String shape = "";
 	private int promptCount = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
@@ -37,6 +39,14 @@ public class AddRoiCommand implements Command {
 	public void setAddingToRoiManager(boolean addToRoiManager) {
 		this.isAddingToRoiManager = addToRoiManager;
 	}
+	
+	public List<Roi> getImageJRois(){
+		return rois;
+	}
+	
+	public List<Mask> getMasks(){
+		return polys;
+	}
   
 	@Override
 	public void execute() {
@@ -54,6 +64,7 @@ public class AddRoiCommand implements Command {
 				
 			pRoi.setName(name);
 			m.setName(name);
+			rois.add(pRoi);
 			if (isAddingToRoiManager) roiManager.addRoi(pRoi);;
 			undoRois.add(pRoi);
 		}
