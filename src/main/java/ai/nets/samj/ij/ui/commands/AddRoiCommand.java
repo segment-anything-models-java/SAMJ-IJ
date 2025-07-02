@@ -1,6 +1,5 @@
 package ai.nets.samj.ij.ui.commands;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -51,7 +50,6 @@ public class AddRoiCommand implements Command {
 	@Override
 	public void execute() {
 		int resNo = 1;
-		List<PolygonRoi> undoRois = new ArrayList<PolygonRoi>();
 		for (Mask m : polys) {
 			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
 			String name = promptCount + "." + (resNo ++) + "_"+shape + "_" + modelName;
@@ -66,7 +64,6 @@ public class AddRoiCommand implements Command {
 			m.setName(name);
 			rois.add(pRoi);
 			if (isAddingToRoiManager) roiManager.addRoi(pRoi);;
-			undoRois.add(pRoi);
 		}
 	}
   

@@ -31,6 +31,7 @@ import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ai.nets.samj.ij.ui.commands.AddRoiCommand;
 import ai.nets.samj.ij.ui.commands.Command;
+import ai.nets.samj.ij.ui.commands.DeleteRoiCommand;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
@@ -781,6 +782,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	public void intervalRemoved(ListDataEvent e) {
 		List<String> roiManagerNames = new ArrayList<String>();
 		List<Mask> deleteList = new ArrayList<Mask>();
+		List<Roi> deleteListRoi = new ArrayList<Roi>();
 		Enumeration<String> elems = listModel.elements();
 		while (elems.hasMoreElements())
 			roiManagerNames.add(elems.nextElement());
@@ -789,6 +791,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				if (roiManagerNames.contains(annotatedMask.get(i).getMasks().get(j).getName()))
 					continue;
 				deleteList.add(annotatedMask.get(i).getMasks().get(j));
+				
 			}
 		}
 		Command command = new DeleteRoiCommand(this.roiManager, deleteList);
