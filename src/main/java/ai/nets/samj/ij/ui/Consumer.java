@@ -790,9 +790,18 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		Enumeration<String> elems = listModel.elements();
 		while (elems.hasMoreElements())
 			roiManagerNames.add(elems.nextElement());
+		List<String> deletedNames = new ArrayList<String>();
 		for (int i = annotatedMask.size() - 1; i >= 0; i --) {
+			if (annotatedMask.get(i) instanceof DeleteRoiCommand) {
+				deletedNames.addAll(
+						annotatedMask.get(i).getMasks().stream()
+						.map(mm -> mm.getName()).collect(Collectors.toList())
+						);
+				continue;
+			}
 			for (int j = annotatedMask.get(i).getMasks().size() - 1; j >= 0; j --) {
-				if (roiManagerNames.contains(annotatedMask.get(i).getMasks().get(j).getName()))
+				if (roiManagerNames.contains(annotatedMask.get(i).getMasks().get(j).getName())
+						|| deletedNames.contains(annotatedMask.get(i).getMasks().get(j).getName()))
 					continue;
 				deleteList.add(annotatedMask.get(i).getMasks().get(j));
 				
@@ -800,7 +809,7 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		}
 		Command command = new DeleteRoiCommand(this.roiManager, deleteList);
 		command.setAddingToRoiManager(this.isAddingToRoiManager);
-		command.execute();
+		//command.execute();
 		this.annotatedMask.push(command);
 		this.redoAnnotatedMask.clear();
 	}
