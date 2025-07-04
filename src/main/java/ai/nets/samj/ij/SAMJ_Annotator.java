@@ -81,7 +81,7 @@ public class SAMJ_Annotator implements PlugIn {
 	/**
 	 * Optional keys to run SAMJ run with a macro or in headless mode
 	 */
-	private final static String[] macroOptionalKeys = new String[] {"model=", "maskPrompt=", "export="};
+	private final static String[] macroOptionalKeys = new String[] {"model", "maskPrompt", "export"};
 	
 	private static Consumer MACRO_CONSUMER;
 	
@@ -435,23 +435,12 @@ public class SAMJ_Annotator implements PlugIn {
 	}
 	
 	private static String parseArg(String macroArg, String arg, boolean required) {
-		int modelFolderInd = macroArg.indexOf(arg);
-		if (modelFolderInd == -1 && required)
+		String value = Macro.getValue(macroArg, arg, null);
+		if (value != null && value.equals(""))
+			value = null;
+		if (value == null && required)
 			throw new IllegalArgumentException("SAMJ macro requires to the variable '" + arg + "'. "
 					+ "For more info, please visit: " + MACRO_INFO);
-		else if (modelFolderInd == -1)
-			return null;
-		int modelFolderInd2 = macroArg.indexOf(arg + "=[");
-		int endInd = macroArg.indexOf(" ", modelFolderInd);
-		String value;
-		if (modelFolderInd2 != -1) {
-			endInd = macroArg.indexOf("] ", modelFolderInd2);
-			value = macroArg.substring(modelFolderInd2 + arg.length() + 1, endInd);
-		} else {
-			value = macroArg.substring(modelFolderInd + arg.length(), endInd);
-		}
-		if (value.equals("null") || value.equals(""))
-			value = null;
 		return value;
 	}
 }
