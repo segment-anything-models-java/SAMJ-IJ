@@ -23,7 +23,6 @@ import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
 import ij.gui.PolygonRoi;
-import ij.gui.Roi;
 
 
 public interface Command {
