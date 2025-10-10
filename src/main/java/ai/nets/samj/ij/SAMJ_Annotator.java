@@ -340,7 +340,8 @@ public class SAMJ_Annotator implements PlugIn {
 		if (selected == null)
 			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
 					+ MACRO_INFO);
-		selected.setImage(rai, null);
+		selected.loadModel(null);
+		selected.setImage(rai);
 		selected.setReturnOnlyBiggest(true);
     	RandomAccessibleInterval<T> maskRai = null;
     	List<Mask> callbackedContours = new ArrayList<Mask>();
@@ -401,7 +402,8 @@ public class SAMJ_Annotator implements PlugIn {
 					+ MACRO_INFO);
 		MACRO_CONSUMER.setModel(selected);
 		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
-		selected.setImage(rai, null);
+		selected.loadModel(null);
+		selected.setImage(rai);
 		selected.setReturnOnlyBiggest(true);
     	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
     	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
