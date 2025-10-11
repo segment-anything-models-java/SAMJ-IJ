@@ -1,0 +1,61 @@
+name: Test mifobio
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - .github/workflows/model_inference_test_fiji_latest.yaml
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            url_file_name: fiji-stable-win64-jdk.zip
+            fiji_executable: ImageJ-win64.exe
+          - name: macos-arm64-14
+            os: macos-14
+            url_file_name: fiji-stable-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-arm64-15
+            os: macos-15
+            url_file_name: fiji-stable-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+          - name: macos-x86_64
+            os: macos-13
+            url_file_name: fiji-stable-macosx-jdk.zip
+            fiji_executable: Contents/MacOS/ImageJ-macosx
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'zulu'
+
+      - name: Set up Fiji
+        shell: bash
+        run: |
+          mkdir -p fiji
+          curl -L -o fiji.zip https://downloads.imagej.net/fiji/stable/${{ matrix.url_file_name }}
+          unzip fiji.zip -d fiji
+
+      - name: Install SAMJ
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --update update
+
+      - name: Install SAM model
+        shell: bash
+        run: |
+          fiji/Fiji.app/${{ matrix.fiji_executable }} --headless --console .github/scripts/print_dir.py
