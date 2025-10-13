@@ -223,7 +223,10 @@ public class SAMJ_Annotator implements PlugIn {
 	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(RandomAccessibleInterval<T> rai,
 																List<int[]> pointPrompts,
 																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
-		return samJReturnMask(new SAM2Tiny(), rai, pointPrompts, rectPrompts);
+		SAM2Tiny model = new SAM2Tiny();
+		RandomAccessibleInterval<UnsignedShortType> res = samJReturnMask(model, rai, pointPrompts, rectPrompts);
+		model.closeProcess();
+		return res;
 	}
 
 	/**
@@ -294,7 +297,10 @@ public class SAMJ_Annotator implements PlugIn {
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
 	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
-		return samJReturnContours(new SAM2Tiny(), rai, pointPrompts, rectPrompts);
+		SAM2Tiny model = new SAM2Tiny();
+		List<Mask> res = samJReturnContours(model, rai, pointPrompts, rectPrompts);
+		model.closeProcess();
+		return res;
 	}
 
 	/**
@@ -340,8 +346,7 @@ public class SAMJ_Annotator implements PlugIn {
 		if (selected == null)
 			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
 					+ MACRO_INFO);
-		selected.loadModel(null);
-		selected.setImage(rai);
+		selected.setImage(rai, null);
 		selected.setReturnOnlyBiggest(true);
     	RandomAccessibleInterval<T> maskRai = null;
     	List<Mask> callbackedContours = new ArrayList<Mask>();
@@ -364,7 +369,6 @@ public class SAMJ_Annotator implements PlugIn {
 		callbackedContours.addAll(contours);
 		
 		
-		selected.closeProcess();
 		return callbackedContours;
 	}
 	
@@ -402,8 +406,7 @@ public class SAMJ_Annotator implements PlugIn {
 					+ MACRO_INFO);
 		MACRO_CONSUMER.setModel(selected);
 		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
-		selected.loadModel(null);
-		selected.setImage(rai);
+		selected.setImage(rai, null);
 		selected.setReturnOnlyBiggest(true);
     	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
     	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
