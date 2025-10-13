@@ -341,13 +341,8 @@ public class SAMJ_Annotator implements PlugIn {
 			throw new IllegalArgumentException("Please provide at least one point prompt or rectangular prompt.");
 		if (MACRO_CONSUMER == null)
 			MACRO_CONSUMER = new Consumer();
-		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
-				.filter(mm -> mm.getName().equals(model.getName())).findFirst().orElse(null);
-		if (selected == null)
-			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
-					+ MACRO_INFO);
-		selected.setImage(rai, null);
-		selected.setReturnOnlyBiggest(true);
+		model.setImage(rai, null);
+		model.setReturnOnlyBiggest(true);
     	RandomAccessibleInterval<T> maskRai = null;
     	List<Mask> callbackedContours = new ArrayList<Mask>();
     	BatchCallback callback = new BatchCallback() {
@@ -365,7 +360,7 @@ public class SAMJ_Annotator implements PlugIn {
     		public void deleteRectPrompt(List<int[]> promptList) {}
         	
         };
-		List<Mask> contours = selected.processBatchOfPrompts(pointPrompts, rectPrompts, maskRai, callback);
+		List<Mask> contours = model.processBatchOfPrompts(pointPrompts, rectPrompts, maskRai, callback);
 		callbackedContours.addAll(contours);
 		
 		
