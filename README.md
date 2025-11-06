@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml/badge.svg)](https://github.com/segment-anything-models-java/SAMJ-IJ/actions/workflows/build.yml)
+[![arXiv](https://img.shields.io/badge/arXiv-2506.02783-b31b1b.svg)](https://arxiv.org/abs/2506.02783)
 
 # SAMJ-IJ
 
@@ -95,7 +96,9 @@ SAMJ supports macro usage via **BatchSAMize** with **preset prompts** (ROI Manag
 A full section is under development. In the meantime, you can check [this excellent Image.sc forum post](https://forum.image.sc/t/using-samj-in-fiji-macros/117394) by Jorge Ramírez, which includes clear example macros.
 
 ## Use Cases
-This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases. 
+This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases.
+
+For additional examples and a detailed description of workflows, please refer to our preprint on arXiv: [Segment Anything Models Java (SAMJ)](https://arxiv.org/abs/2506.02783).
 
 ![Use Cases of different annotations in microscpy images](images/annotation-examples.png)
 
