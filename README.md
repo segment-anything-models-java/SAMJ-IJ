@@ -90,9 +90,9 @@ Only return largest ROI activated         |  Only return largest ROI NOT activat
 ### Export to Labelling
 This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look-Up Table (LUT) in Fiji when necessary(Image > Lookup Tables > Glasbey or choose another option).
 
-
 ## Macros
-
+SAMJ supports macro usage via **BatchSAMize** with **preset prompts** (ROI Manager content as input).
+A full section is under development. In the meantime, you can check [this excellent Image.sc forum post](https://forum.image.sc/t/using-samj-in-fiji-macros/117394) by Jorge Ramírez, which includes clear example macros.
 
 ## Use Cases
 This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases. 
