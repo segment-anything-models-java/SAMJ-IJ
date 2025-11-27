@@ -131,6 +131,31 @@ run("Find Maxima...", "prominence=100 output=[Point Selection]");
 run("SAMJ Annotator", "model=[SAM2 Tiny] export=true");
 ```
 
+### Processing all images in a folder
+
+This macro processes every image inside a folder.\
+For each image, it detects instance-level prompts via Find Maxima and
+annotates them with SAMJ.
+
+``` java
+// Set the directory containing the images to annotate
+directory = "/path/to/images/folder";
+files = getFileList(directory);
+
+for (i = 0; i < files.length; i++) {
+
+    // Open the current image
+    open(directory + File.separator + files[i]);
+    selectImage(files[i]);
+
+    // Detect one prompt per instance
+    run("Find Maxima...", "prominence=100 output=[Point Selection]");
+
+    // Annotate with SAM2 Tiny
+    run("SAMJ Annotator", "model=[SAM2 Tiny] export=true");
+}
+```
+
 In addition there is [this excellent Image.sc forum post](https://forum.image.sc/t/using-samj-in-fiji-macros/117394) by Jorge Ramírez, which includes clear example macros.
 
 ## Use Cases
