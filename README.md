@@ -92,7 +92,7 @@ Only return largest ROI activated         |  Only return largest ROI NOT activat
 This button simplifies the process of exporting your annotations, which are saved as semantic annotations where each marked region is assigned a distinct value. For enhanced visual clarity, we suggest altering the Look-Up Table (LUT) in Fiji when necessary(Image > Lookup Tables > Glasbey or choose another option).
 
 ## Macros
-SAMJ supports macro usage via **BatchSAMize** with **preset prompts** (ROI Manager content as input).
+SAMJ supports macro usage via **BatchSAMize** with **preset prompts**.
 
 ### Single--prompt example
 
