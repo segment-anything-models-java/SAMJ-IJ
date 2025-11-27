@@ -93,7 +93,45 @@ This button simplifies the process of exporting your annotations, which are save
 
 ## Macros
 SAMJ supports macro usage via **BatchSAMize** with **preset prompts** (ROI Manager content as input).
-A full section is under development. In the meantime, you can check [this excellent Image.sc forum post](https://forum.image.sc/t/using-samj-in-fiji-macros/117394) by Jorge Ramírez, which includes clear example macros.
+
+### Single--prompt example
+
+The following macro creates a single point prompt in ImageJ and
+annotates it with SAMJ.
+
+``` java
+// Open example image
+run("Blobs (25K)");
+
+// Use the "multipoint" tool and create a prompt
+makePoint(177, 33, "small yellow hybrid");
+
+// Use SAM2 Tiny to annotate the selected object.
+// This command also generates a label mask.
+run("SAMJ Annotator", "model=[SAM2 Tiny] export=true");
+```
+
+### Automatic prompts using Find Maxima
+
+This macro uses ImageJ's Find Maxima command to automatically generate
+prompts for all detected objects. SAMJ then annotates each instance.
+
+``` java
+// Open example image
+run("Blobs (25K)");
+
+// Invert the image so objects are white and the background is black
+run("Invert");
+
+// Use ImageJ Find Maxima to detect one prompt per instance
+run("Find Maxima...", "prominence=100 output=[Point Selection]");
+
+// Use SAM2 Tiny to annotate all detected prompts.
+// This command also generates a label mask.
+run("SAMJ Annotator", "model=[SAM2 Tiny] export=true");
+```
+
+In addition there is [this excellent Image.sc forum post](https://forum.image.sc/t/using-samj-in-fiji-macros/117394) by Jorge Ramírez, which includes clear example macros.
 
 ## Use Cases
 This Fiji plugin is intended to work with microscopy images. To show its versatility among different images, here are some use cases.
