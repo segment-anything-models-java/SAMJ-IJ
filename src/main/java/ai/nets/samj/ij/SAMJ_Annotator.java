@@ -191,7 +191,7 @@ public class SAMJ_Annotator implements PlugIn {
 			} else {
 				run();
 			}
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException | InterruptedException | RuntimeException | BuildException | TaskException e) {
 			e.printStackTrace();
 		}
 	}
@@ -301,10 +301,11 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs during the segmentation process
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
-	 * @throws BuildException if there is any error building the Pixi env
+	 * @throws BuildException if there is any error building the Python env
+	 * @throws TaskException if there is any error running the Python code
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
-	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException {
+	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
 		SAM2Tiny model = new SAM2Tiny();
 		List<Mask> res = samJReturnContours(model, rai, pointPrompts, rectPrompts);
 		model.closeProcess();
@@ -375,7 +376,7 @@ public class SAMJ_Annotator implements PlugIn {
 		return callbackedContours;
 	}
 	
-	private void runMacro() throws IOException, RuntimeException, InterruptedException {
+	private void runMacro() throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
 		if (Macro.getOptions() == null)
 			return;
 		parseCommand();
