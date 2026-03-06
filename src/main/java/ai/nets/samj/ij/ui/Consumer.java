@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
+import ai.nets.samj.gui.roimanager.RoiManagerConsumer;
 import ai.nets.samj.ij.ui.commands.AddRoiCommand;
 import ai.nets.samj.ij.ui.commands.Command;
 import ai.nets.samj.ij.ui.commands.DeleteRoiCommand;
@@ -141,6 +142,11 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			}
     		
     	});
+    }
+    
+    @Override
+    public RoiManagerConsumer getRoiManagerConsumer() {
+    	return this.roiManagement;
     }
 
 	@Override
