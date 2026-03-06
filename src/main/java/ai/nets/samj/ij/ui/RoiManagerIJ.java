@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.proteovir.utils.Mask;
-
+import ai.nets.samj.annotation.Mask;
+import ai.nets.samj.gui.roimanager.RoiManagerConsumer;
 import ij.ImageListener;
 import ij.ImagePlus;
 import ij.Prefs;

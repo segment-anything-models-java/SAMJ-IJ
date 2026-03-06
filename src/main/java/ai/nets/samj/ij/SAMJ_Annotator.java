@@ -21,6 +21,8 @@ package ai.nets.samj.ij;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ import org.apposed.appose.TaskException;
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.communication.model.SAMModel;
-import ai.nets.samj.gui.MainGUI;
+import ai.nets.samj.gui.last.Main;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageJ;
@@ -42,6 +44,7 @@ import ij.Macro;
 import ij.gui.GUI;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
+import io.bioimage.modelrunner.gui.custom.CellposePluginUI;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
@@ -157,11 +160,25 @@ public class SAMJ_Annotator implements PlugIn {
 				@Override
 				public void error(String text) {System.out.println("network -- " + text);}
 			};
-
-			SwingUtilities.invokeLater(() -> {
-				MainGUI samjDialog = new MainGUI(new Consumer());
-				GUI.center(samjDialog);
-			});
+			
+	        SwingUtilities.invokeLater(new Runnable() {
+	            public void run() {
+	            	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("SAMJ-" + ai.nets.samj.utils.Constants.SAMJ_VERSION);
+					Main samjDialog = new Main(new Consumer());
+	                frame.add(samjDialog);
+	                frame.pack();
+	                frame.setSize(250, 400);
+	                frame.setLocationRelativeTo(null);
+	                frame.setVisible(true);
+	                frame.addWindowListener(new WindowAdapter() {
+	                    @Override
+	                    public void windowClosed(WindowEvent e) {
+	                    	samjDialog.close();
+	                    }
+	                });
+	                samjDialog.setCancelCallback(() -> frame.dispose());
+	            }
+	           });
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
@@ -403,7 +420,7 @@ public class SAMJ_Annotator implements PlugIn {
 		if (MACRO_CONSUMER == null)
 			MACRO_CONSUMER = new Consumer();
 		MACRO_CONSUMER.setFocusedImage(MACRO_CONSUMER.getFocusedImage());
-		SAMModel selected = MainGUI.DEFAULT_MODEL_LIST.stream()
+		SAMModel selected = Main.DEFAULT_MODEL_LIST.stream()
 				.filter(mm -> mm.getName().equals(macroModel)).findFirst().orElse(null);
 		if (selected == null)
 			throw new IllegalArgumentException("Specified model does not exist. Please, for more info visit: "
