@@ -36,15 +36,17 @@ import org.apposed.appose.TaskException;
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.communication.model.SAMModel;
+import ai.nets.samj.gui.last.BottomPanel;
+import ai.nets.samj.gui.last.CenterPanel;
 import ai.nets.samj.gui.last.Main;
+import ai.nets.samj.gui.last.NoDrawerMainGUI;
+import ai.nets.samj.gui.last.TitleGUI;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageJ;
 import ij.Macro;
-import ij.gui.GUI;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
-import io.bioimage.modelrunner.gui.custom.CellposePluginUI;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
@@ -117,6 +119,8 @@ public class SAMJ_Annotator implements PlugIn {
     	
     };
     
+    /**
+     * TODO remove this when the dir has been agreed
     static
     {
     	// IMPORTANT: Set the DEFAULT DIR WHERE MODELS ARE DOWNLOADED TO THE WANTED DIR.
@@ -125,6 +129,7 @@ public class SAMJ_Annotator implements PlugIn {
 				+ ((!PlatformDetection.isMacOS() || !PlatformDetection.isUsingRosseta()) ? PlatformDetection.getArch()
 						: PlatformDetection.ARCH_ARM64 );
     }
+    */
 
 	// TODO I (Carlos) don't know how to develop in IJ2 @Parameter
 	//private LogService logService = new LogService();
@@ -163,20 +168,32 @@ public class SAMJ_Annotator implements PlugIn {
 			
 	        SwingUtilities.invokeLater(new Runnable() {
 	            public void run() {
-	            	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("SAMJ-" + ai.nets.samj.utils.Constants.SAMJ_VERSION);
-					Main samjDialog = new Main(new Consumer());
+	            	//ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("SAMJ-" + ai.nets.samj.utils.Constants.SAMJ_VERSION);
+	            	java.awt.Frame owner = IJ.getInstance(); // ImageJ main window
+	                javax.swing.JDialog frame = new javax.swing.JDialog(
+	                        owner,
+	                        "SAMJ-" + ai.nets.samj.utils.Constants.SAMJ_VERSION,
+	                        false // non-modal
+	                );
+	            	Main samjDialog = new Main(new Consumer());
+	                //NoDrawerMainGUI samjDialog = new NoDrawerMainGUI();
 	                frame.add(samjDialog);
 	                frame.pack();
 	                frame.setSize(250, 400);
 	                frame.setLocationRelativeTo(null);
 	                frame.setVisible(true);
+	                /*
 	                frame.addWindowListener(new WindowAdapter() {
 	                    @Override
 	                    public void windowClosed(WindowEvent e) {
 	                    	samjDialog.close();
 	                    }
 	                });
-	                samjDialog.setCancelCallback(() -> frame.dispose());
+	                samjDialog.setCancelCallback(() -> {
+	                	samjDialog.close();
+	                    frame.dispose();
+	                });
+	                */
 	            }
 	           });
 		} catch (RuntimeException e) {

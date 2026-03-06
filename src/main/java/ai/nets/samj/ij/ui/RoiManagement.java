@@ -27,7 +27,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 
-public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListener {
+public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageListener {
 	
 	private ImagePlus imp;
 	
@@ -49,7 +49,7 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 	
 	private Consumer<Integer> selectedCallback;
 	
-	public RoiManagerIJ() {
+	public RoiManagement() {
 		Roi.addRoiListener(this);
 		ImagePlus.addImageListener(this);
 	}
@@ -114,25 +114,6 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 		setOverlay(overlay);
 	}
 
-	public void changeOverlay(List<Mask> rois) {
-		Overlay overlay = newOverlay();
-		int slice = 0;
-		int frame = 0;
-		if (imp != null) {
-			slice = imp.getCurrentSlice() - 1;
-			frame = imp.getFrame() - 1;
-		}
-		for (Mask mm : rois) {
-			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
-			roi.setName(mm.getName());
-			if (mm.getSlice() != slice || mm.getFrame() != frame)
-				continue;
-			overlay.add(roi);
-		}
-		//imp.deleteRoi();
-		setOverlay(overlay);
-	}
-
 	public void setRois(List<Mask> rois, int ind) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		this.maskList = rois;
@@ -156,6 +137,25 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 			}
 			i ++;
 		}
+		setOverlay(overlay);
+	}
+
+	public void changeOverlay(List<Mask> rois) {
+		Overlay overlay = newOverlay();
+		int slice = 0;
+		int frame = 0;
+		if (imp != null) {
+			slice = imp.getCurrentSlice() - 1;
+			frame = imp.getFrame() - 1;
+		}
+		for (Mask mm : rois) {
+			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			roi.setName(mm.getName());
+			if (mm.getSlice() != slice || mm.getFrame() != frame)
+				continue;
+			overlay.add(roi);
+		}
+		//imp.deleteRoi();
 		setOverlay(overlay);
 	}
 
