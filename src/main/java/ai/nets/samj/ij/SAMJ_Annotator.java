@@ -101,7 +101,7 @@ public class SAMJ_Annotator implements PlugIn {
 
 		@Override
 		public void drawRoi(List<Mask> masks) {
-			SwingUtilities.invokeLater(() -> MACRO_CONSUMER.addPolygonsFromGUI(masks));
+			SwingUtilities.invokeLater(() -> MACRO_CONSUMER.notifyPolygons(masks));
 			
 		}
 

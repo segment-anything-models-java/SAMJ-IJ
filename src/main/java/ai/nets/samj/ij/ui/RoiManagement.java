@@ -43,7 +43,7 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 	
 	private List<Mask> maskList;
 	
-	private List<Roi> roiList;
+	private List<Roi> roiList = new ArrayList<Roi>();
 	
 	private BiConsumer<Integer,Polygon> modifyRoiCallback;
 	
@@ -283,6 +283,7 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 			return;
 		if (modRoi != null)
 			return;
+		System.out.println("reached");
 		modRoi = imp.getRoi();
 		isModifying = true;
 	}

@@ -1,6 +1,5 @@
 package ai.nets.samj.ij.ui;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -13,15 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ai.nets.samj.gui.roimanager.RoiManagerConsumer;
-import ai.nets.samj.ij.ui.commands.AddRoiCommand;
-import ai.nets.samj.ij.ui.commands.Command;
-import ai.nets.samj.ij.ui.commands.DeleteRoiCommand;
 import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.ConsumerInterface;
@@ -39,8 +34,6 @@ import ij.plugin.CompositeConverter;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
 import io.bioimage.modelrunner.system.PlatformDetection;
-import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
@@ -48,7 +41,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 /**
  * 
@@ -72,18 +64,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 */
 	private ImageWindow activeWindow;
 	/**
-	 * A list to save several ROIs that are being created for the same prompt.
-	 * Whenever the prompt is sent to the model, this list is emptied
-	 */
-	private List<Roi> temporalROIs = new ArrayList<Roi>();
-	/**
-	 * A list to save several ROIs that are being created from the same prompt.
-	 * This list saves only the "negative" ROIs, those that are not part of the instance of interest,
-	 * but part of the background.
-	 * Whenever the prompt is sent to the model, this list is emptied. 
-	 */
-	private List<Roi> temporalNegROIs = new ArrayList<Roi>();
-	/**
 	 * For the point prompts, whether if hte user is collecting several prompts (pressing the ctrl key)
 	 * or just one
 	 */
@@ -97,29 +77,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	 */
 	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
     /**
-     * List of the annotated masks on an image
-     */
-    private Stack<Command> annotatedMask = new Stack<Command>();
-    /**
-     * List that keeps track of the annotated masks
-     */
-    private Stack<Command> redoAnnotatedMask = new Stack<Command>();
-    /**
-     * Tracks if Ctrl+Z has already been handled
-     */
-    private boolean undoPressed = false;
-    /**
-     * Tracks if Ctrl+Y has already been handled
-     */
-    private boolean redoPressed = false;
-    /**
      * Whether the SAMJ specific listeners are registered or not.
      */
     private boolean registered = false;
-    /**
-     * Whether the delete operation comes from ctrl+Z or ctrl+Y or from the roi manager
-     */
-    private boolean isCommand = false;
     
     public Consumer() {
     	this.roiManagement = new RoiManagement();
@@ -167,33 +127,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	}
 
 	@Override
-	public void exportImageLabeling() {
-		if (Recorder.record)
-			Recorder.recordString("run(\"SAMJ Annotator\", \"export=true\");" + System.lineSeparator());
-		int width = activeImage.getWidth();
-		int height = activeImage.getHeight();
-		List<Mask> masks = new ArrayList<Mask>();
-		List<String> doNotInclude = new ArrayList<String>();
-		for (int i = this.annotatedMask.size() - 1; i >= 0; i --) {
-			Command maskList = annotatedMask.get(i);
-			if (maskList instanceof DeleteRoiCommand) {
-				for (Mask mm: maskList.getMasks())
-					doNotInclude.add(mm.getName());
-			} else if (maskList instanceof AddRoiCommand) {
-				for (Mask mm : maskList.getMasks()) {
-					if (doNotInclude.contains(mm.getName()))
-						continue;
-					masks.add(mm);
-				}
-			}
-		}
-		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, masks);
-		ImagePlus impMask = ImageJFunctions.show(raiMask);
-		impMask.setTitle(activeImage.getTitle() + "-labeling");
-		impMask.getProcessor().setMinAndMax(0, annotatedMask.size());
-	}
-
-	@Override
 	public void activateListeners() {
 		if (registered) return;
 		activeCanvas.addMouseListener(this);
@@ -236,7 +169,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		activeImage = (ImagePlus) image;
 		this.activeCanvas = this.activeImage.getCanvas();
 		this.activeWindow = this.activeImage.getWindow();
-		this.roiManagement.setImage(image);
 	}
 
 	@Override
@@ -249,6 +181,16 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	@Override
 	public Object getFocusedImage() {
 		return WindowManager.getCurrentImage();
+	}
+
+	@Override
+	public int getFocusedImageZPos() {
+		return WindowManager.getCurrentImage().getCurrentSlice() - 1;
+	}
+
+	@Override
+	public int getFocusedImageTPos() {
+		return WindowManager.getCurrentImage().getFrame() - 1;
 	}
 
 	@Override
@@ -413,18 +355,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.annotatedMask.size() != 0 && !redoPressed) {
-        	redoPressed = true;
-        	Command undo = annotatedMask.pop();
-        	undo.undo();
-        	redoAnnotatedMask.push(undo);
-        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoAnnotatedMask.size() != 0 && !undoPressed) {
-        	undoPressed = true;
-        	Command redo = redoAnnotatedMask.pop();
-        	redo.execute();
-        	annotatedMask.push(redo);
-        }
-        e.consume();
 	}
 
 	@Override
@@ -438,12 +368,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
 			submitAndClearPoints();
 		}
-	    if (e.getKeyCode() == KeyEvent.VK_Z) {
-	        redoPressed = false;
-	    }
-	    if (e.getKeyCode() == KeyEvent.VK_Y) {
-	        undoPressed = false;
-	    }
 	}
 
 	@Override
@@ -463,9 +387,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	private void annotateRect() {
 		final Roi roi = activeImage.getRoi();
 		final Rectangle rectBounds = roi.getBounds();
-		List<Mask> annotations = promptBridge.sendRectanglePrompt(
+		promptBridge.sendRectanglePrompt(
 				new long[] {rectBounds.x, rectBounds.y, rectBounds.width, rectBounds.height});
-		this.roiManagement.setRois(annotations);
 	}
 	
 	private void annotatePoints(MouseEvent e) {
@@ -500,21 +423,17 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		activeImage.deleteRoi();
 		Rectangle zoomedRectangle = this.activeCanvas.getSrcRect();
 		try {
-			List<Mask> masks;
 			if (activeImage.getWidth() * activeImage.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
 					|| activeImage.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || activeImage.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE) {
-				masks = this.promptBridge.sentPointPrompt(collectedPoints, collecteNegPoints, zoomedRectangle);
+				promptBridge.sentPointPrompt(collectedPoints, collecteNegPoints, zoomedRectangle);
 			} else {
-				masks = this.promptBridge.sentPointPrompt(collectedPoints, collecteNegPoints);
+				promptBridge.sentPointPrompt(collectedPoints, collecteNegPoints);
 			}
-			this.roiManagement.setRois(masks);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		collectedPoints = new ArrayList<Localizable>();
 		collecteNegPoints = new ArrayList<Localizable>();
-		temporalROIs = new ArrayList<Roi>();
-		temporalNegROIs = new ArrayList<Roi>();
 	}
 	
 	@Override
