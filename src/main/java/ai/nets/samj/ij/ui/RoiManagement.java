@@ -93,6 +93,8 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 	}
 
 	public void setRois(List<Mask> rois) {
+		if (rois == null || rois.size() == 0)
+			return;
 		Overlay overlay = newOverlay();
 		this.maskList = rois;
 		roiList = new ArrayList<Roi>();
@@ -115,6 +117,8 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 	}
 
 	public void setRois(List<Mask> rois, int ind) {
+		if (rois == null || rois.size() == 0)
+			return;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		this.maskList = rois;
 		Overlay overlay = newOverlay();
@@ -141,6 +145,8 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 	}
 
 	public void changeOverlay(List<Mask> rois) {
+		if (rois == null || rois.size() == 0)
+			return;
 		Overlay overlay = newOverlay();
 		int slice = 0;
 		int frame = 0;
