@@ -184,21 +184,6 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	}
 
 	@Override
-	public int getFocusedImageZPos() {
-		return WindowManager.getCurrentImage().getCurrentSlice() - 1;
-	}
-
-	@Override
-	public int getFocusedImageTPos() {
-		return WindowManager.getCurrentImage().getFrame() - 1;
-	}
-
-	@Override
-	public int getFocusedImageNZ() {
-		return WindowManager.getCurrentImage().getNSlices();
-	}
-
-	@Override
 	public int getFocusedImageNT() {
 		return WindowManager.getCurrentImage().getNFrames();
 	}

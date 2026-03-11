@@ -78,5 +78,25 @@ public class IJComboBoxItem extends ComboBoxItem {
 		return image;
 	}
 
+	@Override
+	public int getCurrentFrame() {
+		return ((ImagePlus) this.getValue()).getFrame();
+	}
+
+	@Override
+	public int getCurrentSlice() {
+		return ((ImagePlus) this.getValue()).getCurrentSlice();
+	}
+
+	@Override
+	public int getNFrames() {
+		return ((ImagePlus) this.getValue()).getNFrames();
+	}
+
+	@Override
+	public int getNSlices() {
+		return ((ImagePlus) this.getValue()).getNSlices();
+	}
+
 
 }
