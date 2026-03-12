@@ -80,12 +80,12 @@ public class IJComboBoxItem extends ComboBoxItem {
 
 	@Override
 	public int getCurrentFrame() {
-		return ((ImagePlus) this.getValue()).getFrame();
+		return ((ImagePlus) this.getValue()).getFrame() - 1;
 	}
 
 	@Override
 	public int getCurrentSlice() {
-		return ((ImagePlus) this.getValue()).getCurrentSlice();
+		return ((ImagePlus) this.getValue()).getCurrentSlice() - 1;
 	}
 
 	@Override
