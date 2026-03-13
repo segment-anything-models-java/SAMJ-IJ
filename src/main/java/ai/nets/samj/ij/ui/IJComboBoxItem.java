@@ -22,12 +22,16 @@ package ai.nets.samj.ij.ui;
 
 import ai.nets.samj.gui.components.ComboBoxItem;
 import ij.ImagePlus;
-import ij.plugin.CompositeConverter;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
+import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.view.Views;
 
 /**
  * Implementation of the SAMJ interface {@link ComboBoxItem} that provides the SAMJ GUI
@@ -74,8 +78,30 @@ public class IJComboBoxItem extends ComboBoxItem {
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageAsImgLib2() {
 		ImagePlus imp = (ImagePlus) this.getValue();
 		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
-		Img<T> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-		return image;
+		if (!isColorRGB)
+			return ImageJFunctions.wrap(imp);
+
+		RandomAccessibleInterval<ARGBType> rgba = ImagePlusAdapter.wrapRGBA(imp);
+		RandomAccessibleInterval<UnsignedByteType> red = Converters.convert(
+				rgba,
+				(in, out) -> out.set(ARGBType.red(in.get())),
+				new UnsignedByteType());
+		RandomAccessibleInterval<UnsignedByteType> green = Converters.convert(
+				rgba,
+				(in, out) -> out.set(ARGBType.green(in.get())),
+				new UnsignedByteType());
+		RandomAccessibleInterval<UnsignedByteType> blue = Converters.convert(
+				rgba,
+				(in, out) -> out.set(ARGBType.blue(in.get())),
+				new UnsignedByteType());
+
+		RandomAccessibleInterval<UnsignedByteType> rgb = Views.stack(red, green, blue);
+		int channelAxis = rgb.numDimensions() - 1;
+		while (channelAxis > 2) {
+			rgb = Views.permute(rgb, channelAxis, channelAxis - 1);
+			channelAxis--;
+		}
+		return (RandomAccessibleInterval<T>) rgb;
 	}
 
 	@Override
