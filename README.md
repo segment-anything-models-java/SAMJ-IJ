@@ -32,6 +32,33 @@ Before you can annotate images using SAMJ-IJ, you need to install the plugin in 
 ![SAMJ Update site](./images/update-site-example.png)
 5. **Open SAMJ-IJ Annotator**: Start Fiji and navigate to `Plugins > SAMJ > SAMJ Annotator` to open the plugin.
 
+
+
+### Common updater issue: JNA error
+
+A common SAMJ failure is caused by the FIJI updater leaving incompatible **JNA** jars in `FIJI/jars`.
+When this happens, SAMJ may start normally, but fail when encoding an image.
+
+#### Error
+
+```text
+java.lang.NoSuchMethodError: 'com.sun.jna.Library com.sun.jna.Native.load(java.lang.String, java.lang.Class)'
+```
+
+#### What to do
+
+Remove old or conflicting JNA jars from `FIJI/jars` and make sure these two files are installed:
+
+- `jna-5.14.0.jar`
+- `jna-platform-5.14.0.jar`
+
+In particular, remove outdated or conflicting files such as:
+
+- `jna-3.2.7.jar`
+- `jnacl-1.0.0.jar`
+
+Then restart FIJI and try again.
+
 ## Model Installation
 
 The different models available to install can change over time as new models are added or removed. Up to this date, the models available for installation are SAM2 Tiny, SAM2 Small,  SAM2 Large, EfficientSAM, and EfficientViTSAM-l2. All these models do not need the use of GPU but the CPU of your workstation can impact its performance.
