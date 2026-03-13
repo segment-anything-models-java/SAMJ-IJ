@@ -179,7 +179,7 @@ public class SAMJ_Annotator implements PlugIn {
 	                //NoDrawerMainGUI samjDialog = new NoDrawerMainGUI();
 	                frame.add(samjDialog);
 	                frame.pack();
-	                frame.setSize(250, 400);
+	                frame.setSize(250, 440);
 	                frame.setLocationRelativeTo(null);
 	                frame.setVisible(true);
 	                /*

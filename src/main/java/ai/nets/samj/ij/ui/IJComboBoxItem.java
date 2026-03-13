@@ -21,11 +21,11 @@ package ai.nets.samj.ij.ui;
 
 
 import ai.nets.samj.gui.components.ComboBoxItem;
+import ij.ImageListener;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.ImagePlusAdapter;
-import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -41,6 +41,8 @@ import net.imglib2.view.Views;
  */
 public class IJComboBoxItem extends ComboBoxItem {
 	
+	private boolean imageClosed = false;
+	
 	/**
 	 * 
 	 * Combobox item that contains an Object associated to a unique identifier.
@@ -50,6 +52,21 @@ public class IJComboBoxItem extends ComboBoxItem {
 	 */
 	public IJComboBoxItem(Object seq) {
 		super(seq);
+		ImagePlus.addImageListener(new ImageListener() {
+
+			@Override
+			public void imageOpened(ImagePlus imp) {}
+			@Override
+			public void imageUpdated(ImagePlus imp) {}
+
+			@Override
+			public void imageClosed(ImagePlus imp) {
+				if (!imp.equals(seq))
+					return;
+				imageClosed = true;
+			}
+    		
+    	});
 	}
 	
 	/**
@@ -57,6 +74,14 @@ public class IJComboBoxItem extends ComboBoxItem {
 	 */
 	public IJComboBoxItem() {
 		super();
+	}
+	
+	@Override
+	public Object getValue() {
+		if (imageClosed)
+			return null;
+		else
+			return super.getValue();
 	}
 
 	@Override

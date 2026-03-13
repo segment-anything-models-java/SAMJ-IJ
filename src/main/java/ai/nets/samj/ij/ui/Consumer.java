@@ -95,10 +95,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			public void imageClosed(ImagePlus imp) {
 				if (guiCallback == null)
 					return;
-				if (imp != Consumer.this.activeImage)
-					return;
-				Consumer.this.deactivateListeners();
-				Consumer.this.guiCallback.run();
+				if (imp == Consumer.this.activeImage)
+					Consumer.this.deactivateListeners();
+				Consumer.this.guiCallback.accept(imp == Consumer.this.activeImage);
 			}
     		
     	});
