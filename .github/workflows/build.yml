@@ -24,7 +24,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'zulu'
-          cache: 'maven'
       - name: Set up CI environment
         run: .github/setup.sh
       - name: Execute the build
