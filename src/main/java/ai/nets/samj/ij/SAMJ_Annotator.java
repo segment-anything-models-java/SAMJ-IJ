@@ -28,9 +28,6 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.apposed.appose.BuildException;
-import org.apposed.appose.TaskException;
-
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.communication.model.SAMModel;
@@ -191,7 +188,7 @@ public class SAMJ_Annotator implements PlugIn {
 			} else {
 				run();
 			}
-		} catch (IOException | InterruptedException | RuntimeException | BuildException | TaskException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -221,13 +218,11 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs during the segmentation process
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
-	 * @throws BuildException if there is any error building the Python env
-	 * @throws TaskException if there is any error running the code
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
 	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(RandomAccessibleInterval<T> rai,
 																List<int[]> pointPrompts,
-																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
+																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
 		SAM2Tiny model = new SAM2Tiny();
 		RandomAccessibleInterval<UnsignedShortType> res = samJReturnMask(model, rai, pointPrompts, rectPrompts);
 		model.closeProcess();
@@ -265,13 +260,11 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs during the segmentation process
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
-	 * @throws TaskException if there is any error running the task
-	 * @throws BuildException if there is any error building the Python environment
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
 	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(SAMModel model, RandomAccessibleInterval<T> rai,
 																List<int[]> pointPrompts,
-																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
+																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
 		List<Mask> masks = samJReturnContours(model, rai, pointPrompts, rectPrompts);
 		return Mask.getMask(rai.dimensionsAsLongArray()[0], rai.dimensionsAsLongArray()[1], masks);
 	}
@@ -301,11 +294,9 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs during the segmentation process
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
-	 * @throws BuildException if there is any error building the Python env
-	 * @throws TaskException if there is any error running the Python code
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
-	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
+	List<Mask> samJReturnContours(RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException {
 		SAM2Tiny model = new SAM2Tiny();
 		List<Mask> res = samJReturnContours(model, rai, pointPrompts, rectPrompts);
 		model.closeProcess();
@@ -341,16 +332,14 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
-	 * @throws TaskException if there is any error running the task
-	 * @throws BuildException if there is any error building the Pixi env
 	 */
 	public static < T extends RealType< T > & NativeType< T > > 
-	List<Mask> samJReturnContours(SAMModel model, RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, InterruptedException, BuildException, TaskException {
+	List<Mask> samJReturnContours(SAMModel model, RandomAccessibleInterval<T> rai, List<int[]> pointPrompts, List<Rectangle> rectPrompts) throws IOException, InterruptedException {
 		if ((pointPrompts == null || pointPrompts.size() == 0) && (rectPrompts == null || rectPrompts.size() == 0))
 			throw new IllegalArgumentException("Please provide at least one point prompt or rectangular prompt.");
 		if (MACRO_CONSUMER == null)
 			MACRO_CONSUMER = new Consumer();
-		model.setImage(rai);
+		model.setImage(rai, null);;
 		model.setReturnOnlyBiggest(true);
     	RandomAccessibleInterval<T> maskRai = null;
     	List<Mask> callbackedContours = new ArrayList<Mask>();
@@ -376,7 +365,7 @@ public class SAMJ_Annotator implements PlugIn {
 		return callbackedContours;
 	}
 	
-	private void runMacro() throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
+	private void runMacro() throws IOException, RuntimeException, InterruptedException {
 		if (Macro.getOptions() == null)
 			return;
 		parseCommand();
@@ -399,7 +388,7 @@ public class SAMJ_Annotator implements PlugIn {
 	}
 
 	private < T extends RealType< T > & NativeType< T > > 
-	void macroRunSAMJ() throws IOException, InterruptedException, BuildException, TaskException {
+	void macroRunSAMJ() throws IOException, InterruptedException {
 		if (MACRO_CONSUMER == null)
 			MACRO_CONSUMER = new Consumer();
 		MACRO_CONSUMER.setFocusedImage(MACRO_CONSUMER.getFocusedImage());
@@ -410,7 +399,7 @@ public class SAMJ_Annotator implements PlugIn {
 					+ MACRO_INFO);
 		MACRO_CONSUMER.setModel(selected);
 		RandomAccessibleInterval<T> rai = MACRO_CONSUMER.getFocusedImageAsRai();
-		selected.setImage(null);
+		selected.setImage(rai, null);
 		selected.setReturnOnlyBiggest(true);
     	List<int[]> pointPrompts = MACRO_CONSUMER.getPointRoisOnFocusImage();
     	List<Rectangle> rectPrompts = MACRO_CONSUMER.getRectRoisOnFocusImage();
