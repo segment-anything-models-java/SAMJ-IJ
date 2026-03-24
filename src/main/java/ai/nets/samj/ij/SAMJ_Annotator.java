@@ -50,7 +50,6 @@ import ai.nets.samj.install.SamEnvManagerAbstract;
 import ai.nets.samj.models.AbstractSamJ.BatchCallback;
 
 // TODO I (Carlos) don't know how to develop in IJ2 @Plugin(type = Command.class, menuPath = "Plugins>SAMJ>Annotator")
-//TODO I (Carlos) don't know how to develop in IJ2 public class Plugin_SamJAnnotator implements Command {
 
 /**
  * ImageJ plugin that implements the SAMJ default GUI that can help annotating images 
