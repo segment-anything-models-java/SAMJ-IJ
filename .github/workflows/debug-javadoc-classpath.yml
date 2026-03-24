@@ -27,7 +27,10 @@ jobs:
           java -version
           mvn -version
           git rev-parse HEAD
-          sed -n '1,180p' pom.xml
+          sed -n '1,220p' pom.xml
+          sed -n '1,220p' .github/workflows/build.yml
+          sed -n '1,80p' .github/build.sh
+          sed -n '1,80p' .github/setup.sh
 
       - name: Clean suspect cached artifacts
         run: |
@@ -40,6 +43,9 @@ jobs:
           set -eux
           mvn -U -DskipTests dependency:resolve
           mvn -U -DskipTests dependency:tree
+          mvn -U -DskipTests dependency:build-classpath -Dmdep.outputFile=cp.txt
+          echo "==== cp.txt ===="
+          cat cp.txt
 
       - name: Inspect resolved SAMJ artifacts
         run: |
@@ -52,50 +58,55 @@ jobs:
           sha1sum ~/.m2/repository/ai/nets/samj/0.0.4/samj-0.0.4.jar || true
           jar tf ~/.m2/repository/ai/nets/samj/0.0.4/samj-0.0.4.jar | grep '^ai/nets/samj/' | head -100
 
-      - name: Build Maven classpath
-        run: |
-          set -eux
-          mvn -U -DskipTests dependency:build-classpath -Dmdep.outputFile=cp.txt
-          echo "==== cp.txt ===="
-          cat cp.txt
-          echo "==== contains samj jar? ===="
-          grep -o 'ai/nets/samj/0.0.4/samj-0.0.4.jar' cp.txt || true
+      - name: Set up CI environment
+        run: .github/setup.sh
 
-      - name: Compile only
+      - name: Run exact CI build path
+        env:
+          GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+          OSSRH_PASS: ${{ secrets.OSSRH_PASS }}
+          SIGNING_ASC: ${{ secrets.SIGNING_ASC }}
         run: |
           set -eux
-          mvn -U -DskipTests compile
+          .github/build.sh || true
 
-      - name: Run Javadoc goal and capture failure
+      - name: Inspect CI build outputs
         run: |
           set -eux
-          mvn -U -DskipTests -e javadoc:jar | tee javadoc.log || true
-
-      - name: Inspect generated Javadoc command files
-        run: |
-          set -eux
-          echo "==== target/reports/apidocs ===="
-          ls -lah target/reports/apidocs || true
-          echo "==== options ===="
-          sed -n '1,240p' target/reports/apidocs/options || true
-          echo "==== packages ===="
+          echo "==== mvn-log tail ===="
+          tail -200 mvn-log || true
+          echo "==== exit-code ===="
+          cat exit-code || true
+          echo "==== target/reports/apidocs tree ===="
+          find target/reports/apidocs -maxdepth 2 -type f | sort || true
+          echo "==== javadoc options ===="
+          sed -n '1,260p' target/reports/apidocs/options || true
+          echo "==== javadoc packages ===="
           sed -n '1,120p' target/reports/apidocs/packages || true
-          echo "==== samj in options? ===="
+          echo "==== samj jar in options ===="
           grep 'samj-0.0.4.jar' target/reports/apidocs/options || true
+          echo "==== dl-modelrunner jar in options ===="
+          grep 'dl-modelrunner-0.6.3.jar' target/reports/apidocs/options || true
 
-      - name: Retry raw Javadoc invocation
+      - name: Retry raw Javadoc invocation from generated files
         run: |
           set -eux
           if [ -f target/reports/apidocs/options ] && [ -f target/reports/apidocs/packages ]; then
-            "$(dirname "$(dirname "$(readlink -f "$(which java)")")")/bin/javadoc" @target/reports/apidocs/options @target/reports/apidocs/packages || true
+            "$(dirname "$(dirname "$(readlink -f "$(which java)")")")/bin/javadoc" @target/reports/apidocs/options @target/reports/apidocs/packages | tee raw-javadoc.log || true
           fi
 
       - name: Upload logs
         uses: actions/upload-artifact@v4
         with:
           name: javadoc-debug-artifacts
+          if-no-files-found: warn
           path: |
             cp.txt
-            javadoc.log
+            mvn-log
+            exit-code
+            raw-javadoc.log
             target/reports/apidocs/options
             target/reports/apidocs/packages
