@@ -124,7 +124,8 @@ public class SAMJ_Annotator implements PlugIn {
 	//private LogService logService = new LogService();
 
 	/**
-	 * Run the plugin
+	 * Opens the SAMJ annotation GUI inside ImageJ.
+	 *
 	 * @throws InterruptedException if there is any thread interruption error
 	 * @throws IOException if there is any file error
 	 */
@@ -165,9 +166,10 @@ public class SAMJ_Annotator implements PlugIn {
 	}
 
 	/**
-	 * method for tesitng during development
-	 * @param args
-	 * 	nothing
+	 * Launches ImageJ and opens the plugin for local development and manual
+	 * testing.
+	 *
+	 * @param args ignored command-line arguments
 	 * @throws InterruptedException if there is any thread related error
 	 * @throws IOException if there is any file related error
 	 */
@@ -176,7 +178,12 @@ public class SAMJ_Annotator implements PlugIn {
 		new SAMJ_Annotator().run();
 	}
 
-
+	/**
+	 * Entry point used by ImageJ when the plugin is invoked from the UI or a
+	 * macro.
+	 *
+	 * @param arg ImageJ plugin argument string, unused by this implementation
+	 */
 	@Override
 	public void run(String arg) {
 		boolean isMacro = IJ.isMacro();
@@ -216,6 +223,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
 	 * @throws RuntimeException
 	 * 	 if an error occurs during the segmentation process
+	 * @throws IllegalArgumentException
+	 * 	 if neither point prompts nor rectangle prompts are provided
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
 	 */
@@ -258,6 +267,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
 	 * @throws RuntimeException
 	 * 	 if an error occurs during the segmentation process
+	 * @throws IllegalArgumentException
+	 * 	 if neither point prompts nor rectangle prompts are provided
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
 	 */
@@ -292,6 +303,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
 	 * @throws RuntimeException
 	 * 	 if an error occurs during the segmentation process
+	 * @throws IllegalArgumentException
+	 * 	 if neither point prompts nor rectangle prompts are provided
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
 	 */
@@ -330,6 +343,8 @@ public class SAMJ_Annotator implements PlugIn {
 	 * 	 a List of {@link Mask} that contain the polygons that define the contour of each of the segmented objects.
 	 * @throws IOException
 	 * 	 if an error occurs while loading the SAM model environment or if the model has not been installed correctly
+	 * @throws IllegalArgumentException
+	 * 	 if neither point prompts nor rectangle prompts are provided
 	 * @throws InterruptedException
 	 * 	 if the segmentation process is unexpectedly interrupted
 	 */

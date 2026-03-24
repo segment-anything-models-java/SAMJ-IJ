@@ -23,10 +23,14 @@ import java.io.File;
 
 import io.bioimage.modelrunner.system.PlatformDetection;
 
+/**
+ * Utility constants used by the ImageJ integration layer.
+ */
 public class Constants {
 
     /**
-     * The folder of Fiji
+     * Absolute path to the Fiji installation currently running the plugin, or a
+     * fallback ImageJ folder if Fiji cannot be detected.
      */
 	public static final String FIJI_FOLDER = getFijiFolder();
 	

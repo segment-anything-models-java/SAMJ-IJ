@@ -55,22 +55,23 @@ public class IJComboBoxItem extends ComboBoxItem {
 		super();
 	}
 
-	@Override
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * For ImageJ is the name of the ImageJ {@link ImagePlus}
+	 * @return the title of the wrapped {@link ImagePlus}
 	 */
+	@Override
 	public String getImageName() {
 		return ((ImagePlus) this.getValue()).getTitle();
 	}
 
-	@Override
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Convert the {@link ImagePlus} into a {@link RandomAccessibleInterval}
+	 * @param <T> the ImgLib2 pixel type used for the returned image view
+	 * @return the wrapped {@link ImagePlus} as a {@link RandomAccessibleInterval}
 	 */
+	@Override
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getImageAsImgLib2() {
 		ImagePlus imp = (ImagePlus) this.getValue();
 		boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;

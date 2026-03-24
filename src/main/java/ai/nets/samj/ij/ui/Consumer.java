@@ -1,3 +1,22 @@
+/*-
+ * #%L
+ * Plugin to help image annotation with SAM-based Deep Learning models
+ * %%
+ * Copyright (C) 2024 SAMJ developers.
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package ai.nets.samj.ij.ui;
 
 import java.awt.Color;
@@ -65,7 +84,10 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 /**
- * 
+ * ImageJ-specific implementation of the SAMJ consumer interface. It tracks the
+ * focused image, captures prompt ROIs drawn by the user, synchronizes with the
+ * ROI manager, and manages undo/redo of generated annotations.
+ *
  * @author Carlos Garcia Lopez de Haro
  */
 public class Consumer extends ConsumerInterface implements MouseListener, KeyListener, WindowListener, IJEventListener, ListDataListener {
@@ -147,6 +169,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
      */
     private boolean isCommand = false;
     
+    /**
+     * Creates a consumer and registers the ImageJ listeners needed to keep the
+     * GUI state synchronized with the active image lifecycle.
+     */
     public Consumer() {
     	IJ.addEventListener(this);
     	ImagePlus.addImageListener(new ImageListener() {
@@ -169,34 +195,54 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
     	});
     }
 
-	@Override
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * GEt the list of open images in ImageJ
+	 * @return the open ImageJ images wrapped as combo-box items
 	 */
+	@Override
 	public List<ComboBoxItem> getListOfOpenImages() {
 		return Arrays.stream(WindowManager.getImageTitles())
 				.map(title -> new IJComboBoxItem((Object) WindowManager.getImage(title)))
 				.collect(Collectors.toList());
 	}
 	
+	/**
+	 * Adds masks produced by the SAMJ GUI to the ROI manager as a batch operation.
+	 *
+	 * @param masks the masks to convert into polygon ROIs
+	 */
 	@Override
 	public void addPolygonsFromGUI(List<Mask> masks) {
 		// TODO improve the naming
 		this.addToRoiManager(masks, "batch");
 	}
 
+	/**
+	 * Returns every polygon ROI currently stored in the ROI manager.
+	 *
+	 * @return the polygons corresponding to the managed ROIs
+	 */
 	@Override
 	public List<Polygon> getPolygonsFromRoiManager() {
 		return Arrays.stream(roiManager.getRoisAsArray()).map(i -> i.getPolygon()).collect(Collectors.toList());
 	}
 
+	/**
+	 * Enables or disables propagation of created annotations to the ROI manager.
+	 *
+	 * @param shouldBeAdding {@code true} to add ROIs to the manager,
+	 *          {@code false} otherwise
+	 */
 	@Override
 	public void enableAddingToRoiManager(boolean shouldBeAdding) {
 		this.isAddingToRoiManager = shouldBeAdding;
 	}
 
+	/**
+	 * Exports the current annotation history as a label image and displays it in
+	 * ImageJ.
+	 */
 	@Override
 	public void exportImageLabeling() {
 		if (Recorder.record)
@@ -224,6 +270,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		impMask.getProcessor().setMinAndMax(0, annotatedMask.size());
 	}
 
+	/**
+	 * Registers mouse, keyboard, and window listeners on the focused image so the
+	 * user prompts can be intercepted by SAMJ.
+	 */
 	@Override
 	public void activateListeners() {
 		if (registered) return;
@@ -237,6 +287,10 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		registered = true;
 	}
 
+	/**
+	 * Removes the SAMJ listeners from the focused image and restores the default
+	 * ImageJ key listeners.
+	 */
 	@Override
 	public void deactivateListeners() {
 		if (!registered) return;
@@ -250,6 +304,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		registered = false;
 	}
 
+	/**
+	 * Checks whether the currently selected ImageJ tool is a prompt type supported
+	 * by the plugin.
+	 *
+	 * @return {@code true} if the active tool is rectangle, point, or multipoint
+	 */
 	@Override
 	public boolean isValidPromptSelected() {
 		return Toolbar.getToolName().equals("rectangle")
@@ -257,6 +317,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 				 || Toolbar.getToolName().equals("multipoint");
 	}
 
+	/**
+	 * Sets the image that should receive prompts and, when enabled, initializes
+	 * the ROI manager against that image.
+	 *
+	 * @param image the focused image, expected to be an {@link ImagePlus}
+	 */
 	@Override
 	public void setFocusedImage(Object image) {
 		boolean changed = activeImage != (ImagePlus) image;
@@ -271,6 +337,9 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 			this.roiManager = startRoiManager();
 	}
 
+	/**
+	 * Clears the currently focused image and its cached window/canvas references.
+	 */
 	@Override
 	public void deselectImage() {
 		activeImage = null;
@@ -278,16 +347,32 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.activeWindow = null;
 	}
 
+	/**
+	 * Returns the currently focused image from ImageJ's window manager.
+	 *
+	 * @return the focused image, or {@code null} if none is active
+	 */
 	@Override
 	public Object getFocusedImage() {
 		return WindowManager.getCurrentImage();
 	}
 
+	/**
+	 * Returns the name of the currently focused image.
+	 *
+	 * @return the title of the focused image
+	 */
 	@Override
 	public String getFocusedImageName() {
 		return WindowManager.getCurrentImage().getTitle();
 	}
 
+	/**
+	 * Wraps the focused ImageJ image as an ImgLib2 interval for model inference.
+	 *
+	 * @param <T> the ImgLib2 pixel type used for the wrapped image
+	 * @return the focused image as a {@link RandomAccessibleInterval}
+	 */
 	@Override
 	public <T extends RealType<T> & NativeType<T>> RandomAccessibleInterval<T> getFocusedImageAsRai() {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -296,6 +381,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		return image;
 	}
 
+	/**
+	 * Collects rectangular prompts from both the ROI manager and the currently
+	 * active image ROI.
+	 *
+	 * @return the rectangle prompts present on the focused image
+	 */
 	@Override
 	public List<Rectangle> getRectRoisOnFocusImage() {
 		Roi roi = WindowManager.getCurrentImage().getRoi();
@@ -310,6 +401,13 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		return list;
 	}
 
+	/**
+	 * Collects point prompts from both the ROI manager and the currently active
+	 * image ROI.
+	 *
+	 * @return the point prompts present on the focused image as {@code [x, y]}
+	 *         pairs
+	 */
 	@Override
 	public List<int[]> getPointRoisOnFocusImage() {
 		Roi roi = WindowManager.getCurrentImage().getRoi();
@@ -329,6 +427,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		return list;
 	}
 
+	/**
+	 * Deletes a point prompt from the ROI manager or, if needed, from the current
+	 * image ROI.
+	 *
+	 * @param pp the point coordinates to remove, encoded as {@code [x, y]}
+	 */
 	@Override
 	public void deletePointRoi(int[] pp) {
 		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
@@ -371,6 +475,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		}
 	}
 
+	/**
+	 * Deletes a rectangular prompt from the ROI manager or, if needed, from the
+	 * current image ROI.
+	 *
+	 * @param rect the rectangle prompt to remove
+	 */
 	@Override
 	public void deleteRectRoi(Rectangle rect) {
 		Roi[] roiManagerRois = RoiManager.getInstance().getRoisAsArray();
@@ -429,10 +539,13 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		return list;
 	}
 
-	@Override
 	/**
-	 * when the plugin is closed, close everything
+	 * Releases ImageJ listeners and the active model when the associated image
+	 * window is closed.
+	 *
+	 * @param e the window close event
 	 */
+	@Override
 	public void windowClosed(WindowEvent e) {
 		roiManager.close();
 		this.selectedModel.closeProcess();
@@ -443,7 +556,11 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.activeWindow = null;
 	}
 
-
+	/**
+	 * Handles undo and redo keyboard shortcuts for the annotation history.
+	 *
+	 * @param e the key event emitted by the focused image window or canvas
+	 */
 	@Override
 	public void keyPressed(KeyEvent e) {
         if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.annotatedMask.size() != 0 && !redoPressed) {
@@ -462,12 +579,14 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
         e.consume();
 	}
 
-	@Override
 	/**
 	 * Monitor when the control key is being released for the point prompts.
 	 * Whenever it is released and the point prompt is selected, the points that have already been drawn 
-	 * are sent to SAMJ
+	 * are sent to SAMJ.
+	 *
+	 * @param e the key release event
 	 */
+	@Override
 	public void keyReleased(KeyEvent e) {
 		if ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS()) 
 				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
@@ -481,6 +600,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	    }
 	}
 
+	/**
+	 * Dispatches the currently drawn ROI to the appropriate annotation workflow
+	 * based on the active ImageJ tool.
+	 *
+	 * @param e the mouse release event that completed the prompt
+	 */
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (activeImage.getRoi() == null)
@@ -711,7 +836,8 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	
 	/**
 	 * Add a single polygon to the ROI manager
-	 * @param pRoi
+	 *
+	 * @param pRoi the polygon ROI to add
 	 */
 	public void addToRoiManager(final PolygonRoi pRoi ) {
 		if (isAddingToRoiManager) roiManager.addRoi(pRoi);
@@ -737,6 +863,12 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.annotatedMask.push(command);
 	}
 	
+	/**
+	 * Reacts to ImageJ tool changes and informs the GUI whether the current tool
+	 * can be used as a SAMJ prompt.
+	 *
+	 * @param eventID the ImageJ event identifier
+	 */
 	@Override
 	public void eventOccurred(int eventID) {
 		if (eventID != IJEventListener.TOOL_CHANGED || callback == null)
@@ -747,13 +879,16 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 		this.callback.validPromptChosen(isvalid);
 	}
 	
-	@Override
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * For more info about how the macros work, please go to 
 	 * https://github.com/segment-anything-models-java/SAMJ-IJ/blob/main/README.md#macros
+	 *
+	 * @param modelName the SAM model name to record in the generated macro command
+	 * @param maskPrompt an optional mask prompt descriptor to include in the macro
 	 */
+	@Override
 	public void notifyBatchSamize(String modelName, String maskPrompt) {
 		if (!Recorder.record)
 			return;
@@ -765,33 +900,106 @@ public class Consumer extends ConsumerInterface implements MouseListener, KeyLis
 	}
 	
 	// ===== unused events =====
+	/**
+	 * Ignores mouse-enter events on the focused canvas.
+	 *
+	 * @param e the mouse event
+	 */
 	@Override
 	public void mouseEntered(MouseEvent e) {}
+	/**
+	 * Ignores mouse-click events on the focused canvas.
+	 *
+	 * @param e the mouse event
+	 */
 	@Override
 	public void mouseClicked(MouseEvent e) {}
+	/**
+	 * Ignores mouse-press events on the focused canvas.
+	 *
+	 * @param e the mouse event
+	 */
 	@Override
 	public void mousePressed(MouseEvent e) {}
+	/**
+	 * Ignores mouse-exit events on the focused canvas.
+	 *
+	 * @param e the mouse event
+	 */
 	@Override
 	public void mouseExited(MouseEvent e) {}
+	/**
+	 * Ignores window-open events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowOpened(WindowEvent e) {}
+	/**
+	 * Ignores window-closing events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowClosing(WindowEvent e) {}
+	/**
+	 * Ignores window-iconify events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowIconified(WindowEvent e) {}
+	/**
+	 * Ignores window-deiconify events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowDeiconified(WindowEvent e) {}
+	/**
+	 * Ignores window-activation events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowActivated(WindowEvent e) {}
+	/**
+	 * Ignores window-deactivation events for the focused image window.
+	 *
+	 * @param e the window event
+	 */
 	@Override
 	public void windowDeactivated(WindowEvent e) {}
+	/**
+	 * Ignores key-typed events because SAMJ reacts only to pressed and released
+	 * key transitions.
+	 *
+	 * @param e the key event
+	 */
 	@Override
 	public void keyTyped(KeyEvent e) {}
+	/**
+	 * Ignores generic list-content changes because ROI deletions are tracked
+	 * specifically through removal events.
+	 *
+	 * @param e the list-data event
+	 */
 	@Override
 	public void contentsChanged(ListDataEvent e) {}
+	/**
+	 * Ignores list-addition events because only removals create delete commands.
+	 *
+	 * @param e the list-data event
+	 */
 	@Override
 	public void intervalAdded(ListDataEvent e) {}
 
+	/**
+	 * Tracks ROI deletions performed directly in the ROI manager and records them
+	 * as undoable delete commands.
+	 *
+	 * @param e the list-data event describing the removed ROI entries
+	 */
 	@Override
 	public void intervalRemoved(ListDataEvent e) {
 		if (isCommand) {

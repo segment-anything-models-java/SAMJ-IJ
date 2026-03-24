@@ -24,15 +24,40 @@ import java.util.List;
 import ai.nets.samj.annotation.Mask;
 import ij.gui.PolygonRoi;
 
-
+/**
+ * Command abstraction used to track ROI additions and deletions so they can be
+ * replayed or reverted from the annotation history.
+ */
 public interface Command {
+	/**
+	 * Applies the command to the current ROI state.
+	 */
 	public void execute();
 	
+	/**
+	 * Reverts the effect of a previously executed command.
+	 */
 	public void undo();
 	
+	/**
+	 * Enables or disables synchronization of the command with the ImageJ ROI manager.
+	 *
+	 * @param addToRoiManager {@code true} to update the ROI manager when the command
+	 *          executes or undoes, {@code false} otherwise
+	 */
 	public void setAddingToRoiManager(boolean addToRoiManager);
 	
+	/**
+	 * Returns the ImageJ polygon ROIs managed by this command.
+	 *
+	 * @return the polygon ROIs created or removed by the command
+	 */
 	public List<PolygonRoi> getImageJRois();
 	
+	/**
+	 * Returns the SAM masks represented by this command.
+	 *
+	 * @return the masks associated with the command
+	 */
 	public List<Mask> getMasks();
 }

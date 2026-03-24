@@ -29,6 +29,10 @@ import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 import ij.gui.PolygonRoi;
 import ij.plugin.frame.RoiManager;
 
+/**
+ * Command that adds one or more SAM-generated polygon ROIs to the ROI manager
+ * and records enough state to undo the addition later.
+ */
 public class AddRoiCommand implements Command {
 	private RoiManager roiManager;
 	private final List<Mask> polys;
@@ -38,35 +42,76 @@ public class AddRoiCommand implements Command {
 	private int promptCount = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
 	private String modelName = "";
   
+	/**
+	 * Creates a command that will add the provided masks as polygon ROIs.
+	 *
+	 * @param roiManager the ROI manager that receives the generated ROIs
+	 * @param polys the masks to convert into ImageJ polygon ROIs
+	 */
 	public AddRoiCommand(RoiManager roiManager, List<Mask> polys) {
 		this.roiManager = roiManager;
 		this.polys = polys;
 	}
 	
+	/**
+	 * Sets the prompt type label used in ROI names created by this command.
+	 *
+	 * @param shape the prompt description, such as {@code point} or {@code rect}
+	 */
 	public void setPromptShape(String shape) {
 		this.shape = shape;
 	}
 	
+	/**
+	 * Sets the prompt sequence number used to name the generated ROIs.
+	 *
+	 * @param promptCount the prompt counter to embed in ROI names
+	 */
 	public void setPromptCount(int promptCount) {
 		this.promptCount = promptCount;
 	}
 	
+	/**
+	 * Sets the model name suffix used in ROI names created by this command.
+	 *
+	 * @param modelName the SAM model name associated with the generated masks
+	 */
 	public void setModelName(String modelName) {
 		this.modelName = modelName;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param addToRoiManager {@code true} to add ROIs to the ROI manager,
+	 *          {@code false} to keep the command in-memory only
+	 */
 	public void setAddingToRoiManager(boolean addToRoiManager) {
 		this.isAddingToRoiManager = addToRoiManager;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return the polygon ROIs created from the command masks
+	 */
 	public List<PolygonRoi> getImageJRois(){
 		return rois;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return the masks that will be added by this command
+	 */
 	public List<Mask> getMasks(){
 		return polys;
 	}
   
+	/**
+	 * Converts the stored masks to polygon ROIs, names them, and optionally adds
+	 * them to the ROI manager.
+	 */
 	@Override
 	public void execute() {
 		rois = new ArrayList<PolygonRoi>();
@@ -88,6 +133,9 @@ public class AddRoiCommand implements Command {
 		}
 	}
   
+	/**
+	 * Removes the ROIs previously added by this command from the ROI manager.
+	 */
 	@Override
 	public void undo() {
 		try {

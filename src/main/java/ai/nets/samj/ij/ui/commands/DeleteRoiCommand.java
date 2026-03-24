@@ -29,12 +29,22 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 
+/**
+ * Command that removes previously annotated polygon ROIs from the ROI manager
+ * while keeping enough state to restore them on undo.
+ */
 public class DeleteRoiCommand implements Command {
 	private RoiManager roiManager;
 	private final List<Mask> polys;
 	private final List<PolygonRoi> rois;
 	private boolean isAddingToRoiManager = true;
   
+	/**
+	 * Creates a command that will remove the provided masks from the ROI manager.
+	 *
+	 * @param roiManager the ROI manager that currently contains the ROIs
+	 * @param polys the masks describing the ROIs to remove
+	 */
 	public DeleteRoiCommand(RoiManager roiManager, List<Mask> polys) {
 		this.roiManager = roiManager;
 		this.polys = polys;
@@ -46,6 +56,11 @@ public class DeleteRoiCommand implements Command {
 		}
 	}
 	
+	/**
+	 * Removes the ROIs represented by this command from the ROI manager when ROI
+	 * synchronization is enabled.
+	 */
+	@Override
 	public void execute() {
 		if (!isAddingToRoiManager)
 			return;
@@ -67,22 +82,43 @@ public class DeleteRoiCommand implements Command {
     	}
 	}
 	
+	/**
+	 * Restores the deleted ROIs to the ROI manager when ROI synchronization is
+	 * enabled.
+	 */
+	@Override
 	public void undo() {
 		for (Roi m : rois) {
 			if (isAddingToRoiManager) roiManager.addRoi(m);;
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param addToRoiManager {@code true} to propagate deletions and restores to
+	 *          the ROI manager, {@code false} otherwise
+	 */
 	@Override
 	public void setAddingToRoiManager(boolean addToRoiManager) {
 		this.isAddingToRoiManager = addToRoiManager;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return the polygon ROIs represented by the masks scheduled for deletion
+	 */
 	@Override
 	public List<PolygonRoi> getImageJRois() {
 		return rois;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return the masks corresponding to the deleted ROIs
+	 */
 	@Override
 	public List<Mask> getMasks(){
 		return polys;

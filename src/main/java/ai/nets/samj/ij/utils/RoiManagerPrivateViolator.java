@@ -31,8 +31,31 @@ import javax.swing.DefaultListModel;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 
+/**
+ * Reflection-based helper for invoking private ROI manager operations that are
+ * needed by the plugin but not exposed by ImageJ's public API.
+ */
 public class RoiManagerPrivateViolator {
 	
+	/**
+	 * Removes the ROI at a given position from an initialized {@link RoiManager}
+	 * by calling its internal deletion routines.
+	 *
+	 * @param roiM the ROI manager instance to modify
+	 * @param position the zero-based ROI index to delete
+	 * @throws NoSuchFieldException if an expected private field is not present in
+	 *          the current ImageJ implementation
+	 * @throws SecurityException if reflective access to the ROI manager internals
+	 *          is denied
+	 * @throws NoSuchMethodException if an expected private helper method is not
+	 *          present in the current ImageJ implementation
+	 * @throws IllegalAccessException if reflective access to a private member is
+	 *          not permitted
+	 * @throws IllegalArgumentException if the reflected member is invoked with an
+	 *          invalid argument
+	 * @throws InvocationTargetException if the invoked ImageJ method throws an
+	 *          exception while deleting the ROI
+	 */
 	@SuppressWarnings("unchecked")
 	public static void deleteRoiAtPosition(RoiManager roiM, int position) throws NoSuchFieldException, SecurityException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Objects.requireNonNull(roiM, "Please provide an initialized RoiManager.");
