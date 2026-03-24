@@ -2,7 +2,7 @@
  * #%L
  * Plugin to help image annotation with SAM-based Deep Learning models
  * %%
- * Copyright (C) 2024 SAMJ developers.
+ * Copyright (C) 2024 - 2026 SAMJ developers.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
