@@ -47,7 +47,6 @@ import ij.ImageJ;
 import ij.Macro;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
-import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -305,8 +304,10 @@ public class SAMJ_Annotator implements PlugIn {
 	public static < T extends RealType< T > & NativeType< T > > 
 	RandomAccessibleInterval<UnsignedShortType> samJReturnMask(SAMModel model, RandomAccessibleInterval<T> rai,
 																List<int[]> pointPrompts,
-																List<Rectangle> rectPrompts) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
+																List<Rectangle> rectPrompts,
+																int[] frames, int[] slices) throws IOException, RuntimeException, InterruptedException, BuildException, TaskException {
 		List<Mask> masks = samJReturnContours(model, rai, pointPrompts, rectPrompts);
+		// TODO 
 		return Mask.getMask(rai.dimensionsAsLongArray()[0], rai.dimensionsAsLongArray()[1], masks);
 	}
 

@@ -23,6 +23,7 @@ import java.io.File;
 
 import io.bioimage.modelrunner.system.PlatformDetection;
 
+
 public class Constants {
 
     /**

@@ -196,7 +196,9 @@ public class RoiManagement implements RoiManagerConsumer, RoiListener, ImageList
 	public void exportMask() {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, maskList);
+		int depth = imp.getNSlices();
+		int frames = imp.getNFrames();
+		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, depth, frames, maskList);
 		ImagePlus impMask = ImageJFunctions.show(raiMask);
 		impMask.setTitle(imp.getTitle() + "-labeling");
 		impMask.getProcessor().setMinAndMax(0, maskList.size());
