@@ -31,6 +31,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
 
 /**
@@ -126,7 +127,7 @@ public class IJComboBoxItem extends ComboBoxItem {
 			rgb = Views.permute(rgb, channelAxis, channelAxis - 1);
 			channelAxis--;
 		}
-		return (RandomAccessibleInterval<T>) rgb;
+		return Cast.unchecked(rgb);
 	}
 
 	@Override
