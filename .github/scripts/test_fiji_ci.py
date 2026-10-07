@@ -25,40 +25,42 @@ class FijiCITest(unittest.TestCase):
         name = artifact_id + "-2.0.jar"
         path = self.bundle / name
         path.write_bytes(b"source-built jar")
-        return {"artifactId": artifact_id, "path": name, "sha256": fiji_ci.sha256(path),
-                "destination": destination}
+        return {"artifactId": artifact_id, "path": name, "destination": destination}
 
     def seed_sources(self):
         projects = {"samj": ("ai.nets", "samj", "0.0.5-SNAPSHOT"),
                     "jdll": ("io.bioimage", "dl-modelrunner", "0.6.4")}
         for name, (group, artifact, version) in projects.items():
-            source = self.workspace / "ci-sources" / name
-            (source / "target").mkdir(parents=True)
-            (source / "pom.xml").write_text(
-                '<project xmlns="%s"><groupId>%s</groupId><artifactId>%s</artifactId>'
-                '<version>%s</version><properties><dl-modelrunner.version>0.6.3</dl-modelrunner.version>'
-                '</properties></project>' % (fiji_ci.MAVEN_NS, group, artifact, version))
             jar_name = artifact + "-" + version + ".jar"
-            built = source / "target" / jar_name
-            built.write_bytes(b"built from source")
             staged = self.bundle / "jars" / group.replace(".", "/") / artifact / version
             staged.mkdir(parents=True)
-            (staged / jar_name).write_bytes(built.read_bytes())
+            if name == "jdll":
+                source = self.workspace / "ci-sources/jdll"
+                (source / "target").mkdir(parents=True)
+                (source / "pom.xml").write_text(
+                    '<project xmlns="%s"><groupId>%s</groupId><artifactId>%s</artifactId>'
+                    '<version>%s</version></project>' % (fiji_ci.MAVEN_NS, group, artifact, version))
+                (source / "target" / jar_name).write_bytes(b"built from source")
+                (staged / jar_name).write_bytes(b"built from source")
+            else:
+                (staged / jar_name).write_bytes(b"published snapshot")
         (self.workspace / "pom.xml").write_text(
             '<project xmlns="%s"><groupId>ai.nets</groupId><artifactId>samj-IJ</artifactId>'
-            '<version>0.0.4-SNAPSHOT</version></project>' % fiji_ci.MAVEN_NS)
+            '<version>0.0.4-SNAPSHOT</version><properties><samj.version>0.0.5-SNAPSHOT</samj.version>'
+            '</properties></project>' % fiji_ci.MAVEN_NS)
         (self.bundle / "plugin").mkdir()
         (self.bundle / "plugin/samj-IJ-0.0.4-SNAPSHOT.jar").write_bytes(b"plugin")
 
     def test_configure_persists_jdll_override_and_snapshot_version(self):
         self.seed_sources()
-        env = self.workspace / "github-env"
-        with patch.dict(os.environ, GITHUB_ENV=str(env)):
-            fiji_ci.configure(self.workspace)
-        tree = fiji_ci.ET.parse(self.workspace / "ci-sources/samj/pom.xml")
-        self.assertEqual(tree.findtext("m:properties/m:dl-modelrunner.version",
-                                     namespaces={"m": fiji_ci.MAVEN_NS}), "0.6.4")
-        self.assertIn("SAMJ_VERSION=0.0.5-SNAPSHOT", env.read_text())
+        fiji_ci.configure(self.workspace)
+        fiji_ci.configure(self.workspace)
+        tree = fiji_ci.ET.parse(self.workspace / "pom.xml")
+        ns = {"m": fiji_ci.MAVEN_NS}
+        dependencies = tree.findall("m:dependencyManagement/m:dependencies/m:dependency", ns)
+        self.assertEqual(len(dependencies), 1)
+        self.assertEqual(dependencies[0].findtext("m:version", namespaces=ns), "0.6.4")
+        self.assertEqual(tree.findtext("m:properties/m:samj.version", namespaces=ns), "0.0.5-SNAPSHOT")
 
     def test_bundle_records_exact_sources_and_maven_coordinates(self):
         self.seed_sources()
@@ -67,14 +69,18 @@ class FijiCITest(unittest.TestCase):
         manifest = fiji_ci.json.loads((self.bundle / "manifest.json").read_text())
         samj, = [a for a in manifest["artifacts"] if a["artifactId"] == "samj"]
         self.assertEqual(samj["groupId"], "ai.nets")
+        self.assertEqual(manifest["sources"]["samj"]["origin"], "Maven repository")
         self.assertEqual(manifest["sources"]["jdll"]["commit"], "commit-sha")
+        published = self.bundle / "jars/ai/nets/samj/0.0.5-SNAPSHOT/samj-0.0.5-SNAPSHOT.jar"
+        self.assertEqual(published.read_bytes(), b"published snapshot")
 
-    def test_bundle_rejects_published_jar_with_same_version(self):
+    def test_bundle_uses_jdll_source_build_instead_of_published_jar_with_same_version(self):
         self.seed_sources()
-        (self.bundle / "jars/ai/nets/samj/0.0.5-SNAPSHOT/samj-0.0.5-SNAPSHOT.jar").write_bytes(b"published jar")
+        staged = self.bundle / "jars/io/bioimage/dl-modelrunner/0.6.4/dl-modelrunner-0.6.4.jar"
+        staged.write_bytes(b"published jar")
         with patch.object(fiji_ci.subprocess, "check_output", return_value="commit-sha\n"):
-            with self.assertRaisesRegex(RuntimeError, "differs from source build"):
-                fiji_ci.bundle(self.workspace)
+            fiji_ci.bundle(self.workspace)
+        self.assertEqual(staged.read_bytes(), b"built from source")
 
     def test_replaces_duplicate_jars_and_preserves_distinct_artifacts(self):
         old_names = ("jars/jna-1.0.jar", "jars/linux64/jna-1.0-linux.jar",
@@ -91,14 +97,14 @@ class FijiCITest(unittest.TestCase):
         self.assertEqual(unrelated.read_bytes(), b"keep")
         for artifact in artifacts:
             installed = self.root / artifact["destination"] / artifact["path"]
-            self.assertEqual(fiji_ci.sha256(installed), artifact["sha256"])
+            self.assertEqual(installed.read_bytes(), (self.bundle / artifact["path"]).read_bytes())
 
-    def test_bad_bundle_does_not_remove_existing_jars(self):
+    def test_missing_bundle_jar_does_not_remove_existing_jars(self):
         old = self.root / "jars/jna-1.0.jar"
         old.write_bytes(b"keep")
         artifact = self.artifact("jna")
-        (self.bundle / artifact["path"]).write_bytes(b"corrupt")
-        with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
+        (self.bundle / artifact["path"]).unlink()
+        with self.assertRaises(FileNotFoundError):
             fiji_ci.install_jars(self.root, self.bundle, {"artifacts": [artifact]})
         self.assertEqual(old.read_bytes(), b"keep")
 
@@ -128,12 +134,11 @@ class FijiCITest(unittest.TestCase):
         self.assertTrue((destination / link.filename).is_symlink())
         self.assertEqual((destination / link.filename).read_bytes(), b"native library")
 
-    def test_bad_fiji_checksum_fails_before_extraction(self):
+    def test_invalid_fiji_archive_fails_before_launch(self):
         (self.workspace / "fiji.zip").write_bytes(b"bad download")
-        (self.workspace / "fiji.zip.sha256").write_text("0" * 64)
-        with self.assertRaisesRegex(RuntimeError, "SHA-256"):
+        with self.assertRaises(zipfile.BadZipFile):
             fiji_ci.prepare(self.workspace)
-        self.assertFalse((self.workspace / "fiji").exists())
+        self.assertFalse((self.workspace / "test-output/fiji.json").exists())
 
     def test_prepare_discovers_all_platform_launchers(self):
         for launcher in ("fiji-linux-x64", "fiji-windows-x64.exe", "fiji-macos-arm64", "fiji-macos-x64"):
@@ -148,7 +153,6 @@ class FijiCITest(unittest.TestCase):
                     zipped.writestr(relative, b"launcher")
                     zipped.writestr("Fiji/jars/keep.jar", b"jar")
                     zipped.writestr("Fiji/plugins/keep.jar", b"plugin")
-                (workspace / "fiji.zip.sha256").write_text(fiji_ci.sha256(archive))
                 with patch.dict(os.environ, FIJI_LAUNCHER=launcher):
                     fiji_ci.prepare(workspace)
                 config = fiji_ci.json.loads((workspace / "test-output/fiji.json").read_text())

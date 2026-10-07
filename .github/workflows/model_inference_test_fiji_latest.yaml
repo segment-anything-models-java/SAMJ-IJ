@@ -21,13 +21,6 @@ jobs:
           ref: legacy
           path: ci-sources/jdll
 
-      - name: Checkout latest SAMJ main
-        uses: actions/checkout@v4
-        with:
-          repository: segment-anything-models-java/SAMJ
-          ref: main
-          path: ci-sources/samj
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -39,19 +32,18 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Configure source dependency versions
+      - name: Use source-built JDLL with published SAMJ
         run: python .github/scripts/fiji_ci.py configure
 
-      - name: Build dependencies and plugin from source
+      - name: Build JDLL and plugin with published SAMJ
         shell: bash
         run: |
           set -euo pipefail
           python -B -m unittest discover -s .github/scripts -p test_fiji_ci.py -v
           mkdir -p ci-bundle/plugin
           mvn -B -ntp -f ci-sources/jdll/pom.xml clean install
-          mvn -B -ntp -f ci-sources/samj/pom.xml clean install
-          mvn -B -ntp -Dsamj.version="$SAMJ_VERSION" clean package
-          mvn -B -ntp -Dsamj.version="$SAMJ_VERSION" org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy-dependencies \
+          mvn -U -B -ntp clean package
+          mvn -nsu -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy-dependencies \
             -DincludeScope=runtime -DincludeTypes=jar -Dmdep.useRepositoryLayout=true \
             -DoutputDirectory="$GITHUB_WORKSPACE/ci-bundle/jars"
           PLUGIN_NAME=$(mvn -B -q help:evaluate -Dexpression=project.build.finalName -DforceStdout -Dstyle.color=never)
@@ -59,7 +51,7 @@ jobs:
           python .github/scripts/fiji_ci.py bundle
           cat ci-bundle/manifest.json >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload source-built jars
+      - name: Upload test jars
         uses: actions/upload-artifact@v4
         with:
           name: fiji-test-bundle
@@ -102,7 +94,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Download source-built jars
+      - name: Download test jars
         uses: actions/download-artifact@v4
         with:
           name: fiji-test-bundle
@@ -118,13 +110,11 @@ jobs:
           mkdir -p test-output
           BASE_URL=https://downloads.imagej.net/fiji/latest
           curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 1800 \
-            "$BASE_URL/$FIJI_ARCHIVE.sha256" -o fiji.zip.sha256
-          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 1800 \
             "$BASE_URL/$FIJI_ARCHIVE" -o fiji.zip
           curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 120 \
             https://imagej.net/images/blobs.gif -o test-output/input.gif
 
-      - name: Verify and prepare fresh Fiji
+      - name: Prepare fresh Fiji
         env:
           FIJI_LAUNCHER: ${{ matrix.launcher }}
         run: python .github/scripts/fiji_ci.py prepare

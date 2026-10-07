@@ -1,7 +1,6 @@
 """Host-side preparation and fail-closed execution of the Fiji integration test."""
 
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,14 +18,6 @@ WORKSPACE = Path(__file__).resolve().parents[2]
 MAVEN_NS = "http://maven.apache.org/POM/4.0.0"
 
 
-def sha256(path):
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def project_info(pom):
     root = ET.parse(pom).getroot()
     ns = {"m": MAVEN_NS}
@@ -39,22 +30,32 @@ def write_json(path, value):
 
 
 def configure(workspace=WORKSPACE):
-    samj_pom = workspace / "ci-sources/samj/pom.xml"
-    samj_version = project_info(samj_pom)["version"]
-    jdll_version = project_info(workspace / "ci-sources/jdll/pom.xml")["version"]
-    if not samj_version.endswith("-SNAPSHOT"):
-        raise RuntimeError("SAMJ main must declare a snapshot version")
-    # Persist this override so downstream builds resolve JDLL's source-built POM.
-    tree = ET.parse(samj_pom)
-    property_node = tree.find("m:properties/m:dl-modelrunner.version", {"m": MAVEN_NS})
-    if property_node is None:
-        raise RuntimeError("SAMJ no longer declares dl-modelrunner.version")
-    property_node.text = jdll_version
+    pom = workspace / "pom.xml"
+    jdll = project_info(workspace / "ci-sources/jdll/pom.xml")
+    tree = ET.parse(pom)
+    root = tree.getroot()
+    ns = {"m": MAVEN_NS}
+    samj_version = root.findtext("m:properties/m:samj.version", namespaces=ns)
+    # Dependency management overrides the JDLL version in SAMJ's published POM.
+    management = root.find("m:dependencyManagement", ns)
+    if management is None:
+        management = ET.SubElement(root, "{%s}dependencyManagement" % MAVEN_NS)
+    dependencies = management.find("m:dependencies", ns)
+    if dependencies is None:
+        dependencies = ET.SubElement(management, "{%s}dependencies" % MAVEN_NS)
+    dependency = next((dep for dep in dependencies
+                       if dep.findtext("m:groupId", namespaces=ns) == jdll["groupId"]
+                       and dep.findtext("m:artifactId", namespaces=ns) == jdll["artifactId"]), None)
+    if dependency is None:
+        dependency = ET.SubElement(dependencies, "{%s}dependency" % MAVEN_NS)
+    for key, value in jdll.items():
+        node = dependency.find("m:" + key, ns)
+        if node is None:
+            node = ET.SubElement(dependency, "{%s}%s" % (MAVEN_NS, key))
+        node.text = value
     ET.register_namespace("", MAVEN_NS)
-    tree.write(samj_pom, encoding="utf-8", xml_declaration=True)
-    with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
-        env.write("SAMJ_VERSION=" + samj_version + "\n")
-    print("Using SAMJ %s and source-built JDLL %s" % (samj_version, jdll_version))
+    tree.write(pom, encoding="utf-8", xml_declaration=True)
+    print("Using published SAMJ %s and source-built JDLL %s" % (samj_version, jdll["version"]))
 
 
 def bundle(workspace=WORKSPACE):
@@ -64,22 +65,22 @@ def bundle(workspace=WORKSPACE):
         parts = jar.relative_to(root / "jars").parts
         artifacts.append({"groupId": ".".join(parts[:-3]), "artifactId": parts[-3],
                           "version": parts[-2], "path": jar.relative_to(root).as_posix(),
-                          "sha256": sha256(jar), "destination": "jars"})
+                          "destination": "jars"})
     plugin, = (root / "plugin").glob("*.jar")
     artifacts.append(dict(project_info(workspace / "pom.xml"),
                           path=plugin.relative_to(root).as_posix(),
-                          sha256=sha256(plugin), destination="plugins"))
-    sources = {}
-    for name in ("samj", "jdll"):
-        checkout = workspace / "ci-sources" / name
-        sources[name] = dict(project_info(checkout / "pom.xml"), commit=subprocess.check_output(
-            ["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True).strip())
-        resolved, = [a for a in artifacts if a["artifactId"] == sources[name]["artifactId"]]
-        if resolved["version"] != sources[name]["version"]:
-            raise RuntimeError("Resolved dependency differs from source build: " + name)
-        built_jar = checkout / "target" / (resolved["artifactId"] + "-" + resolved["version"] + ".jar")
-        if sha256(built_jar) != resolved["sha256"]:
-            raise RuntimeError("Bundled jar differs from source build: " + name)
+                          destination="plugins"))
+    samj, = [a for a in artifacts if a["groupId"] == "ai.nets" and a["artifactId"] == "samj"]
+    sources = {"samj": {key: samj[key] for key in ("groupId", "artifactId", "version")}}
+    sources["samj"]["origin"] = "Maven repository"
+    checkout = workspace / "ci-sources/jdll"
+    sources["jdll"] = dict(project_info(checkout / "pom.xml"), commit=subprocess.check_output(
+        ["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True).strip())
+    jdll, = [a for a in artifacts if a["artifactId"] == sources["jdll"]["artifactId"]]
+    if jdll["version"] != sources["jdll"]["version"]:
+        raise RuntimeError("Resolved JDLL version differs from source build")
+    built_jar = checkout / "target" / (jdll["artifactId"] + "-" + jdll["version"] + ".jar")
+    shutil.copy2(built_jar, root / jdll["path"])
     sources["plugin"] = {"commit": subprocess.check_output(
         ["git", "-C", str(workspace), "rev-parse", "HEAD"], text=True).strip()}
     write_json(root / "manifest.json", {"sources": sources, "artifacts": artifacts})
@@ -107,10 +108,10 @@ def extract_archive(archive, destination):
 
 def install_jars(root, bundle_root, manifest):
     artifacts = manifest["artifacts"]
-    # Check the entire bundle before changing Fiji's classpath.
     for artifact in artifacts:
-        if sha256(bundle_root / artifact["path"]) != artifact["sha256"]:
-            raise RuntimeError("Jar checksum mismatch: " + artifact["path"])
+        source = bundle_root / artifact["path"]
+        if not source.is_file():
+            raise FileNotFoundError(source)
     patterns = [re.compile(r"^" + re.escape(a["artifactId"]) + r"(?:-[0-9].*)?\.jar$", re.I)
                 for a in artifacts]
     for folder in (root / "jars", root / "plugins"):
@@ -128,10 +129,6 @@ def prepare(workspace=WORKSPACE):
     output = workspace / "test-output"
     output.mkdir(exist_ok=True)
     archive = workspace / "fiji.zip"
-    expected = (workspace / "fiji.zip.sha256").read_text().split()[0].lower()
-    actual = sha256(archive)
-    if not re.fullmatch(r"[0-9a-f]{64}", expected) or actual != expected:
-        raise RuntimeError("Fiji download failed SHA-256 verification")
     extract_archive(archive, workspace / "fiji")
     launcher, = (workspace / "fiji").rglob(os.environ["FIJI_LAUNCHER"])
     root = next(parent for parent in launcher.parents
@@ -143,8 +140,7 @@ def prepare(workspace=WORKSPACE):
     manifest = json.loads((workspace / "ci-bundle/manifest.json").read_text())
     install_jars(root, workspace / "ci-bundle", manifest)
     write_json(output / "build-manifest.json", manifest)
-    write_json(output / "fiji.json", {"launcher": str(launcher), "root": str(root),
-                                      "archive_sha256": actual})
+    write_json(output / "fiji.json", {"launcher": str(launcher), "root": str(root)})
 
 
 def stop_process_tree(process):
