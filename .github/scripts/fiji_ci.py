@@ -135,8 +135,6 @@ def prepare(workspace=WORKSPACE):
                 if (parent / "jars").is_dir() and (parent / "plugins").is_dir())
     if os.name != "nt":
         launcher.chmod(launcher.stat().st_mode | stat.S_IXUSR)
-    if os.name == "posix" and os.uname().sysname == "Darwin":
-        subprocess.run(["xattr", "-dr", "com.apple.quarantine", str(root)], check=True)
     manifest = json.loads((workspace / "ci-bundle/manifest.json").read_text())
     install_jars(root, workspace / "ci-bundle", manifest)
     write_json(output / "build-manifest.json", manifest)
