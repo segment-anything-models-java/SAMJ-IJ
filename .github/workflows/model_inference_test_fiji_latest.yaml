@@ -2,116 +2,141 @@ name: Model inference test Fiji latest
 
 on:
   workflow_dispatch:
-    inputs: 
-      run_tests:
-        description: "Trigger the model‐inference‐test workflow by hand"
-        required: false
-        default: "true"
+
+permissions:
+  contents: read
 
 jobs:
-  integration-tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: ubuntu
-            os: ubuntu-latest
-            url_file_name: fiji-latest-linux64-jdk.zip
-            fiji_executable: fiji-linux-x64
-          - name: windows
-            os: windows-latest
-            url_file_name: fiji-latest-win64-jdk.zip
-            fiji_executable: fiji-windows-x64.exe
-          - name: macos-arm64-14
-            os: macos-14
-            url_file_name: fiji-latest-macos-arm64-jdk.zip
-            fiji_executable: Contents/MacOS/fiji-macos-arm64
-          - name: macos-arm64-15
-            os: macos-15
-            url_file_name: fiji-latest-macos-arm64-jdk.zip
-            fiji_executable: Contents/MacOS/fiji-macos-arm64
-          - name: macos-x86_64
-            os: macos-13
-            url_file_name: fiji-latest-macos64-jdk.zip
-            fiji_executable: Contents/MacOS/fiji-macos-x64
-    runs-on: ${{ matrix.os }}
-
+  build-test-bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - name: Checkout code
+      - name: Checkout plugin
         uses: actions/checkout@v4
+
+      - name: Checkout latest JDLL legacy
+        uses: actions/checkout@v4
+        with:
+          repository: bioimage-io/JDLL
+          ref: legacy
+          path: ci-sources/jdll
+
+      - name: Checkout latest SAMJ main
+        uses: actions/checkout@v4
+        with:
+          repository: segment-anything-models-java/SAMJ
+          ref: main
+          path: ci-sources/samj
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'zulu'
+          distribution: zulu
 
-      - name: Set up Fiji
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Configure source dependency versions
+        run: python .github/scripts/fiji_ci.py configure
+
+      - name: Build dependencies and plugin from source
         shell: bash
         run: |
-          mkdir -p fiji
-          curl -L -o fiji.zip https://downloads.imagej.net/fiji/latest/${{ matrix.url_file_name }}
-          unzip fiji.zip -d fiji
+          set -euo pipefail
+          python -B -m unittest discover -s .github/scripts -p test_fiji_ci.py -v
+          mkdir -p ci-bundle/plugin
+          mvn -B -ntp -f ci-sources/jdll/pom.xml clean install
+          mvn -B -ntp -f ci-sources/samj/pom.xml clean install
+          mvn -B -ntp -Dsamj.version="$SAMJ_VERSION" clean package
+          mvn -B -ntp -Dsamj.version="$SAMJ_VERSION" org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy-dependencies \
+            -DincludeScope=runtime -DincludeTypes=jar -Dmdep.useRepositoryLayout=true \
+            -DoutputDirectory="$GITHUB_WORKSPACE/ci-bundle/jars"
+          PLUGIN_NAME=$(mvn -B -q help:evaluate -Dexpression=project.build.finalName -DforceStdout -Dstyle.color=never)
+          cp "target/$PLUGIN_NAME.jar" ci-bundle/plugin/
+          python .github/scripts/fiji_ci.py bundle
+          cat ci-bundle/manifest.json >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Install SAMJ
+      - name: Upload source-built jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiji-test-bundle
+          path: ci-bundle/
+          if-no-files-found: error
+          retention-days: 7
+
+  integration-tests:
+    needs: build-test-bundle
+    name: SAM2 Tiny (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            os: ubuntu-24.04
+            archive: fiji-latest-linux64-jdk.zip
+            launcher: fiji-linux-x64
+          - name: windows-x64
+            os: windows-2022
+            archive: fiji-latest-win64-jdk.zip
+            launcher: fiji-windows-x64.exe
+          - name: macos-arm64
+            os: macos-15
+            archive: fiji-latest-macos-arm64-jdk.zip
+            launcher: fiji-macos-arm64
+          - name: macos-x64
+            os: macos-15-intel
+            archive: fiji-latest-macos64-jdk.zip
+            launcher: fiji-macos-x64
+
+    steps:
+      - name: Checkout test scripts
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download source-built jars
+        uses: actions/download-artifact@v4
+        with:
+          name: fiji-test-bundle
+          path: ci-bundle
+
+      - name: Download Fiji and test image
+        timeout-minutes: 20
         shell: bash
+        env:
+          FIJI_ARCHIVE: ${{ matrix.archive }}
         run: |
-          fiji/Fiji/${{ matrix.fiji_executable }} --headless --update add-update-site "SAMJ" "https://sites.imagej.net/SAMJ/"
-          fiji/Fiji/${{ matrix.fiji_executable }} --headless --update update
+          set -euo pipefail
+          mkdir -p test-output
+          BASE_URL=https://downloads.imagej.net/fiji/latest
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 1800 \
+            "$BASE_URL/$FIJI_ARCHIVE.sha256" -o fiji.zip.sha256
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 1800 \
+            "$BASE_URL/$FIJI_ARCHIVE" -o fiji.zip
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 120 \
+            https://imagej.net/images/blobs.gif -o test-output/input.gif
 
-      - name: rm SAMJ-IJ file
-        shell: bash
-        run: |
-          rm -f /fiji/Fiji/plugins/SAMJ-IJ-*.jar
+      - name: Verify and prepare fresh Fiji
+        env:
+          FIJI_LAUNCHER: ${{ matrix.launcher }}
+        run: python .github/scripts/fiji_ci.py prepare
 
-      - name: Build Plugin
-        shell: bash
-        run: mvn clean package
+      - name: Install SAM2 Tiny from scratch and export prompted mask
+        run: python .github/scripts/fiji_ci.py run
 
-      - name: Get plugin name and version
-        shell: bash
-        run: |
-          MVN_VERSION=$(mvn -q \
-            -Dexec.executable=echo \
-            -Dexec.args='${project.version}' \
-            --non-recursive \
-            exec:exec)
-          MVN_NAME=$(mvn -q \
-            -Dexec.executable=echo \
-            -Dexec.args='${project.artifactId}' \
-            --non-recursive \
-            exec:exec)
-          echo "version=${MVN_VERSION}" >> $GITHUB_OUTPUT
-          echo "name=${MVN_NAME}" >> $GITHUB_OUTPUT
-        id: mvn_info
-
-      - name: Copy Plugin to Fiji
-        shell: bash
-        run: cp target/${{steps.mvn_info.outputs.name}}-${{steps.mvn_info.outputs.version}}.jar fiji/Fiji/plugins/
-
-      - name: Print information about the OS
-        shell: bash
-        run: |
-          python -c "import platform; print(platform.platform())"
-
-      - name: Install SAM model
-        shell: bash
-        run: |
-          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/install_model.py
-
-      - name: Get chip
-        shell: bash
-        run: |
-          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/get_chip.py
-
-      - name: Check if mps is available (only macos)
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          python -c "import os; print(os.listdir());"
-          fiji/Fiji/appose_*/envs/sam2/bin/python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available());"
-
-      - name: Run Macro for annotation
-        shell: bash
-        run: |
-          fiji/Fiji/${{ matrix.fiji_executable }} --headless --console .github/scripts/run_model.py
+      - name: Upload mask, provenance and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sam2-tiny-${{ matrix.name }}
+          path: test-output/
+          if-no-files-found: warn
+          retention-days: 14
