@@ -3,6 +3,11 @@
 
 # SAMJ-IJ
 
+> [!TIP]
+> **Video tutorials:** Visit the [SAMJ YouTube channel](https://www.youtube.com/@segment-anything-model-java) for videos covering several SAMJ use cases.
+>
+> You can also watch the [full SAMJ workshop from Virtual I2K 2024](https://www.youtube.com/watch?v=GlvJPXPQ2_g&t=2s).
+
 The SAMJ-IJ is a powerful Fiji plugin for annotating microscopy images using various versions of the [Segment Anything](https://github.com/facebookresearch/segment-anything) Model (SAM). This README provides detailed instructions on how to use the plugin for image annotation. In this first version of the plugin, the SAMJ-IJ Annotator is delivered to annotate images through the usage of prompts. The plugin is designed to be user-friendly and efficient, allowing for easy and accurate image annotation for further analysis.
 
 > [!NOTE]
